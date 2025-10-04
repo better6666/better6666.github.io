@@ -1522,7 +1522,7 @@
 
         /* ========== 移动端适配 ========== */
         @media (max-width: 768px) {
-            /* 侧边栏 */
+            /* 侧边栏 - 默认完全隐藏 */
             .sidebar {
                 position: fixed;
                 z-index: 100;
@@ -1530,17 +1530,14 @@
                 width: 260px !important;
                 left: 0;
                 top: 0;
-                transform: translateX(-100%);
+                transform: translateX(-100%) !important;
                 transition: transform 0.3s ease;
                 margin-left: 0 !important;
             }
 
-            .sidebar:not(.hidden) {
-                transform: translateX(0);
-            }
-
-            .sidebar.hidden {
-                transform: translateX(-100%);
+            /* 只有明确显示时才显示侧边栏 */
+            .sidebar.mobile-visible {
+                transform: translateX(0) !important;
             }
 
             .sidebar-backdrop {
@@ -1563,11 +1560,14 @@
                 width: 100% !important;
                 margin-left: 0 !important;
                 max-width: 100% !important;
+                position: relative;
+                z-index: 1;
             }
             
             /* 切换侧边栏按钮 */
             .toggle-sidebar-btn {
                 display: flex !important;
+                z-index: 101;
             }
 
             /* 欢迎界面 */
@@ -2675,16 +2675,19 @@
         const sidebarBackdrop = document.getElementById('sidebarBackdrop');
 
         function toggleSidebar() {
-            sidebar.classList.toggle('hidden');
-            sidebarBackdrop.classList.toggle('active');
-            
-            // Prevent body scroll when sidebar is open on mobile
+            // 移动端使用 mobile-visible 类，桌面端使用 hidden 类
             if (window.innerWidth <= 768) {
-                if (!sidebar.classList.contains('hidden')) {
+                sidebar.classList.toggle('mobile-visible');
+                sidebarBackdrop.classList.toggle('active');
+                
+                // Prevent body scroll when sidebar is open on mobile
+                if (sidebar.classList.contains('mobile-visible')) {
                     document.body.style.overflow = 'hidden';
                 } else {
                     document.body.style.overflow = '';
                 }
+            } else {
+                sidebar.classList.toggle('hidden');
             }
         }
 
@@ -4153,11 +4156,12 @@
                 if (artifactsPanel) artifactsPanel.classList.remove('active');
                 if (mainContent) mainContent.classList.remove('with-artifacts');
                 
-                // 恢复显示左侧栏
+                // 恢复显示左侧栏（仅桌面端）
                 const sidebar = document.getElementById('sidebar');
-                if (sidebar) {
+                if (sidebar && window.innerWidth > 768) {
                     sidebar.classList.remove('hidden');
                 }
+                // 移动端保持隐藏，用户需要手动打开
             });
         }
 
@@ -4293,11 +4297,12 @@
             artifactsPanel.classList.add('active');
             mainContent.classList.add('with-artifacts');
             
-            // 自动收起左侧栏，腾出更多空间给对话区域
+            // 自动收起左侧栏（仅桌面端），腾出更多空间给对话区域
             const sidebar = document.getElementById('sidebar');
-            if (sidebar) {
+            if (sidebar && window.innerWidth > 768) {
                 sidebar.classList.add('hidden');
             }
+            // 移动端侧边栏已经默认隐藏，无需额外处理
         }
 
         // HTML 转义
