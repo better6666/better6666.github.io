@@ -1370,54 +1370,62 @@
         function getProviderConfig(modelName) {
             const providers = loadAISettings();
             
+            // 根据模型名称判断 provider（优先级：模型名称 > 本地配置）
+            // 这样即使没有本地配置，也能使用服务器端配置
+            
             // 检查是否是 Kimi/Custom
-            if (providers.custom && providers.custom.enabled) {
-                if (modelName.includes('kimi') || modelName.includes('moonshot')) {
-                    return {
-                        provider: 'custom',
-                        config: {
-                            apiKey: providers.custom.apiKey,
-                            endpoint: providers.custom.endpoint,
-                            model: 'moonshot-v1-8k',
-                            stream: true
-                        }
-                    };
-                }
-            }
-            
-            // 检查是否是 OpenAI
-            if (providers.openai && providers.openai.enabled) {
-                if (modelName.includes('gpt') || modelName.includes('openai')) {
-                    return {
-                        provider: 'openai',
-                        config: {
-                            apiKey: providers.openai.apiKey,
-                            endpoint: providers.openai.endpoint,
-                            model: providers.openai.model || 'gpt-3.5-turbo',
-                            stream: true
-                        }
-                    };
-                }
-            }
-            
-            // 默认使用 Claude
-            if (providers.claude && providers.claude.enabled) {
+            if (modelName.includes('kimi') || modelName.includes('moonshot')) {
                 return {
-                    provider: 'claude',
-                    config: {
-                        apiKey: providers.claude.apiKey,
-                        model: providers.claude.model || 'claude-3-5-sonnet-20241022',
+                    provider: 'custom',
+                    config: (providers.custom && providers.custom.enabled) ? {
+                        apiKey: providers.custom.apiKey,
+                        endpoint: providers.custom.endpoint,
+                        model: 'moonshot-v1-8k',
+                        stream: true
+                    } : {
+                        // 没有本地配置时，发送空配置，让服务器使用默认配置
                         stream: true
                     }
                 };
             }
             
-            // 如果没有配置，使用默认 Claude
+            // 检查是否是 OpenAI
+            if (modelName.includes('gpt') || modelName.includes('openai')) {
+                return {
+                    provider: 'openai',
+                    config: (providers.openai && providers.openai.enabled) ? {
+                        apiKey: providers.openai.apiKey,
+                        endpoint: providers.openai.endpoint,
+                        model: providers.openai.model || 'gpt-3.5-turbo',
+                        stream: true
+                    } : {
+                        stream: true
+                    }
+                };
+            }
+            
+            // 检查是否是 Gemini
+            if (modelName.includes('gemini')) {
+                return {
+                    provider: 'gemini',
+                    config: (providers.gemini && providers.gemini.enabled) ? {
+                        apiKey: providers.gemini.apiKey,
+                        model: providers.gemini.model || 'gemini-pro',
+                        stream: true
+                    } : {
+                        stream: true
+                    }
+                };
+            }
+            
+            // 默认使用 Claude
             return {
                 provider: 'claude',
-                config: {
-                    apiKey: 'your-api-key',
-                    model: 'claude-3-5-sonnet-20241022',
+                config: (providers.claude && providers.claude.enabled) ? {
+                    apiKey: providers.claude.apiKey,
+                    model: providers.claude.model || 'claude-3-5-sonnet-20241022',
+                    stream: true
+                } : {
                     stream: true
                 }
             };
@@ -1448,17 +1456,17 @@
                 // 获取当前选择的提供商和配置
                 const providerData = getProviderConfig(currentModel);
                 
-                // 检查是否有有效配置
-                if (!providerData || !providerData.config || !providerData.config.apiKey || 
-                    providerData.config.apiKey === 'your-api-key') {
-                    addMessage('❌ 错误：当前AI未配置API Key，请先访问配置页面进行配置！', 'assistant', true);
+                if (!providerData) {
+                    addMessage('❌ 错误：无法识别当前模型，请刷新页面重试', 'assistant', true);
                     isStreaming = false;
                     return;
                 }
                 
                 const { provider, config } = providerData;
                 
-                console.log('Using provider:', provider, 'Model:', currentModel);
+                // 📝 注意：如果前端没有配置 API Key，后端会自动使用服务器端默认配置
+                console.log('✅ 使用提供商:', provider, '| 模型:', currentModel);
+                console.log('📤 发送配置:', config);
                 
                 // 调用流式 API
                 const response = await fetch('http://localhost:3000/api/chat/stream', {
@@ -1470,7 +1478,7 @@
                         message: message,
                         conversationId: currentConversationId,
                         provider: provider,
-                        config: config
+                        config: config  // 前端配置 或 空配置（让后端使用服务器配置）
                     })
                 });
                 
