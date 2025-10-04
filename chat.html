@@ -1468,8 +1468,8 @@
                 console.log('✅ 使用提供商:', provider, '| 模型:', currentModel);
                 console.log('📤 发送配置:', config);
                 
-                // 调用流式 API
-                const response = await fetch('http://localhost:3000/api/chat/stream', {
+                // 调用流式 API（使用相对路径，支持手机访问）
+                const response = await fetch('/api/chat/stream', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

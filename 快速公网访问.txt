@@ -1,0 +1,38 @@
+🌐 快速公网访问方法
+
+✅ 已安装 Localtunnel（无需注册的内网穿透工具）
+
+🚀 启动步骤：
+
+方法一：使用命令行
+1. 确保服务器正在运行（node server-multi-ai.js）
+2. 打开新的命令行窗口
+3. 运行：lt --port 3000
+4. 复制显示的公网地址（例如：https://xxxxx.loca.lt）
+5. 在任何设备访问：https://xxxxx.loca.lt/chat.html
+
+方法二：使用批处理文件
+1. 双击 start-public.bat
+2. 查看显示的公网地址
+3. 在任何设备访问该地址
+
+⚠️ 重要提示：
+- 首次访问可能显示 "Tunnel Password" 页面，点击 "Click to Continue" 即可
+- 每次重启会获得新的地址
+- 电脑必须保持开机且服务器运行
+- 关闭命令行窗口会停止公网访问
+
+🌍 访问范围：
+✅ 全球任何设备
+✅ 任何网络（不限制WiFi）
+✅ 手机、电脑、平板都能访问
+
+📝 示例：
+如果获得地址：https://happy-dogs-123.loca.lt
+则访问：https://happy-dogs-123.loca.lt/chat.html
+
+---
+
+💎 如果需要永久固定地址，请使用 Vercel 部署：
+查看：部署到Vercel指南.md
+
