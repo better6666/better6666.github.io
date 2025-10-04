@@ -1029,6 +1029,13 @@
                                             <div class="model-description">Smartest model. Efficient for everyday use.</div>
                                         </div>
                                         
+                                        <div class="model-option" data-model="kimi">
+                                            <div class="model-option-header">
+                                                <div class="model-name">🌙 Kimi AI</div>
+                                            </div>
+                                            <div class="model-description">月之暗面 - 200k 超长文本处理</div>
+                                        </div>
+                                        
                                         <div class="model-more" id="moreModels">
                                             <span>More models</span>
                                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1203,7 +1210,71 @@
         // 当前对话 ID
         let currentConversationId = 'conv-' + Date.now();
         let currentModel = 'sonnet-4.5';
+        let currentProvider = 'claude'; // 默认使用 Claude
         let isStreaming = false;
+
+        // 从配置读取可用的 AI 提供商
+        function loadAISettings() {
+            const settings = JSON.parse(localStorage.getItem('aiSettings') || '{}');
+            return settings.providers || {};
+        }
+
+        // 根据模型名称确定提供商和配置
+        function getProviderConfig(modelName) {
+            const providers = loadAISettings();
+            
+            // 检查是否是 Kimi/Custom
+            if (providers.custom && providers.custom.enabled) {
+                if (modelName.includes('kimi') || modelName.includes('moonshot')) {
+                    return {
+                        provider: 'custom',
+                        config: {
+                            apiKey: providers.custom.apiKey,
+                            endpoint: providers.custom.endpoint,
+                            model: 'moonshot-v1-8k',
+                            stream: true
+                        }
+                    };
+                }
+            }
+            
+            // 检查是否是 OpenAI
+            if (providers.openai && providers.openai.enabled) {
+                if (modelName.includes('gpt') || modelName.includes('openai')) {
+                    return {
+                        provider: 'openai',
+                        config: {
+                            apiKey: providers.openai.apiKey,
+                            endpoint: providers.openai.endpoint,
+                            model: providers.openai.model || 'gpt-3.5-turbo',
+                            stream: true
+                        }
+                    };
+                }
+            }
+            
+            // 默认使用 Claude
+            if (providers.claude && providers.claude.enabled) {
+                return {
+                    provider: 'claude',
+                    config: {
+                        apiKey: providers.claude.apiKey,
+                        model: providers.claude.model || 'claude-3-5-sonnet-20241022',
+                        stream: true
+                    }
+                };
+            }
+            
+            // 如果没有配置，使用默认 Claude
+            return {
+                provider: 'claude',
+                config: {
+                    apiKey: 'your-api-key',
+                    model: 'claude-3-5-sonnet-20241022',
+                    stream: true
+                }
+            };
+        }
 
         // 发送消息函数
         async function sendMessage() {
@@ -1221,6 +1292,21 @@
             isStreaming = true;
 
             try {
+                // 获取当前选择的提供商和配置
+                const providerData = getProviderConfig(currentModel);
+                
+                // 检查是否有有效配置
+                if (!providerData || !providerData.config || !providerData.config.apiKey || 
+                    providerData.config.apiKey === 'your-api-key') {
+                    addMessage('❌ 错误：当前AI未配置API Key，请先访问配置页面进行配置！', 'assistant', true);
+                    isStreaming = false;
+                    return;
+                }
+                
+                const { provider, config } = providerData;
+                
+                console.log('Using provider:', provider, 'Model:', currentModel);
+                
                 // 调用流式 API
                 const response = await fetch('http://localhost:3000/api/chat/stream', {
                     method: 'POST',
@@ -1230,9 +1316,14 @@
                     body: JSON.stringify({
                         message: message,
                         conversationId: currentConversationId,
-                        model: currentModel
+                        provider: provider,
+                        config: config
                     })
                 });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: 服务器请求失败`);
+                }
 
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder();
@@ -1281,7 +1372,20 @@
 
             } catch (error) {
                 console.error('Error sending message:', error);
-                addMessage('Error: ' + error.message, 'assistant', true);
+                let errorMsg = '❌ 发送失败：' + error.message;
+                
+                // 根据错误类型提供更友好的提示
+                if (error.message.includes('Failed to fetch') || error.message.includes('fetch')) {
+                    errorMsg = '❌ 连接失败：无法连接到服务器，请确保后端服务正在运行';
+                } else if (error.message.includes('401') || error.message.includes('authentication')) {
+                    errorMsg = '❌ 认证失败：API Key 无效，请检查配置';
+                } else if (error.message.includes('429')) {
+                    errorMsg = '❌ 请求过于频繁：请稍后再试';
+                } else if (error.message.includes('insufficient')) {
+                    errorMsg = '❌ 余额不足：请充值后再使用';
+                }
+                
+                addMessage(errorMsg, 'assistant', true);
             } finally {
                 isStreaming = false;
             }

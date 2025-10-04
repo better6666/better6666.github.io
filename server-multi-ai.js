@@ -242,6 +242,66 @@ app.post('/api/chat/stream', async (req, res) => {
                 res.end();
                 break;
 
+            case 'custom':
+                // 使用 fetch 调用自定义 API（如 Kimi）
+                const fetch = require('node-fetch');
+                const customHeaders = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${config.apiKey}`
+                };
+                
+                const customResponse = await fetch(config.endpoint, {
+                    method: 'POST',
+                    headers: customHeaders,
+                    body: JSON.stringify({
+                        model: config.model || 'moonshot-v1-8k',
+                        messages: history,
+                        stream: true
+                    })
+                });
+
+                if (!customResponse.ok) {
+                    const errorData = await customResponse.json();
+                    throw new Error(errorData.error?.message || 'Custom API request failed');
+                }
+
+                // 处理流式响应
+                const reader = customResponse.body;
+                reader.on('data', (chunk) => {
+                    const lines = chunk.toString().split('\n').filter(line => line.trim());
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+                            if (data === '[DONE]') continue;
+                            
+                            try {
+                                const parsed = JSON.parse(data);
+                                const content = parsed.choices?.[0]?.delta?.content || '';
+                                if (content) {
+                                    fullResponse += content;
+                                    res.write(`data: ${JSON.stringify({ type: 'text', content })}\n\n`);
+                                }
+                            } catch (e) {
+                                // 忽略解析错误
+                            }
+                        }
+                    }
+                });
+
+                reader.on('end', () => {
+                    history.push({ role: 'assistant', content: fullResponse });
+                    conversations.set(conversationId, history);
+                    res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
+                    res.end();
+                });
+
+                reader.on('error', (error) => {
+                    console.error('Custom stream error:', error);
+                    res.write(`data: ${JSON.stringify({ type: 'error', content: error.message })}\n\n`);
+                    res.end();
+                });
+                break;
+
             default:
                 throw new Error('Stream not supported for: ' + provider);
         }
@@ -295,6 +355,38 @@ app.post('/api/test/:provider', async (req, res) => {
                 result = { success: true, model: 'gemini-pro' };
                 break;
 
+            case 'custom':
+                const fetch = require('node-fetch');
+                const customHeaders = {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                };
+                
+                const customResponse = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: customHeaders,
+                    body: JSON.stringify({
+                        model: 'moonshot-v1-8k',
+                        messages: [{ role: 'user', content: 'Hi' }],
+                        max_tokens: 10
+                    })
+                });
+                
+                const customData = await customResponse.json();
+                
+                if (customResponse.ok) {
+                    result = { 
+                        success: true, 
+                        model: customData.model || 'custom-model' 
+                    };
+                } else {
+                    result = { 
+                        success: false, 
+                        error: customData.error?.message || 'Connection failed' 
+                    };
+                }
+                break;
+
             default:
                 result = { success: false, error: 'Unknown provider' };
         }
@@ -323,6 +415,10 @@ app.delete('/api/conversations/:id', (req, res) => {
 });
 
 app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'config.html'));
+});
+
+app.get('/index.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'config.html'));
 });
 

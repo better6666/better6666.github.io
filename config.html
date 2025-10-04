@@ -567,10 +567,21 @@
             btn.disabled = true;
 
             try {
+                // 收集所有必要的配置信息
+                const requestBody = { apiKey };
+                
+                // 对于不同的提供商，添加额外参数
+                if (provider === 'openai' || provider === 'custom') {
+                    const endpointInput = document.getElementById(`${provider}-endpoint`);
+                    if (endpointInput) {
+                        requestBody.endpoint = endpointInput.value;
+                    }
+                }
+                
                 const response = await fetch(`http://localhost:3000/api/test/${provider}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ apiKey })
+                    body: JSON.stringify(requestBody)
                 });
 
                 const result = await response.json();
