@@ -980,6 +980,74 @@
             padding: 0 2rem;
         }
 
+        /* ==================== 思考链样式 ==================== */
+        .thinking-chain {
+            margin-bottom: 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background-color: #f9fafb;
+        }
+
+        .thinking-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 0.875rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.15s ease;
+        }
+
+        .thinking-header:hover {
+            background-color: #f3f4f6;
+        }
+
+        .thinking-toggle {
+            transition: transform 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .thinking-toggle.collapsed {
+            transform: rotate(-90deg);
+        }
+
+        .thinking-label {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .thinking-icon {
+            width: 14px;
+            height: 14px;
+            animation: spin 2s linear infinite;
+        }
+
+        .thinking-content {
+            padding: 0.875rem;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            color: #4b5563;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            border-top: 1px solid #e5e7eb;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .thinking-content.collapsed {
+            display: none;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
         /* ==================== Artifacts 面板 ==================== */
         .artifacts-panel {
             position: fixed;
@@ -1862,6 +1930,80 @@
     </div>
 
     <script>
+        // ==================== 思考链处理 ====================
+        function updateMessageWithThinking(textElement, fullMessage, provider) {
+            // 只对 Gemini 显示思考链
+            if (provider !== 'gemini') {
+                textElement.textContent = fullMessage;
+                return;
+            }
+
+            // 检查是否包含思考标记
+            const thinkingRegex = /<thinking>([\s\S]*?)<\/thinking>/;
+            const answerRegex = /<answer>([\s\S]*?)<\/answer>/;
+            
+            const thinkingMatch = fullMessage.match(thinkingRegex);
+            const answerMatch = fullMessage.match(answerRegex);
+
+            if (thinkingMatch || answerMatch) {
+                textElement.innerHTML = '';
+
+                // 添加思考链
+                if (thinkingMatch) {
+                    const thinkingText = thinkingMatch[1].trim();
+                    const thinkingChain = document.createElement('div');
+                    thinkingChain.className = 'thinking-chain';
+                    
+                    const thinkingHeader = document.createElement('div');
+                    thinkingHeader.className = 'thinking-header';
+                    thinkingHeader.innerHTML = `
+                        <svg class="thinking-toggle collapsed" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                        <span class="thinking-label">
+                            <svg class="thinking-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M12 6v6l4 2"></path>
+                            </svg>
+                            思考过程
+                        </span>
+                    `;
+                    
+                    const thinkingContent = document.createElement('div');
+                    thinkingContent.className = 'thinking-content collapsed';
+                    thinkingContent.textContent = thinkingText;
+                    
+                    // 添加点击切换
+                    thinkingHeader.addEventListener('click', () => {
+                        const toggle = thinkingHeader.querySelector('.thinking-toggle');
+                        const content = thinkingContent;
+                        toggle.classList.toggle('collapsed');
+                        content.classList.toggle('collapsed');
+                    });
+                    
+                    thinkingChain.appendChild(thinkingHeader);
+                    thinkingChain.appendChild(thinkingContent);
+                    textElement.appendChild(thinkingChain);
+                }
+
+                // 添加回答部分
+                if (answerMatch) {
+                    const answerText = answerMatch[1].trim();
+                    const answerDiv = document.createElement('div');
+                    answerDiv.style.whiteSpace = 'pre-wrap';
+                    answerDiv.style.wordWrap = 'break-word';
+                    answerDiv.textContent = answerText;
+                    textElement.appendChild(answerDiv);
+                } else if (!thinkingMatch) {
+                    // 如果没有找到任何标记，显示原始内容
+                    textElement.textContent = fullMessage;
+                }
+            } else {
+                // 没有思考标记，直接显示
+                textElement.textContent = fullMessage;
+            }
+        }
+
         // ==================== 获取时间问候语 ====================
         function getGreeting() {
             const hour = new Date().getHours();
@@ -2700,9 +2842,9 @@
                                         messageElement = addMessage('', 'assistant', false, false);
                                     }
                                     
-                                    // 更新消息内容
+                                    // 更新消息内容（支持思考链）
                                     const textElement = messageElement.querySelector('.message-text');
-                                    textElement.textContent = assistantMessage;
+                                    updateMessageWithThinking(textElement, assistantMessage, provider);
                                     
                                     // 滚动到底部
                                     messageElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
