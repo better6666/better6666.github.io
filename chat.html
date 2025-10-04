@@ -53,12 +53,15 @@
             transition: all 0.3s ease;
         }
 
-        .sidebar.hidden {
-            margin-left: -260px;
-            width: 0;
-            overflow: hidden;
-            flex-shrink: 0;
-            flex-basis: 0;
+        /* 桌面端：左侧栏隐藏时 */
+        @media (min-width: 769px) {
+            .sidebar.hidden {
+                margin-left: -260px;
+                width: 0;
+                overflow: hidden;
+                flex-shrink: 0;
+                flex-basis: 0;
+            }
         }
 
         .sidebar-header {
@@ -259,16 +262,25 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
+            align-items: stretch; /* 改为stretch让滚动条在右边 */
             justify-content: flex-start;
             padding: 0;
             overflow-y: auto;
             overflow-x: hidden;
         }
+        
+        /* 为聊天内容添加居中wrapper（排除input-section） */
+        .chat-container > .welcome-section,
+        .chat-container > .messages-container {
+            max-width: 48rem; /* 768px，类似Claude */
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+        }
 
         .welcome-section {
             text-align: center;
-            max-width: 56rem;
+            max-width: 48rem !important; /* 和其他内容保持一致 */
             width: 100%;
             flex: 1;
             display: flex;
@@ -1123,12 +1135,14 @@
             transform: translateX(0);
         }
 
-        /* Artifacts打开时，主内容区域调整宽度 */
-        .main-content.with-artifacts {
-            width: 50vw !important;
-            max-width: 50vw !important;
-            flex: 0 0 50vw !important;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* 桌面端：Artifacts打开时，主内容区域调整宽度 */
+        @media (min-width: 769px) {
+            .main-content.with-artifacts {
+                width: 50vw !important;
+                max-width: 50vw !important;
+                flex: 0 0 50vw !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
         }
 
         .artifacts-header {
@@ -1528,15 +1542,17 @@
         @media (max-width: 768px) {
             /* 侧边栏 - 默认完全隐藏 */
             .sidebar {
-                position: fixed;
-                z-index: 100;
-                height: 100%;
+                position: fixed !important;
+                z-index: 100 !important;
+                height: 100% !important;
                 width: 260px !important;
-                left: 0;
-                top: 0;
+                left: 0 !important;
+                top: 0 !important;
                 transform: translateX(-100%) !important;
-                transition: transform 0.3s ease;
+                transition: transform 0.3s ease !important;
                 margin-left: 0 !important;
+                flex-shrink: 1 !important;
+                flex-basis: auto !important;
             }
 
             /* 只有明确显示时才显示侧边栏 */
@@ -1564,8 +1580,17 @@
                 width: 100% !important;
                 margin-left: 0 !important;
                 max-width: 100% !important;
-                position: relative;
-                z-index: 1;
+                position: relative !important;
+                z-index: 1 !important;
+                flex: 1 1 auto !important;
+                min-width: 100% !important;
+            }
+            
+            /* 移动端：禁用桌面端的Artifacts调整 */
+            .main-content.with-artifacts {
+                width: 100% !important;
+                max-width: 100% !important;
+                flex: 1 1 auto !important;
             }
             
             /* 切换侧边栏按钮 */
