@@ -326,10 +326,53 @@
             }
         }
         
-        /* 当artifacts打开时，对话区域使用更多可用空间 */
+        /* 当artifacts打开时，对话区域充分利用剩余空间 */
+        .main-content.with-artifacts .chat-container {
+            padding: 0 !important; /* 移除外层padding */
+        }
+        
         .main-content.with-artifacts .chat-container > .welcome-section,
         .main-content.with-artifacts .chat-container > .messages-container {
-            max-width: 95% !important; /* artifacts打开时，充分利用剩余空间 */
+            max-width: 100% !important; /* 使用全部可用宽度 */
+            width: 100% !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        
+        @media (min-width: 1024px) {
+            .main-content.with-artifacts .chat-container > .welcome-section,
+            .main-content.with-artifacts .chat-container > .messages-container {
+                padding-left: 1.5rem !important;
+                padding-right: 1.5rem !important;
+            }
+        }
+        
+        @media (min-width: 1600px) {
+            .main-content.with-artifacts .chat-container > .welcome-section,
+            .main-content.with-artifacts .chat-container > .messages-container {
+                padding-left: 2rem !important;
+                padding-right: 2rem !important;
+            }
+        }
+        
+        /* artifacts打开时，消息内容本身也要充分利用空间 */
+        .main-content.with-artifacts .message-content,
+        .main-content.with-artifacts .message-text-content {
+            max-width: 100% !important;
+            width: 100% !important;
+        }
+        
+        /* 代码块在artifacts打开时也要充分利用空间 */
+        .main-content.with-artifacts .message-text-content pre {
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
+        
+        .main-content.with-artifacts .message-text-content pre code {
+            max-width: 100% !important;
+            display: block;
+            overflow-x: auto;
         }
 
         .welcome-section {
@@ -356,6 +399,47 @@
             .welcome-section {
                 padding: 3rem;
                 gap: 3rem;
+            }
+        }
+        
+        /* 当artifacts打开时的字体优化 */
+        .main-content.with-artifacts .message-text-content {
+            font-size: 0.95rem !important; /* 稍小但仍清晰 */
+        }
+        
+        .main-content.with-artifacts .message-text-content h1 {
+            font-size: 1.35rem !important;
+        }
+        
+        .main-content.with-artifacts .message-text-content h2 {
+            font-size: 1.2rem !important;
+        }
+        
+        .main-content.with-artifacts .message-text-content h3 {
+            font-size: 1.1rem !important;
+        }
+        
+        .main-content.with-artifacts .message-text-content pre {
+            font-size: 0.8125rem !important; /* 13px */
+            padding: 0.75rem 1rem !important;
+        }
+        
+        .main-content.with-artifacts .message-text-content code {
+            font-size: 0.85em !important;
+        }
+        
+        /* 大屏幕时，artifacts打开后字体可以稍大 */
+        @media (min-width: 1600px) {
+            .main-content.with-artifacts .message-text-content {
+                font-size: 1rem !important;
+            }
+            
+            .main-content.with-artifacts .message-text-content h1 {
+                font-size: 1.5rem !important;
+            }
+            
+            .main-content.with-artifacts .message-text-content pre {
+                font-size: 0.875rem !important; /* 14px */
             }
         }
 
@@ -1208,9 +1292,9 @@
             position: fixed;
             top: 0;
             right: 0;
-            width: 42%; /* 默认42%，给对话区域更多空间 */
-            min-width: 480px; /* 最小宽度保证代码可读 */
-            max-width: 850px; /* 最大宽度，避免在超大屏上太宽 */
+            width: 34%; /* 默认34%，给对话区域66%空间 */
+            min-width: 420px; /* 最小宽度保证代码可读 */
+            max-width: 650px; /* 最大宽度，代码显示区不需要太宽 */
             height: 100vh;
             background-color: #fafaf9;
             border-left: 1px solid #e5e5e5;
@@ -1230,7 +1314,7 @@
         @media (min-width: 769px) {
             .main-content.with-artifacts {
                 /* 不再固定50vw，改为自适应 */
-                margin-right: 42%; /* 为artifacts留出空间 */
+                margin-right: 34%; /* 为artifacts留出空间 */
                 width: auto !important;
                 max-width: 100% !important;
                 flex: 1 1 auto !important;
@@ -1240,43 +1324,43 @@
             /* 当侧边栏隐藏时，对话区域可以更宽 */
             .sidebar.hidden ~ .main-content.with-artifacts {
                 margin-left: 0;
-                margin-right: 42%;
+                margin-right: 34%;
             }
         }
         
-        /* 中等屏幕（笔记本）：artifacts占38% */
+        /* 中等屏幕（笔记本）：artifacts占32% */
         @media (min-width: 769px) and (max-width: 1440px) {
             .artifacts-panel {
-                width: 38%;
-                min-width: 450px;
+                width: 32%;
+                min-width: 400px;
             }
             
             .main-content.with-artifacts {
-                margin-right: 38% !important;
+                margin-right: 32% !important;
             }
         }
         
         /* 大屏幕：固定宽度更合理 */
         @media (min-width: 1920px) {
             .artifacts-panel {
-                width: 750px; /* 固定宽度 */
-                max-width: 750px;
+                width: 600px; /* 固定宽度 */
+                max-width: 600px;
             }
             
             .main-content.with-artifacts {
-                margin-right: 750px !important;
+                margin-right: 600px !important;
             }
         }
         
         /* 超大屏（4K等） */
         @media (min-width: 2560px) {
             .artifacts-panel {
-                width: 900px;
-                max-width: 900px;
+                width: 700px;
+                max-width: 700px;
             }
             
             .main-content.with-artifacts {
-                margin-right: 900px !important;
+                margin-right: 700px !important;
             }
         }
 
@@ -1389,15 +1473,23 @@
         .artifacts-code {
             background-color: #1e1e1e;
             color: #d4d4d4;
-            padding: 2rem;
-            margin: 1.5rem;
-            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 1rem;
+            border-radius: 0.5rem;
             overflow-x: auto;
             font-family: 'SF Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
-            font-size: 0.8125rem;
-            line-height: 1.7;
+            font-size: 0.875rem; /* 14px - 更清晰的代码字体 */
+            line-height: 1.6;
             white-space: pre;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* 在较宽屏幕上增加代码字体 */
+        @media (min-width: 1600px) {
+            .artifacts-code {
+                font-size: 0.9375rem; /* 15px */
+                padding: 1.75rem;
+            }
         }
 
         .artifacts-preview {
