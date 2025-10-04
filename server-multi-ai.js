@@ -11,7 +11,10 @@ app.use(cors({
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+// 增加请求体大小限制，支持大文件上传（图片 Base64 编码后会变大）
+// 注意：图片Base64编码后大小会增加约33%
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 app.use(express.static(__dirname));
 
 // 添加请求日志
@@ -132,19 +135,112 @@ async function chatWithGemini(messages, config) {
     const genAI = new GoogleGenerativeAI(config.apiKey);
     const model = genAI.getGenerativeModel({ model: config.model || 'gemini-2.5-pro' });
 
-    // 转换消息格式
-    const history = messages.slice(0, -1).map(msg => ({
-        role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }]
-    }));
+    // 转换消息格式，支持文本和图片
+    const history = messages.slice(0, -1).map(msg => {
+        const parts = [];
+        const content = msg.content;
+        
+        // 检查是否包含图片（Base64 格式）
+        const imageRegex = /!\[.*?\]\((data:image\/[^;]+;base64,[^)]+)\)/g;
+        let match;
+        let lastIndex = 0;
+        let hasImages = false;
+        
+        while ((match = imageRegex.exec(content)) !== null) {
+            hasImages = true;
+            // 添加图片前的文本
+            if (match.index > lastIndex) {
+                const textBefore = content.substring(lastIndex, match.index).trim();
+                if (textBefore) {
+                    parts.push({ text: textBefore });
+                }
+            }
+            
+            // 添加图片数据
+            const dataUrl = match[1];
+            const [mimeType, base64Data] = dataUrl.replace('data:', '').split(';base64,');
+            parts.push({
+                inlineData: {
+                    mimeType: mimeType,
+                    data: base64Data
+                }
+            });
+            
+            lastIndex = match.index + match[0].length;
+        }
+        
+        // 添加剩余文本
+        if (lastIndex < content.length) {
+            const remainingText = content.substring(lastIndex).trim();
+            if (remainingText) {
+                parts.push({ text: remainingText });
+            }
+        }
+        
+        // 如果没有找到图片，使用纯文本
+        if (!hasImages) {
+            parts.push({ text: content });
+        }
+        
+        return {
+            role: msg.role === 'assistant' ? 'model' : 'user',
+            parts: parts
+        };
+    });
 
     const chat = model.startChat({ history });
+    
+    // 处理最后一条消息（可能包含图片）
     const lastMessage = messages[messages.length - 1].content;
+    const lastParts = [];
+    
+    const imageRegex = /!\[.*?\]\((data:image\/[^;]+;base64,[^)]+)\)/g;
+    let match;
+    let lastIndex = 0;
+    let hasImages = false;
+    
+    while ((match = imageRegex.exec(lastMessage)) !== null) {
+        hasImages = true;
+        if (match.index > lastIndex) {
+            const textBefore = lastMessage.substring(lastIndex, match.index).trim();
+            if (textBefore) {
+                lastParts.push({ text: textBefore });
+            }
+        }
+        
+        const dataUrl = match[1];
+        const [mimeType, base64Data] = dataUrl.replace('data:', '').split(';base64,');
+        lastParts.push({
+            inlineData: {
+                mimeType: mimeType,
+                data: base64Data
+            }
+        });
+        
+        lastIndex = match.index + match[0].length;
+    }
+    
+    if (lastIndex < lastMessage.length) {
+        const remainingText = lastMessage.substring(lastIndex).trim();
+        if (remainingText) {
+            lastParts.push({ text: remainingText });
+        }
+    }
+    
+    if (!hasImages) {
+        lastParts.push({ text: lastMessage });
+    }
+
+    console.log('🖼️ Gemini 消息处理:', {
+        hasImages,
+        partsCount: lastParts.length,
+        messagePreview: lastMessage.substring(0, 100)
+    });
 
     if (config.stream) {
-        return await chat.sendMessageStream(lastMessage);
+        return await chat.sendMessageStream(lastParts);
     } else {
-        return await chat.sendMessage(lastMessage);
+        return await chat.sendMessage(lastParts);
     }
 }
 
