@@ -281,44 +281,59 @@
         .chat-container > .messages-container {
             max-width: 100%; /* 默认手机端全宽 */
             width: 100%;
-            flex-shrink: 0; /* 不收缩 */
-            padding-left: 1rem; /* 手机端较小内边距 */
+            flex-shrink: 0;
+            padding-left: 1rem;
             padding-right: 1rem;
         }
 
-        /* 平板端：中等宽度 */
+        /* 平板端：充分利用空间 */
         @media (min-width: 768px) {
             .chat-container > .welcome-section,
             .chat-container > .messages-container {
-                max-width: 52rem; /* 832px，适合平板 */
-                padding-left: 1.5rem;
-                padding-right: 1.5rem;
-            }
-        }
-
-        /* 笔记本/小屏电脑：更宽一些 */
-        @media (min-width: 1024px) {
-            .chat-container > .welcome-section,
-            .chat-container > .messages-container {
-                max-width: 68rem; /* 1088px，适合笔记本 */
+                max-width: 90% !important; /* 充分利用平板宽度 */
                 padding-left: 2rem;
                 padding-right: 2rem;
             }
         }
 
-        /* 大屏电脑：最宽 */
-        @media (min-width: 1440px) {
+        /* 笔记本：适中宽度 */
+        @media (min-width: 1024px) {
             .chat-container > .welcome-section,
             .chat-container > .messages-container {
-                max-width: 85rem; /* 1360px，充分利用宽屏 */
+                max-width: 85% !important; /* 笔记本上留一些边距 */
                 padding-left: 2.5rem;
                 padding-right: 2.5rem;
             }
         }
 
+        /* 大屏电脑：限制最大宽度保持可读性 */
+        @media (min-width: 1440px) {
+            .chat-container > .welcome-section,
+            .chat-container > .messages-container {
+                max-width: 1200px !important; /* 固定最大宽度，避免行太长 */
+                padding-left: 3rem;
+                padding-right: 3rem;
+            }
+        }
+        
+        /* 超大屏：稍微增加宽度 */
+        @media (min-width: 1920px) {
+            .chat-container > .welcome-section,
+            .chat-container > .messages-container {
+                max-width: 1400px !important;
+                padding-left: 4rem;
+                padding-right: 4rem;
+            }
+        }
+        
+        /* 当artifacts打开时，对话区域使用更多可用空间 */
+        .main-content.with-artifacts .chat-container > .welcome-section,
+        .main-content.with-artifacts .chat-container > .messages-container {
+            max-width: 95% !important; /* artifacts打开时，充分利用剩余空间 */
+        }
+
         .welcome-section {
             text-align: center;
-            width: 100%;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -332,8 +347,15 @@
         /* 平板及以上增加welcome-section的间距 */
         @media (min-width: 768px) {
             .welcome-section {
-                padding: 2rem;
+                padding: 2.5rem;
                 gap: 2.5rem;
+            }
+        }
+        
+        @media (min-width: 1440px) {
+            .welcome-section {
+                padding: 3rem;
+                gap: 3rem;
             }
         }
 
@@ -374,10 +396,32 @@
 
         .input-section {
             width: 100%;
-            max-width: 52rem;
+            max-width: 100%;
             margin: 0 auto;
-            padding: 1rem 2rem 2rem;
+            padding: 1rem 1rem 1rem;
             background-color: var(--bg-100);
+        }
+        
+        /* 响应式输入框宽度 - 与内容区域保持一致 */
+        @media (min-width: 768px) {
+            .input-section {
+                max-width: calc(100% - 4rem);
+                padding: 1rem 2rem 2rem;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .input-section {
+                max-width: calc(100% - 6rem);
+                padding: 1rem 3rem 2rem;
+            }
+        }
+        
+        @media (min-width: 1440px) {
+            .input-section {
+                max-width: calc(100% - 8rem);
+                padding: 1rem 4rem 2rem;
+            }
         }
         
         /* 当 input-section 移出 welcome-section 后，固定在底部 */
@@ -1159,12 +1203,14 @@
             }
         }
 
-        /* ==================== Artifacts 面板 ==================== */
+        /* ==================== Artifacts 面板 - 全新响应式设计 ==================== */
         .artifacts-panel {
             position: fixed;
             top: 0;
             right: 0;
-            width: 50%;
+            width: 42%; /* 默认42%，给对话区域更多空间 */
+            min-width: 480px; /* 最小宽度保证代码可读 */
+            max-width: 850px; /* 最大宽度，避免在超大屏上太宽 */
             height: 100vh;
             background-color: #fafaf9;
             border-left: 1px solid #e5e5e5;
@@ -1180,13 +1226,57 @@
             transform: translateX(0);
         }
 
-        /* 桌面端：Artifacts打开时，主内容区域调整宽度 */
+        /* 桌面端：Artifacts打开时，主内容区域自适应调整 */
         @media (min-width: 769px) {
             .main-content.with-artifacts {
-                width: 50vw !important;
-                max-width: 50vw !important;
-                flex: 0 0 50vw !important;
+                /* 不再固定50vw，改为自适应 */
+                margin-right: 42%; /* 为artifacts留出空间 */
+                width: auto !important;
+                max-width: 100% !important;
+                flex: 1 1 auto !important;
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            
+            /* 当侧边栏隐藏时，对话区域可以更宽 */
+            .sidebar.hidden ~ .main-content.with-artifacts {
+                margin-left: 0;
+                margin-right: 42%;
+            }
+        }
+        
+        /* 中等屏幕（笔记本）：artifacts占38% */
+        @media (min-width: 769px) and (max-width: 1440px) {
+            .artifacts-panel {
+                width: 38%;
+                min-width: 450px;
+            }
+            
+            .main-content.with-artifacts {
+                margin-right: 38% !important;
+            }
+        }
+        
+        /* 大屏幕：固定宽度更合理 */
+        @media (min-width: 1920px) {
+            .artifacts-panel {
+                width: 750px; /* 固定宽度 */
+                max-width: 750px;
+            }
+            
+            .main-content.with-artifacts {
+                margin-right: 750px !important;
+            }
+        }
+        
+        /* 超大屏（4K等） */
+        @media (min-width: 2560px) {
+            .artifacts-panel {
+                width: 900px;
+                max-width: 900px;
+            }
+            
+            .main-content.with-artifacts {
+                margin-right: 900px !important;
             }
         }
 
