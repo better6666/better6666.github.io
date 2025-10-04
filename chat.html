@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
-    <title>Claude</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Claude - Multi-AI v2.1</title>
     <style>
         * {
             margin: 0;
@@ -1143,6 +1146,19 @@
     </main>
 
     <script>
+        // 全局错误处理 - 防止页面崩溃
+        window.addEventListener('error', function(event) {
+            console.error('错误被捕获:', event.error);
+            event.preventDefault();
+            return true;
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            console.error('Promise错误被捕获:', event.reason);
+            event.preventDefault();
+            return true;
+        });
+
         // Toggle sidebar
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('toggleSidebar');
@@ -1212,6 +1228,137 @@
         let currentModel = 'sonnet-4.5';
         let currentProvider = 'claude'; // 默认使用 Claude
         let isStreaming = false;
+        
+        // 对话历史存储（持久化）
+        const conversationHistory = new Map(); // { conversationId: { title, messages: [], timestamp } }
+        
+        // 从 localStorage 加载对话历史
+        function loadConversationsFromStorage() {
+            try {
+                const stored = localStorage.getItem('conversationHistory');
+                if (stored) {
+                    const data = JSON.parse(stored);
+                    Object.entries(data).forEach(([id, conv]) => {
+                        conversationHistory.set(id, conv);
+                    });
+                    console.log('Loaded', conversationHistory.size, 'conversations from storage');
+                }
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+            }
+        }
+        
+        // 保存对话历史到 localStorage
+        function saveConversationsToStorage() {
+            try {
+                const data = Object.fromEntries(conversationHistory);
+                localStorage.setItem('conversationHistory', JSON.stringify(data));
+                console.log('Saved', conversationHistory.size, 'conversations to storage');
+            } catch (error) {
+                console.error('Error saving conversations:', error);
+            }
+        }
+        
+        // 页面加载时恢复对话历史
+        loadConversationsFromStorage();
+        
+        // 恢复侧边栏对话列表
+        function restoreSidebarConversations() {
+            try {
+                const navSection = document.querySelector('.nav-section:last-of-type');
+                if (!navSection) return;
+                
+                const recentsTitle = navSection.querySelector('.recents-title');
+                if (!recentsTitle) return;
+                
+                // 清除现有的对话项（保留示例）
+                const existingItems = navSection.querySelectorAll('.recent-item[data-conversation-id]');
+                existingItems.forEach(item => item.remove());
+                
+                // 按时间戳倒序排序对话
+                const conversations = Array.from(conversationHistory.entries())
+                    .sort((a, b) => b[1].timestamp - a[1].timestamp);
+                
+                // 添加所有对话到侧边栏
+                conversations.forEach(([id, conv]) => {
+                    const newItem = document.createElement('div');
+                    newItem.className = 'recent-item';
+                    newItem.textContent = conv.title;
+                    newItem.dataset.conversationId = id;
+                    newItem.style.cursor = 'pointer';
+                    
+                    // 添加点击事件
+                    newItem.addEventListener('click', function() {
+                        loadConversation(this.dataset.conversationId);
+                    });
+                    
+                    // 添加删除按钮（悬停时显示）
+                    const deleteBtn = document.createElement('span');
+                    deleteBtn.innerHTML = '×';
+                    deleteBtn.style.cssText = `
+                        position: absolute;
+                        right: 0.75rem;
+                        opacity: 0;
+                        font-size: 1.25rem;
+                        color: var(--text-400);
+                        cursor: pointer;
+                        transition: opacity 0.2s;
+                    `;
+                    deleteBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        deleteConversation(id);
+                    });
+                    
+                    newItem.style.position = 'relative';
+                    newItem.appendChild(deleteBtn);
+                    
+                    newItem.addEventListener('mouseenter', () => {
+                        deleteBtn.style.opacity = '1';
+                    });
+                    newItem.addEventListener('mouseleave', () => {
+                        deleteBtn.style.opacity = '0';
+                    });
+                    
+                    // 插入到 RECENTS 标题后
+                    if (recentsTitle.nextSibling) {
+                        navSection.insertBefore(newItem, recentsTitle.nextSibling);
+                    } else {
+                        navSection.appendChild(newItem);
+                    }
+                });
+                
+                console.log('Restored', conversations.length, 'conversations to sidebar');
+            } catch (error) {
+                console.error('Error restoring sidebar:', error);
+            }
+        }
+        
+        // 删除对话
+        function deleteConversation(conversationId) {
+            if (confirm('确定要删除这个对话吗？')) {
+                // 从 Map 中删除
+                conversationHistory.delete(conversationId);
+                
+                // 保存到 localStorage
+                saveConversationsToStorage();
+                
+                // 从侧边栏移除
+                const item = document.querySelector(`.recent-item[data-conversation-id="${conversationId}"]`);
+                if (item) {
+                    item.remove();
+                }
+                
+                // 如果删除的是当前对话，创建新对话
+                if (conversationId === currentConversationId) {
+                    newChatBtn.click();
+                }
+                
+                console.log('Deleted conversation:', conversationId);
+            }
+        }
+        
+        // 页面加载时恢复侧边栏
+        restoreSidebarConversations();
 
         // 从配置读取可用的 AI 提供商
         function loadAISettings() {
@@ -1284,6 +1431,12 @@
             // 添加用户消息到界面
             addMessage(message, 'user');
             
+            // 如果是新对话的第一条消息，添加到侧边栏
+            const messagesContainer = document.querySelector('.messages-container');
+            if (messagesContainer && messagesContainer.children.length === 1) {
+                addConversationToSidebar(message);
+            }
+            
             // 清空输入框
             textarea.value = '';
             textarea.style.height = 'auto';
@@ -1349,12 +1502,15 @@
                                         messageElement = addMessage('', 'assistant');
                                     }
                                     
-                                    // 更新消息内容
-                                    const textElement = messageElement.querySelector('.message-text');
-                                    textElement.textContent = assistantMessage;
-                                    
-                                    // 滚动到底部
-                                    messageElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                                    // 安全更新消息内容
+                                    if (messageElement) {
+                                        const textElement = messageElement.querySelector('.message-text');
+                                        if (textElement) {
+                                            textElement.textContent = assistantMessage;
+                                            // 滚动到底部
+                                            messageElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                                        }
+                                    }
                                 } else if (data.type === 'error') {
                                     console.error('Stream error:', data.content);
                                     if (!messageElement) {
@@ -1391,81 +1547,271 @@
             }
         }
 
-        // 添加消息到界面
-        function addMessage(text, role, isError = false) {
-            const welcomeSection = document.querySelector('.welcome-section');
-            
-            // 如果是第一条消息，隐藏欢迎界面，创建消息容器
-            if (welcomeSection && !document.querySelector('.messages-container')) {
-                welcomeSection.style.display = 'none';
+        // 添加对话到侧边栏
+        function addConversationToSidebar(firstMessage) {
+            try {
+                // 获取 RECENTS 区域
+                const navSection = document.querySelector('.nav-section:last-of-type');
+                if (!navSection) return;
                 
-                const chatContainer = document.querySelector('.chat-container');
-                const messagesContainer = document.createElement('div');
-                messagesContainer.className = 'messages-container';
-                messagesContainer.style.cssText = `
-                    flex: 1;
-                    overflow-y: auto;
-                    padding: 2rem;
-                    max-width: 48rem;
-                    width: 100%;
-                    margin: 0 auto;
+                // 创建新的对话项
+                const newItem = document.createElement('div');
+                newItem.className = 'recent-item';
+                
+                // 截取前30个字符作为标题
+                const title = firstMessage.length > 30 
+                    ? firstMessage.substring(0, 30) + '...' 
+                    : firstMessage;
+                newItem.textContent = title;
+                
+                // 存储对话ID到元素上
+                newItem.dataset.conversationId = currentConversationId;
+                
+                // 添加点击事件
+                newItem.style.cursor = 'pointer';
+                newItem.addEventListener('click', function() {
+                    loadConversation(this.dataset.conversationId);
+                });
+                
+                // 添加删除按钮（悬停时显示）
+                const deleteBtn = document.createElement('span');
+                deleteBtn.innerHTML = '×';
+                deleteBtn.style.cssText = `
+                    position: absolute;
+                    right: 0.75rem;
+                    opacity: 0;
+                    font-size: 1.25rem;
+                    color: var(--text-400);
+                    cursor: pointer;
+                    transition: opacity 0.2s;
                 `;
-                chatContainer.insertBefore(messagesContainer, document.querySelector('.input-section'));
+                deleteBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    deleteConversation(currentConversationId);
+                });
+                
+                newItem.style.position = 'relative';
+                newItem.appendChild(deleteBtn);
+                
+                newItem.addEventListener('mouseenter', () => {
+                    deleteBtn.style.opacity = '1';
+                });
+                newItem.addEventListener('mouseleave', () => {
+                    deleteBtn.style.opacity = '0';
+                });
+                
+                // 初始化对话历史
+                if (!conversationHistory.has(currentConversationId)) {
+                    conversationHistory.set(currentConversationId, {
+                        title: title,
+                        messages: [],
+                        timestamp: Date.now()
+                    });
+                    // 保存到 localStorage
+                    saveConversationsToStorage();
+                }
+                
+                // 插入到 RECENTS 标题后的第一个位置
+                const recentsTitle = navSection.querySelector('.recents-title');
+                if (recentsTitle && recentsTitle.nextSibling) {
+                    navSection.insertBefore(newItem, recentsTitle.nextSibling);
+                } else {
+                    navSection.appendChild(newItem);
+                }
+                
+                console.log('Added conversation to sidebar:', title, currentConversationId);
+            } catch (error) {
+                console.error('Error adding conversation to sidebar:', error);
+            }
+        }
+        
+        // 加载对话历史
+        function loadConversation(conversationId) {
+            try {
+                console.log('Loading conversation:', conversationId);
+                
+                const history = conversationHistory.get(conversationId);
+                if (!history) {
+                    console.error('Conversation not found:', conversationId);
+                    return;
+                }
+                
+                // 切换当前对话ID
+                currentConversationId = conversationId;
+                
+                // 清空当前消息显示
+                const messagesContainer = document.querySelector('.messages-container');
+                if (messagesContainer) {
+                    messagesContainer.remove();
+                }
+                
+                // 显示欢迎界面（如果消息为空）
+                const welcomeSection = document.querySelector('.welcome-section');
+                if (history.messages.length === 0) {
+                    if (welcomeSection) {
+                        const welcomeTitle = welcomeSection.querySelector('.welcome-title');
+                        const upgradeBadge = welcomeSection.querySelector('.upgrade-badge');
+                        const quickActions = welcomeSection.querySelector('.quick-actions');
+                        if (welcomeTitle) welcomeTitle.style.display = 'flex';
+                        if (upgradeBadge) upgradeBadge.style.display = 'flex';
+                        if (quickActions) quickActions.style.display = 'flex';
+                    }
+                    return;
+                }
+                
+                // 重新显示历史消息（不保存到历史，因为已经在历史中了）
+                history.messages.forEach(msg => {
+                    addMessage(msg.content, msg.role, msg.isError || false, false);
+                });
+                
+                console.log('Loaded', history.messages.length, 'messages');
+                
+            } catch (error) {
+                console.error('Error loading conversation:', error);
+            }
+        }
+        
+        // 添加消息到界面
+        function addMessage(text, role, isError = false, saveToHistory = true) {
+            try {
+                const welcomeSection = document.querySelector('.welcome-section');
+                
+                // 如果是第一条消息，重新布局界面
+                if (welcomeSection && !document.querySelector('.messages-container')) {
+                    // 隐藏欢迎内容
+                    const welcomeTitle = document.querySelector('.welcome-title');
+                    const upgradeBadge = document.querySelector('.upgrade-badge');
+                    const quickActions = document.querySelector('.quick-actions');
+                    if (welcomeTitle) welcomeTitle.style.display = 'none';
+                    if (upgradeBadge) upgradeBadge.style.display = 'none';
+                    if (quickActions) quickActions.style.display = 'none';
+                    
+                    // 将输入区域移到 chat-container 的底部（与 welcome-section 同级）
+                    const inputSection = document.querySelector('.input-section');
+                    const chatContainer = document.querySelector('.chat-container');
+                    if (!chatContainer) {
+                        console.error('Chat container not found!');
+                        return null;
+                    }
+                    
+                    if (inputSection && inputSection.parentElement !== chatContainer) {
+                        chatContainer.appendChild(inputSection);
+                        // 调整 chat-container 为 flex 布局
+                        chatContainer.style.cssText = `
+                            flex: 1;
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: flex-start;
+                            padding: 0;
+                        `;
+                        // 调整 input-section 样式，固定在底部
+                        inputSection.style.cssText = `
+                            width: 100%;
+                            max-width: 48rem;
+                            padding: 1rem 2rem;
+                            background: transparent;
+                        `;
+                    }
+                    
+                    // 创建消息容器
+                    const messagesContainer = document.createElement('div');
+                    messagesContainer.className = 'messages-container';
+                    messagesContainer.style.cssText = `
+                        flex: 1;
+                        overflow-y: auto;
+                        padding: 2rem;
+                        max-width: 48rem;
+                        width: 100%;
+                        margin: 0 auto;
+                    `;
+                    
+                    // 将消息容器插入到输入框之前
+                    chatContainer.insertBefore(messagesContainer, inputSection);
+                }
+            } catch (error) {
+                console.error('Error in addMessage (initial setup):', error);
+                return null;
             }
 
             const messagesContainer = document.querySelector('.messages-container');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message message-${role}`;
-            messageDiv.style.cssText = `
-                display: flex;
-                gap: 1rem;
-                margin-bottom: 1.5rem;
-                ${role === 'user' ? 'flex-direction: row-reverse;' : ''}
-            `;
+            if (!messagesContainer) {
+                console.error('Messages container not found after setup!');
+                return null;
+            }
+            
+            try {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message message-${role}`;
+                messageDiv.style.cssText = `
+                    display: flex;
+                    gap: 1rem;
+                    margin-bottom: 1.5rem;
+                    ${role === 'user' ? 'flex-direction: row-reverse;' : ''}
+                `;
 
-            const avatar = document.createElement('div');
-            avatar.style.cssText = `
-                width: 2rem;
-                height: 2rem;
-                border-radius: 50%;
-                background-color: ${role === 'user' ? '#171717' : '#d97757'};
-                color: white;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-weight: 600;
-                font-size: 0.875rem;
-                flex-shrink: 0;
-            `;
-            avatar.textContent = role === 'user' ? 'Y' : 'C';
+                const avatar = document.createElement('div');
+                avatar.style.cssText = `
+                    width: 2rem;
+                    height: 2rem;
+                    border-radius: 50%;
+                    background-color: ${role === 'user' ? '#171717' : '#d97757'};
+                    color: white;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: 600;
+                    font-size: 0.875rem;
+                    flex-shrink: 0;
+                `;
+                avatar.textContent = role === 'user' ? 'Y' : 'C';
 
-            const messageContent = document.createElement('div');
-            messageContent.style.cssText = `
-                flex: 1;
-                ${role === 'user' ? 'text-align: right;' : ''}
-            `;
+                const messageContent = document.createElement('div');
+                messageContent.style.cssText = `
+                    flex: 1;
+                    ${role === 'user' ? 'text-align: right;' : ''}
+                `;
 
-            const messageText = document.createElement('div');
-            messageText.className = 'message-text';
-            messageText.style.cssText = `
-                background-color: ${role === 'user' ? '#f4f4f4' : '#ffffff'};
-                padding: 0.875rem 1rem;
-                border-radius: 1rem;
-                color: var(--text-100);
-                line-height: 1.6;
-                white-space: pre-wrap;
-                word-wrap: break-word;
-                ${isError ? 'color: #ef4444; border: 1px solid #fecaca;' : ''}
-                ${role === 'assistant' ? 'border: 0.5px solid #ebebeb;' : ''}
-            `;
-            messageText.textContent = text;
+                const messageText = document.createElement('div');
+                messageText.className = 'message-text';
+                messageText.style.cssText = `
+                    background-color: ${role === 'user' ? '#f4f4f4' : '#ffffff'};
+                    padding: 0.875rem 1rem;
+                    border-radius: 1rem;
+                    color: var(--text-100);
+                    line-height: 1.6;
+                    white-space: pre-wrap;
+                    word-wrap: break-word;
+                    ${isError ? 'color: #ef4444; border: 1px solid #fecaca;' : ''}
+                    ${role === 'assistant' ? 'border: 0.5px solid #ebebeb;' : ''}
+                `;
+                messageText.textContent = text;
 
-            messageContent.appendChild(messageText);
-            messageDiv.appendChild(avatar);
-            messageDiv.appendChild(messageContent);
-            messagesContainer.appendChild(messageDiv);
+                messageContent.appendChild(messageText);
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(messageContent);
+                messagesContainer.appendChild(messageDiv);
 
-            return messageDiv;
+                // 保存消息到对话历史（仅当 saveToHistory 为 true 时）
+                if (saveToHistory) {
+                    const history = conversationHistory.get(currentConversationId);
+                    if (history && !isError) {
+                        history.messages.push({
+                            role: role,
+                            content: text,
+                            isError: isError,
+                            timestamp: Date.now()
+                        });
+                        // 保存到 localStorage
+                        saveConversationsToStorage();
+                    }
+                }
+
+                return messageDiv;
+            } catch (error) {
+                console.error('Error in addMessage (creating message):', error);
+                return null;
+            }
         }
 
         // Model selector dropdown
@@ -1655,10 +2001,33 @@
                 messagesContainer.remove();
             }
             
-            // 显示欢迎界面
+            // 完全重置界面到初始状态
+            const inputSection = document.querySelector('.input-section');
+            const chatContainer = document.querySelector('.chat-container');
             const welcomeSection = document.querySelector('.welcome-section');
+            
+            // 如果输入框被移到了 chat-container 底部，移回 welcome-section
+            if (inputSection && inputSection.parentElement === chatContainer) {
+                welcomeSection.appendChild(inputSection);
+            }
+            
+            // 恢复所有样式到初始状态
+            if (chatContainer) {
+                chatContainer.style.cssText = '';
+            }
+            if (inputSection) {
+                inputSection.style.cssText = '';
+            }
             if (welcomeSection) {
                 welcomeSection.style.display = 'block';
+                
+                // 显示欢迎内容
+                const welcomeTitle = welcomeSection.querySelector('.welcome-title');
+                const upgradeBadge = welcomeSection.querySelector('.upgrade-badge');
+                const quickActions = welcomeSection.querySelector('.quick-actions');
+                if (welcomeTitle) welcomeTitle.style.display = 'flex';
+                if (upgradeBadge) upgradeBadge.style.display = 'flex';
+                if (quickActions) quickActions.style.display = 'flex';
             }
             
             // 清空输入框

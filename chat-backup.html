@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Claude - Multi-AI v2.1</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-100: #f4f4f4;
+            --bg-000: #ffffff;
+            --bg-200: #e8e8e8;
+            --bg-sidebar: #f9f9f9;
+            --text-100: #1f1f1f;
+            --text-200: #525252;
+            --text-300: #737373;
+            --text-400: #a3a3a3;
+            --text-500: #b8b8b8;
+            --text-000: #0a0a0a;
+            --border-100: #e5e5e5;
+            --border-200: #d4d4d4;
+            --border-300: #ebebeb;
+            --accent-main: #d97757;
+            --accent-hover: #c16843;
+            --upgrade-bg: #f5f3f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            height: 100vh;
+            background-color: var(--bg-100);
+            color: var(--text-100);
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-100);
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.hidden {
+            margin-left: -260px;
+        }
+
+        .sidebar-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-100);
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .logo-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .new-chat-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            background-color: var(--bg-000);
+            border: none;
+            border-radius: 0.5rem;
+            color: var(--accent-main);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .new-chat-btn:hover {
+            background-color: var(--bg-100);
+        }
+
+        .new-chat-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            background-color: var(--accent-main);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.75rem;
+            color: var(--text-200);
+            font-size: 0.875rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 0.25rem;
+        }
+
+        .nav-item:hover {
+            background-color: var(--bg-100);
+        }
+
+        .nav-item.active {
+            background-color: var(--bg-100);
+            font-weight: 500;
+        }
+
+        .nav-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .recents-title {
+            font-size: 0.75rem;
+            color: var(--text-400);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.5rem;
+            padding: 0 0.75rem;
+        }
+
+        .recent-item {
+            padding: 0.5rem 0.75rem;
+            color: var(--text-300);
+            font-size: 0.875rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-bottom: 0.125rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .recent-item:hover {
+            background-color: var(--bg-100);
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border-100);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .user-info:hover {
+            background-color: var(--bg-100);
+        }
+
+        .user-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background-color: #171717;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-100);
+        }
+
+        .user-plan {
+            font-size: 0.75rem;
+            color: var(--text-400);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .toggle-sidebar-btn {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            width: 2rem;
+            height: 2rem;
+            border: 1px solid var(--border-200);
+            background-color: var(--bg-000);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .toggle-sidebar-btn:hover {
+            background-color: var(--bg-100);
+        }
+
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .welcome-section {
+            text-align: center;
+            max-width: 48rem;
+            width: 100%;
+        }
+
+        .upgrade-badge {
+            display: inline-flex;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            background-color: var(--upgrade-bg);
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            color: var(--text-300);
+            margin-bottom: 2rem;
+        }
+
+        .upgrade-link {
+            color: var(--text-100);
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .welcome-title {
+            font-size: 2rem;
+            font-weight: 400;
+            font-family: 'Charter', 'Bitstream Charter', 'Sitka Text', 'Cambria', serif;
+            color: var(--text-100);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .claude-icon {
+            width: 2rem;
+            height: 2rem;
+        }
+
+        .input-section {
+            width: 100%;
+            max-width: 48rem;
+            position: relative;
+        }
+
+        .input-wrapper {
+            background-color: var(--bg-000);
+            border: 0.5px solid #d6d6d6;
+            border-radius: 1.75rem;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+
+        .input-box {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--text-100);
+            background: transparent;
+            resize: none;
+            min-height: 1.5rem;
+            max-height: 12rem;
+        }
+
+        .input-box::placeholder {
+            color: var(--text-400);
+        }
+
+        .input-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 0.5px solid #ebebeb;
+        }
+
+        .input-tools {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tool-btn {
+            width: 2rem;
+            height: 2rem;
+            border: none;
+            background: transparent;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-400);
+            transition: all 0.15s;
+        }
+
+        .tool-btn:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+            color: var(--text-200);
+        }
+
+        .model-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+            background: transparent;
+            border: none;
+            font-size: 0.875rem;
+            color: var(--text-300);
+            cursor: pointer;
+            transition: background-color 0.15s;
+            position: relative;
+        }
+
+        .model-selector:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+
+        .model-dropdown {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            margin-bottom: 0.5rem;
+            background-color: var(--bg-000);
+            border: 1px solid var(--border-200);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            min-width: 320px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .model-dropdown.active {
+            display: block;
+        }
+
+        .model-option {
+            padding: 0.875rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid var(--border-300);
+        }
+
+        .model-option:first-child {
+            border-radius: 0.75rem 0.75rem 0 0;
+        }
+
+        .model-option:last-child {
+            border-bottom: none;
+            border-radius: 0 0 0.75rem 0.75rem;
+        }
+
+        .model-option:hover {
+            background-color: var(--bg-100);
+        }
+
+        .model-option.selected {
+            background-color: var(--bg-100);
+        }
+
+        .model-option-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .model-name {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-100);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .model-badge {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            color: #6366f1;
+            background-color: #eef2ff;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            text-transform: uppercase;
+        }
+
+        .model-checkmark {
+            color: var(--accent-main);
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .model-description {
+            font-size: 0.8125rem;
+            color: var(--text-400);
+            line-height: 1.4;
+        }
+
+        .model-limit {
+            font-size: 0.75rem;
+            color: var(--text-500);
+            margin-top: 0.25rem;
+        }
+
+        .model-more {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.875rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: var(--text-200);
+            font-size: 0.9375rem;
+            font-weight: 500;
+        }
+
+        .model-more:hover {
+            background-color: var(--bg-100);
+        }
+
+        .model-submenu {
+            background-color: var(--bg-100);
+            display: none;
+        }
+
+        .model-submenu.active {
+            display: block;
+        }
+
+        .model-submenu .model-option {
+            padding-left: 1.5rem;
+            background-color: var(--bg-100);
+        }
+
+        .model-submenu .model-option:hover {
+            background-color: var(--bg-200);
+        }
+
+        /* User menu dropdown */
+        .user-menu-dropdown {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            margin-bottom: 0.5rem;
+            background-color: var(--bg-000);
+            border: 1px solid var(--border-200);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            min-width: 260px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .user-menu-dropdown.active {
+            display: block;
+        }
+
+        .user-menu-header {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-300);
+        }
+
+        .user-menu-email {
+            font-size: 0.8125rem;
+            color: var(--text-400);
+            margin-bottom: 0.25rem;
+        }
+
+        .user-menu-account {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .user-menu-account-name {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-100);
+        }
+
+        .checkmark-icon {
+            color: var(--accent-main);
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .user-menu-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.9375rem;
+            color: var(--text-200);
+        }
+
+        .user-menu-item:hover {
+            background-color: var(--bg-100);
+        }
+
+        .user-menu-section {
+            border-top: 1px solid var(--border-300);
+        }
+
+        .user-menu-item.has-submenu:hover .submenu-arrow {
+            transform: translateX(2px);
+        }
+
+        .submenu-arrow {
+            transition: transform 0.2s;
+        }
+
+        .language-submenu {
+            position: absolute;
+            left: 100%;
+            top: 0;
+            margin-left: 0.5rem;
+            background-color: var(--bg-000);
+            border: 1px solid var(--border-200);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            min-width: 240px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .language-submenu.active {
+            display: block;
+        }
+
+        .language-option {
+            padding: 0.625rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 0.9375rem;
+            color: var(--text-200);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .language-option:hover {
+            background-color: var(--bg-100);
+        }
+
+        .language-option.selected {
+            background-color: var(--bg-100);
+        }
+
+        /* Attachment menu */
+        .attachment-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            margin-bottom: 0.5rem;
+            background-color: var(--bg-000);
+            border: 1px solid var(--border-200);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            min-width: 220px;
+            display: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .attachment-menu.active {
+            display: block;
+        }
+
+        .attachment-item {
+            padding: 0.75rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9375rem;
+            color: var(--text-200);
+            border-bottom: 1px solid var(--border-300);
+        }
+
+        .attachment-item:last-child {
+            border-bottom: none;
+        }
+
+        .attachment-item:hover {
+            background-color: var(--bg-100);
+        }
+
+        .attachment-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            color: var(--text-300);
+        }
+
+        .send-btn {
+            width: 2rem;
+            height: 2rem;
+            border: none;
+            background-color: var(--accent-main);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .send-btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .quick-action-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.125rem;
+            background-color: transparent;
+            border: 0.5px solid #d6d6d6;
+            border-radius: 2rem;
+            font-size: 0.875rem;
+            color: var(--text-200);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quick-action-btn:hover {
+            background-color: var(--bg-000);
+            border-color: var(--border-200);
+        }
+
+        /* Backdrop overlay for mobile */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.4);
+            z-index: 99;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .sidebar-backdrop.active {
+            display: block;
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                z-index: 100;
+                height: 100%;
+                left: 0;
+                top: 0;
+            }
+
+            .sidebar.hidden {
+                margin-left: 0;
+                transform: translateX(-100%);
+            }
+
+            .main-content {
+                width: 100%;
+            }
+
+            .welcome-title {
+                font-size: 1.5rem;
+            }
+
+            .quick-actions {
+                flex-direction: column;
+            }
+
+            .toggle-sidebar-btn {
+                z-index: 50;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Backdrop (for mobile) -->
+    <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+    
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-section">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" fill="#D97757">
+                    <path d="M11.376 24L10.776 23.544L10.44 22.8L10.776 21.312L11.16 19.392L11.472 17.856L11.76 15.96L11.928 15.336L11.904 15.288L11.784 15.312L10.344 17.28L8.16 20.232L6.432 22.056L6.024 22.224L5.304 21.864L5.376 21.192L5.784 20.616L8.16 17.568L9.6 15.672L10.536 14.592L10.512 14.448H10.464L4.128 18.576L3 18.72L2.496 18.264L2.568 17.52L2.808 17.28L4.704 15.96L9.432 13.32L9.504 13.08L9.432 12.96H9.192L8.4 12.912L5.712 12.84L3.384 12.744L1.104 12.624L0.528 12.504L0 11.784L0.048 11.424L0.528 11.112L1.224 11.16L2.736 11.28L5.016 11.424L6.672 11.52L9.12 11.784H9.504L9.552 11.616L9.432 11.52L9.336 11.424L6.96 9.84L4.416 8.16L3.072 7.176L2.352 6.672L1.992 6.216L1.848 5.208L2.496 4.488L3.384 4.56L3.6 4.608L4.488 5.304L6.384 6.768L8.88 8.616L9.24 8.904L9.408 8.808V8.736L9.24 8.472L7.896 6.024L6.456 3.528L5.808 2.496L5.64 1.872C5.576 1.656 5.544 1.416 5.544 1.152L6.288 0.144001L6.696 0L7.704 0.144001L8.112 0.504001L8.736 1.92L9.72 4.152L11.28 7.176L11.736 8.088L11.976 8.904L12.072 9.168H12.24V9.024L12.36 7.296L12.6 5.208L12.84 2.52L12.912 1.752L13.296 0.840001L14.04 0.360001L14.616 0.624001L15.096 1.32L15.024 1.752L14.76 3.6L14.184 6.504L13.824 8.472H14.04L14.28 8.208L15.264 6.912L16.92 4.848L17.64 4.032L18.504 3.12L19.056 2.688H20.088L20.832 3.816L20.496 4.992L19.44 6.336L18.552 7.464L17.28 9.168L16.512 10.536L16.584 10.632H16.752L19.608 10.008L21.168 9.744L22.992 9.432L23.832 9.816L23.928 10.2L23.592 11.016L21.624 11.496L19.32 11.952L15.888 12.768L15.84 12.792L15.888 12.864L17.424 13.008L18.096 13.056H19.728L22.752 13.272L23.544 13.8L24 14.424L23.928 14.928L22.704 15.528L21.072 15.144L17.232 14.232L15.936 13.92H15.744V14.016L16.848 15.096L18.84 16.896L21.36 19.224L21.48 19.8L21.168 20.28L20.832 20.232L18.624 18.552L17.76 17.808L15.84 16.2H15.72V16.368L16.152 17.016L18.504 20.544L18.624 21.624L18.456 21.96L17.832 22.176L17.184 22.056L15.792 20.136L14.376 17.952L13.224 16.008L13.104 16.104L12.408 23.352L12.096 23.712L11.376 24Z"></path>
+                </svg>
+                <span class="logo-text">Claude</span>
+            </div>
+            <button class="new-chat-btn" id="newChatBtn">
+                <span class="new-chat-icon">+</span>
+                New chat
+            </button>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-item active">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Chats
+                </div>
+                <div class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    Projects
+                </div>
+                <div class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    Artifacts
+                </div>
+            </div>
+
+            <div class="nav-section">
+                <div class="recents-title">Recents</div>
+                <div class="recent-item">Matlab code generation</div>
+                <div class="recent-item">AI model identity</div>
+                <div class="recent-item">Matlab code generation</div>
+                <div class="recent-item">Untitled</div>
+                <div class="recent-item">Code review and analysis</div>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar">Y</div>
+                <div class="user-details">
+                    <div class="user-name">yuqingwei</div>
+                    <div class="user-plan">Free plan</div>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+                
+                <!-- User Menu Dropdown -->
+                <div class="user-menu-dropdown" id="userMenuDropdown">
+                    <div class="user-menu-header">
+                        <div class="user-menu-email">ywj2333333434@outlook.com</div>
+                        <div class="user-menu-account">
+                            <span class="user-menu-account-name">Personal</span>
+                            <svg class="checkmark-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="user-plan">Free plan</div>
+                    </div>
+                    
+                    <div class="user-menu-item">
+                        Settings
+                        <span style="font-size: 0.75rem; color: var(--text-400);">⌘+Ctrl+,</span>
+                    </div>
+                    
+                    <div class="user-menu-item has-submenu" id="languageMenuItem" style="position: relative;">
+                        Language
+                        <svg class="submenu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                        
+                        <!-- Language Submenu -->
+                        <div class="language-submenu" id="languageSubmenu">
+                            <div class="language-option selected">
+                                English (United States)
+                                <svg class="checkmark-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                </svg>
+                            </div>
+                            <div class="language-option">Français (France)</div>
+                            <div class="language-option">Deutsch (Deutschland)</div>
+                            <div class="language-option">हिंदी (भारत)</div>
+                            <div class="language-option">Indonesia (Indonesia)</div>
+                            <div class="language-option">Italiano (Italia)</div>
+                            <div class="language-option">日本語 (日本)</div>
+                            <div class="language-option">한국어(대한민국)</div>
+                            <div class="language-option">Português (Brasil)</div>
+                            <div class="language-option">Español (Latinoamérica)</div>
+                            <div class="language-option">Español (España)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="user-menu-item">Get help</div>
+                    
+                    <div class="user-menu-section">
+                        <div class="user-menu-item">
+                            About Anthropic
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </div>
+                        <div class="user-menu-item">
+                            Usage policy
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </div>
+                        <div class="user-menu-item">
+                            Privacy policy
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                <polyline points="15 3 21 3 21 9"></polyline>
+                                <line x1="10" y1="14" x2="21" y2="3"></line>
+                            </svg>
+                        </div>
+                        <div class="user-menu-item">Your privacy choices</div>
+                        <div class="user-menu-item">
+                            Keyboard shortcuts
+                            <span style="font-size: 0.75rem; color: var(--text-400);">Ctrl+?</span>
+                        </div>
+                    </div>
+                    
+                    <div class="user-menu-section">
+                        <div class="user-menu-item" onclick="window.location.href='upgrade.html'">Upgrade plan</div>
+                        <div class="user-menu-item">
+                            Learn more
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </div>
+                        <div class="user-menu-item">Log out</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <button class="toggle-sidebar-btn" id="toggleSidebar" title="Toggle sidebar Ctrl+.">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="9" y1="3" x2="9" y2="21"></line>
+            </svg>
+        </button>
+        
+        <!-- Top right notification icon -->
+        <div style="position: absolute; top: 1rem; right: 1rem; z-index: 10;">
+            <button style="width: 2.5rem; height: 2.5rem; border: none; background: transparent; border-radius: 0.5rem; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-300); transition: background-color 0.15s; position: relative;" onmouseover="this.style.backgroundColor='rgba(0,0,0,0.04)'" onmouseout="this.style.backgroundColor='transparent'" title="Notifications">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <!-- Notification badge -->
+                <span style="position: absolute; top: 0.5rem; right: 0.5rem; width: 0.5rem; height: 0.5rem; background-color: #ef4444; border-radius: 50%; border: 2px solid var(--bg-100);"></span>
+            </button>
+        </div>
+
+        <div class="chat-container">
+            <div class="welcome-section">
+                <div class="upgrade-badge">
+                    <span>Free plan</span>
+                    <span>·</span>
+                    <span class="upgrade-link">Upgrade</span>
+                </div>
+
+                <h1 class="welcome-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="claude-icon" fill="#D97757">
+                        <path d="M11.376 24L10.776 23.544L10.44 22.8L10.776 21.312L11.16 19.392L11.472 17.856L11.76 15.96L11.928 15.336L11.904 15.288L11.784 15.312L10.344 17.28L8.16 20.232L6.432 22.056L6.024 22.224L5.304 21.864L5.376 21.192L5.784 20.616L8.16 17.568L9.6 15.672L10.536 14.592L10.512 14.448H10.464L4.128 18.576L3 18.72L2.496 18.264L2.568 17.52L2.808 17.28L4.704 15.96L9.432 13.32L9.504 13.08L9.432 12.96H9.192L8.4 12.912L5.712 12.84L3.384 12.744L1.104 12.624L0.528 12.504L0 11.784L0.048 11.424L0.528 11.112L1.224 11.16L2.736 11.28L5.016 11.424L6.672 11.52L9.12 11.784H9.504L9.552 11.616L9.432 11.52L9.336 11.424L6.96 9.84L4.416 8.16L3.072 7.176L2.352 6.672L1.992 6.216L1.848 5.208L2.496 4.488L3.384 4.56L3.6 4.608L4.488 5.304L6.384 6.768L8.88 8.616L9.24 8.904L9.408 8.808V8.736L9.24 8.472L7.896 6.024L6.456 3.528L5.808 2.496L5.64 1.872C5.576 1.656 5.544 1.416 5.544 1.152L6.288 0.144001L6.696 0L7.704 0.144001L8.112 0.504001L8.736 1.92L9.72 4.152L11.28 7.176L11.736 8.088L11.976 8.904L12.072 9.168H12.24V9.024L12.36 7.296L12.6 5.208L12.84 2.52L12.912 1.752L13.296 0.840001L14.04 0.360001L14.616 0.624001L15.096 1.32L15.024 1.752L14.76 3.6L14.184 6.504L13.824 8.472H14.04L14.28 8.208L15.264 6.912L16.92 4.848L17.64 4.032L18.504 3.12L19.056 2.688H20.088L20.832 3.816L20.496 4.992L19.44 6.336L18.552 7.464L17.28 9.168L16.512 10.536L16.584 10.632H16.752L19.608 10.008L21.168 9.744L22.992 9.432L23.832 9.816L23.928 10.2L23.592 11.016L21.624 11.496L19.32 11.952L15.888 12.768L15.84 12.792L15.888 12.864L17.424 13.008L18.096 13.056H19.728L22.752 13.272L23.544 13.8L24 14.424L23.928 14.928L22.704 15.528L21.072 15.144L17.232 14.232L15.936 13.92H15.744V14.016L16.848 15.096L18.84 16.896L21.36 19.224L21.48 19.8L21.168 20.28L20.832 20.232L18.624 18.552L17.76 17.808L15.84 16.2H15.72V16.368L16.152 17.016L18.504 20.544L18.624 21.624L18.456 21.96L17.832 22.176L17.184 22.056L15.792 20.136L14.376 17.952L13.224 16.008L13.104 16.104L12.408 23.352L12.096 23.712L11.376 24Z"></path>
+                    </svg>
+                    Hey there, yuqingwei
+                </h1>
+
+                <div class="input-section">
+                    <div class="input-wrapper">
+                        <textarea class="input-box" placeholder="How can I help you today?" rows="1"></textarea>
+                        <div class="input-actions">
+                            <div class="input-tools">
+                                <button class="tool-btn" id="attachBtn" title="Attach files" style="position: relative;">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    
+                                    <!-- Attachment Menu -->
+                                    <div class="attachment-menu" id="attachmentMenu">
+                                        <div class="attachment-item">
+                                            <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                            </svg>
+                                            Upload a file
+                                        </div>
+                                        <div class="attachment-item">
+                                            <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                            Take a screenshot
+                                        </div>
+                                        <div class="attachment-item">
+                                            <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                                            </svg>
+                                            Add from GitHub
+                                        </div>
+                                        <div class="attachment-item">
+                                            <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                            </svg>
+                                            Use a project
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="9 18 15 12 9 6"></polyline>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </button>
+                                <button class="tool-btn" title="Random prompt">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="16 3 21 3 21 8"></polyline>
+                                        <line x1="4" y1="20" x2="21" y2="3"></line>
+                                        <polyline points="21 16 21 21 16 21"></polyline>
+                                        <line x1="15" y1="15" x2="21" y2="21"></line>
+                                        <line x1="4" y1="4" x2="9" y2="9"></line>
+                                    </svg>
+                                </button>
+                                <button class="tool-btn" title="Recent conversations">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.5rem; position: relative;">
+                                <button class="model-selector" id="modelSelector">
+                                    <span id="selectedModel">Sonnet 4.5</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                    
+                                    <!-- Model Dropdown -->
+                                    <div class="model-dropdown" id="modelDropdown">
+                                        <div class="model-option" data-model="opus-4.1">
+                                            <div class="model-option-header">
+                                                <div class="model-name">Opus 4.1</div>
+                                            </div>
+                                            <div class="model-description">Powerful, large model for complex challenges</div>
+                                            <div class="model-limit">3 remaining until Oct 6</div>
+                                        </div>
+                                        
+                                        <div class="model-option selected" data-model="sonnet-4.5">
+                                            <div class="model-option-header">
+                                                <div class="model-name">Sonnet 4.5</div>
+                                                <svg class="model-checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                    <polyline points="20 6 9 17 4 12"></polyline>
+                                                </svg>
+                                            </div>
+                                            <div class="model-description">Smartest model. Efficient for everyday use.</div>
+                                        </div>
+                                        
+                                        <div class="model-option" data-model="kimi">
+                                            <div class="model-option-header">
+                                                <div class="model-name">🌙 Kimi AI</div>
+                                            </div>
+                                            <div class="model-description">月之暗面 - 200k 超长文本处理</div>
+                                        </div>
+                                        
+                                        <div class="model-more" id="moreModels">
+                                            <span>More models</span>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                <polyline points="9 18 15 12 9 6"></polyline>
+                                            </svg>
+                                        </div>
+                                        
+                                        <div class="model-submenu" id="submenu">
+                                            <div class="model-option" data-model="opus-4">
+                                                <div class="model-option-header">
+                                                    <div class="model-name">Opus 4</div>
+                                                </div>
+                                                <div class="model-limit">3 remaining until Oct 6</div>
+                                            </div>
+                                            
+                                            <div class="model-option" data-model="sonnet-4">
+                                                <div class="model-option-header">
+                                                    <div class="model-name">Sonnet 4</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="model-option" data-model="sonnet-3.7">
+                                                <div class="model-option-header">
+                                                    <div class="model-name">
+                                                        Sonnet 3.7
+                                                        <span class="model-badge">PRO</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="model-option" data-model="opus-3">
+                                                <div class="model-option-header">
+                                                    <div class="model-name">
+                                                        Opus 3
+                                                        <span class="model-badge">PRO</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="model-option" data-model="haiku-3.5">
+                                                <div class="model-option-header">
+                                                    <div class="model-name">
+                                                        Haiku 3.5
+                                                        <span class="model-badge">PRO</span>
+                                                    </div>
+                                                </div>
+                                                <div class="model-description">Fastest model for daily tasks</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </button>
+                                <button class="send-btn" title="Send message">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <line x1="12" y1="19" x2="12" y2="5"></line>
+                                        <polyline points="5 12 12 5 19 12"></polyline>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="quick-actions">
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                            Code
+                        </button>
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                            Write
+                        </button>
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                            </svg>
+                            Learn
+                        </button>
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                            </svg>
+                            Life stuff
+                        </button>
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            Claude's choice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Toggle sidebar
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('toggleSidebar');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+        function toggleSidebar() {
+            sidebar.classList.toggle('hidden');
+            sidebarBackdrop.classList.toggle('active');
+            
+            // Prevent body scroll when sidebar is open on mobile
+            if (window.innerWidth <= 768) {
+                if (!sidebar.classList.contains('hidden')) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            }
+        }
+
+        toggleBtn.addEventListener('click', toggleSidebar);
+
+        // Close sidebar when clicking backdrop
+        sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        // Keyboard shortcut for sidebar toggle
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === '.') {
+                e.preventDefault();
+                toggleSidebar();
+            }
+        });
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768) {
+                document.body.style.overflow = '';
+                sidebarBackdrop.classList.remove('active');
+                sidebar.classList.remove('hidden');
+            }
+        });
+
+        // Initialize sidebar state on mobile
+        if (window.innerWidth <= 768) {
+            sidebar.classList.add('hidden');
+        }
+
+        // Auto-resize textarea
+        const textarea = document.querySelector('.input-box');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 192) + 'px';
+        });
+
+        // Send message on Enter (but allow Shift+Enter for new line)
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Send button click
+        document.querySelector('.send-btn').addEventListener('click', sendMessage);
+
+        // 当前对话 ID
+        let currentConversationId = 'conv-' + Date.now();
+        let currentModel = 'sonnet-4.5';
+        let currentProvider = 'claude'; // 默认使用 Claude
+        let isStreaming = false;
+
+        // 从配置读取可用的 AI 提供商
+        function loadAISettings() {
+            const settings = JSON.parse(localStorage.getItem('aiSettings') || '{}');
+            return settings.providers || {};
+        }
+
+        // 根据模型名称确定提供商和配置
+        function getProviderConfig(modelName) {
+            const providers = loadAISettings();
+            
+            // 检查是否是 Kimi/Custom
+            if (providers.custom && providers.custom.enabled) {
+                if (modelName.includes('kimi') || modelName.includes('moonshot')) {
+                    return {
+                        provider: 'custom',
+                        config: {
+                            apiKey: providers.custom.apiKey,
+                            endpoint: providers.custom.endpoint,
+                            model: 'moonshot-v1-8k',
+                            stream: true
+                        }
+                    };
+                }
+            }
+            
+            // 检查是否是 OpenAI
+            if (providers.openai && providers.openai.enabled) {
+                if (modelName.includes('gpt') || modelName.includes('openai')) {
+                    return {
+                        provider: 'openai',
+                        config: {
+                            apiKey: providers.openai.apiKey,
+                            endpoint: providers.openai.endpoint,
+                            model: providers.openai.model || 'gpt-3.5-turbo',
+                            stream: true
+                        }
+                    };
+                }
+            }
+            
+            // 默认使用 Claude
+            if (providers.claude && providers.claude.enabled) {
+                return {
+                    provider: 'claude',
+                    config: {
+                        apiKey: providers.claude.apiKey,
+                        model: providers.claude.model || 'claude-3-5-sonnet-20241022',
+                        stream: true
+                    }
+                };
+            }
+            
+            // 如果没有配置，使用默认 Claude
+            return {
+                provider: 'claude',
+                config: {
+                    apiKey: 'your-api-key',
+                    model: 'claude-3-5-sonnet-20241022',
+                    stream: true
+                }
+            };
+        }
+
+        // 发送消息函数
+        async function sendMessage() {
+            const message = textarea.value.trim();
+            if (!message || isStreaming) return;
+
+            // 添加用户消息到界面
+            addMessage(message, 'user');
+            
+            // 清空输入框
+            textarea.value = '';
+            textarea.style.height = 'auto';
+
+            // 设置为流式请求状态
+            isStreaming = true;
+
+            try {
+                // 获取当前选择的提供商和配置
+                const providerData = getProviderConfig(currentModel);
+                
+                // 检查是否有有效配置
+                if (!providerData || !providerData.config || !providerData.config.apiKey || 
+                    providerData.config.apiKey === 'your-api-key') {
+                    addMessage('❌ 错误：当前AI未配置API Key，请先访问配置页面进行配置！', 'assistant', true);
+                    isStreaming = false;
+                    return;
+                }
+                
+                const { provider, config } = providerData;
+                
+                console.log('Using provider:', provider, 'Model:', currentModel);
+                
+                // 调用流式 API
+                const response = await fetch('http://localhost:3000/api/chat/stream', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        conversationId: currentConversationId,
+                        provider: provider,
+                        config: config
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: 服务器请求失败`);
+                }
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let assistantMessage = '';
+                let messageElement = null;
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            try {
+                                const data = JSON.parse(line.slice(6));
+                                
+                                if (data.type === 'text') {
+                                    assistantMessage += data.content;
+                                    
+                                    if (!messageElement) {
+                                        messageElement = addMessage('', 'assistant');
+                                    }
+                                    
+                                    // 更新消息内容
+                                    const textElement = messageElement.querySelector('.message-text');
+                                    textElement.textContent = assistantMessage;
+                                    
+                                    // 滚动到底部
+                                    messageElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                                } else if (data.type === 'error') {
+                                    console.error('Stream error:', data.content);
+                                    if (!messageElement) {
+                                        addMessage('Error: ' + data.content, 'assistant', true);
+                                    }
+                                } else if (data.type === 'end') {
+                                    console.log('Stream ended');
+                                }
+                            } catch (e) {
+                                console.error('Parse error:', e);
+                            }
+                        }
+                    }
+                }
+
+            } catch (error) {
+                console.error('Error sending message:', error);
+                let errorMsg = '❌ 发送失败：' + error.message;
+                
+                // 根据错误类型提供更友好的提示
+                if (error.message.includes('Failed to fetch') || error.message.includes('fetch')) {
+                    errorMsg = '❌ 连接失败：无法连接到服务器，请确保后端服务正在运行';
+                } else if (error.message.includes('401') || error.message.includes('authentication')) {
+                    errorMsg = '❌ 认证失败：API Key 无效，请检查配置';
+                } else if (error.message.includes('429')) {
+                    errorMsg = '❌ 请求过于频繁：请稍后再试';
+                } else if (error.message.includes('insufficient')) {
+                    errorMsg = '❌ 余额不足：请充值后再使用';
+                }
+                
+                addMessage(errorMsg, 'assistant', true);
+            } finally {
+                isStreaming = false;
+            }
+        }
+
+        // 添加消息到界面
+        function addMessage(text, role, isError = false) {
+            try {
+                const welcomeSection = document.querySelector('.welcome-section');
+                
+                // 如果是第一条消息，隐藏欢迎界面，创建消息容器
+                if (welcomeSection && !document.querySelector('.messages-container')) {
+                    welcomeSection.style.display = 'none';
+                    
+                    const chatContainer = document.querySelector('.chat-container');
+                    if (!chatContainer) {
+                        console.error('Chat container not found!');
+                        return null;
+                    }
+                    
+                    const messagesContainer = document.createElement('div');
+                    messagesContainer.className = 'messages-container';
+                    messagesContainer.style.cssText = `
+                        flex: 1;
+                        overflow-y: auto;
+                        padding: 2rem;
+                        max-width: 48rem;
+                        width: 100%;
+                        margin: 0 auto;
+                    `;
+                    
+                    const inputSection = document.querySelector('.input-section');
+                    if (inputSection) {
+                        chatContainer.insertBefore(messagesContainer, inputSection);
+                    } else {
+                        chatContainer.appendChild(messagesContainer);
+                    }
+                }
+            } catch (error) {
+                console.error('Error in addMessage (initial setup):', error);
+                return null;
+            }
+
+            const messagesContainer = document.querySelector('.messages-container');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${role}`;
+            messageDiv.style.cssText = `
+                display: flex;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+                ${role === 'user' ? 'flex-direction: row-reverse;' : ''}
+            `;
+
+            const avatar = document.createElement('div');
+            avatar.style.cssText = `
+                width: 2rem;
+                height: 2rem;
+                border-radius: 50%;
+                background-color: ${role === 'user' ? '#171717' : '#d97757'};
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 600;
+                font-size: 0.875rem;
+                flex-shrink: 0;
+            `;
+            avatar.textContent = role === 'user' ? 'Y' : 'C';
+
+            const messageContent = document.createElement('div');
+            messageContent.style.cssText = `
+                flex: 1;
+                ${role === 'user' ? 'text-align: right;' : ''}
+            `;
+
+            const messageText = document.createElement('div');
+            messageText.className = 'message-text';
+            messageText.style.cssText = `
+                background-color: ${role === 'user' ? '#f4f4f4' : '#ffffff'};
+                padding: 0.875rem 1rem;
+                border-radius: 1rem;
+                color: var(--text-100);
+                line-height: 1.6;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                ${isError ? 'color: #ef4444; border: 1px solid #fecaca;' : ''}
+                ${role === 'assistant' ? 'border: 0.5px solid #ebebeb;' : ''}
+            `;
+            messageText.textContent = text;
+
+            messageContent.appendChild(messageText);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            messagesContainer.appendChild(messageDiv);
+
+            return messageDiv;
+        }
+
+        // Model selector dropdown
+        const modelSelector = document.getElementById('modelSelector');
+        const modelDropdown = document.getElementById('modelDropdown');
+        const selectedModelSpan = document.getElementById('selectedModel');
+        const moreModelsBtn = document.getElementById('moreModels');
+        const submenu = document.getElementById('submenu');
+        const modelOptions = document.querySelectorAll('.model-option');
+
+        // Toggle dropdown
+        modelSelector.addEventListener('click', (e) => {
+            e.stopPropagation();
+            modelDropdown.classList.toggle('active');
+        });
+
+        // Toggle submenu
+        moreModelsBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            submenu.classList.toggle('active');
+            const arrow = moreModelsBtn.querySelector('svg polyline');
+            if (submenu.classList.contains('active')) {
+                arrow.setAttribute('points', '6 9 12 15 18 9'); // Down arrow
+            } else {
+                arrow.setAttribute('points', '9 18 15 12 9 6'); // Right arrow
+            }
+        });
+
+        // Select model
+        modelOptions.forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const modelName = option.querySelector('.model-name').textContent.trim();
+                const modelData = option.dataset.model;
+                
+                // Update selected model display
+                selectedModelSpan.textContent = modelName;
+                
+                // Update current model
+                currentModel = modelData;
+                
+                // Update selected state
+                modelOptions.forEach(opt => opt.classList.remove('selected'));
+                option.classList.add('selected');
+                
+                // Remove checkmark from all options
+                document.querySelectorAll('.model-checkmark').forEach(check => check.remove());
+                
+                // Add checkmark to selected option
+                const checkmark = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                checkmark.setAttribute('class', 'model-checkmark');
+                checkmark.setAttribute('viewBox', '0 0 24 24');
+                checkmark.setAttribute('fill', 'none');
+                checkmark.setAttribute('stroke', 'currentColor');
+                checkmark.setAttribute('stroke-width', '2.5');
+                const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                polyline.setAttribute('points', '20 6 9 17 4 12');
+                checkmark.appendChild(polyline);
+                option.querySelector('.model-option-header').appendChild(checkmark);
+                
+                // Close dropdown
+                modelDropdown.classList.remove('active');
+                submenu.classList.remove('active');
+                
+                console.log('Selected model:', modelData, '(' + currentModel + ')');
+            });
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!modelSelector.contains(e.target)) {
+                modelDropdown.classList.remove('active');
+                submenu.classList.remove('active');
+            }
+        });
+
+        // User menu dropdown
+        const userInfo = document.getElementById('userInfo');
+        const userMenuDropdown = document.getElementById('userMenuDropdown');
+        const languageMenuItem = document.getElementById('languageMenuItem');
+        const languageSubmenu = document.getElementById('languageSubmenu');
+
+        userInfo.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenuDropdown.classList.toggle('active');
+            languageSubmenu.classList.remove('active');
+        });
+
+        languageMenuItem.addEventListener('mouseenter', () => {
+            languageSubmenu.classList.add('active');
+        });
+
+        languageMenuItem.addEventListener('mouseleave', (e) => {
+            if (!languageSubmenu.contains(e.relatedTarget)) {
+                setTimeout(() => {
+                    languageSubmenu.classList.remove('active');
+                }, 300);
+            }
+        });
+
+        // Select language
+        document.querySelectorAll('.language-option').forEach(option => {
+            option.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelectorAll('.language-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    opt.querySelector('.checkmark-icon')?.remove();
+                });
+                
+                option.classList.add('selected');
+                const checkmark = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                checkmark.setAttribute('class', 'checkmark-icon');
+                checkmark.setAttribute('viewBox', '0 0 24 24');
+                checkmark.setAttribute('fill', 'none');
+                checkmark.setAttribute('stroke', 'currentColor');
+                checkmark.setAttribute('stroke-width', '2.5');
+                const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                polyline.setAttribute('points', '20 6 9 17 4 12');
+                checkmark.appendChild(polyline);
+                option.appendChild(checkmark);
+                
+                userMenuDropdown.classList.remove('active');
+                languageSubmenu.classList.remove('active');
+            });
+        });
+
+        // Close user menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!userInfo.contains(e.target)) {
+                userMenuDropdown.classList.remove('active');
+                languageSubmenu.classList.remove('active');
+            }
+        });
+
+        // Attachment menu
+        const attachBtn = document.getElementById('attachBtn');
+        const attachmentMenu = document.getElementById('attachmentMenu');
+
+        attachBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            attachmentMenu.classList.toggle('active');
+        });
+
+        // Handle attachment options
+        document.querySelectorAll('.attachment-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const action = item.textContent.trim();
+                console.log('Attachment action:', action);
+                
+                if (action.includes('Upload a file')) {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '*/*';
+                    input.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            console.log('File selected:', file.name);
+                            alert(`File selected: ${file.name}`);
+                        }
+                    };
+                    input.click();
+                } else {
+                    alert(`${action} feature would be implemented here!`);
+                }
+                
+                attachmentMenu.classList.remove('active');
+            });
+        });
+
+        // Close attachment menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!attachBtn.contains(e.target)) {
+                attachmentMenu.classList.remove('active');
+            }
+        });
+
+        // New chat button
+        const newChatBtn = document.getElementById('newChatBtn');
+        newChatBtn.addEventListener('click', () => {
+            // 创建新的对话 ID
+            currentConversationId = 'conv-' + Date.now();
+            
+            // 清除消息容器
+            const messagesContainer = document.querySelector('.messages-container');
+            if (messagesContainer) {
+                messagesContainer.remove();
+            }
+            
+            // 显示欢迎界面
+            const welcomeSection = document.querySelector('.welcome-section');
+            if (welcomeSection) {
+                welcomeSection.style.display = 'block';
+            }
+            
+            // 清空输入框
+            textarea.value = '';
+            textarea.style.height = 'auto';
+            
+            console.log('New conversation started:', currentConversationId);
+        });
+    </script>
+</body>
+</html>
+
