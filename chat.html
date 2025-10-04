@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -55,6 +55,7 @@
         .sidebar.hidden {
             margin-left: -260px;
             width: 0;
+            overflow: hidden;
         }
 
         .sidebar-header {
@@ -1425,11 +1426,34 @@
         /* 移动端 Artifacts */
         @media (max-width: 768px) {
             .artifacts-panel {
-                width: 100%;
+                width: 100% !important;
+                z-index: 201;
+            }
+
+            .artifacts-panel.active {
+                transform: translateX(0);
             }
 
             .main-content.with-artifacts {
-                width: 100%;
+                width: 100% !important;
+            }
+            
+            /* 移动端打开Artifacts时隐藏主内容 */
+            body:has(.artifacts-panel.active) .main-content {
+                display: none;
+            }
+            
+            /* Artifacts按钮触摸优化 */
+            .artifacts-action-btn {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 0.625rem 1rem;
+                font-size: 0.9375rem;
+            }
+            
+            /* Artifacts标题 */
+            .artifacts-title {
+                font-size: 1rem;
             }
         }
 
@@ -1503,13 +1527,19 @@
                 position: fixed;
                 z-index: 100;
                 height: 100%;
+                width: 260px !important;
                 left: 0;
                 top: 0;
+                transform: translateX(-100%);
                 transition: transform 0.3s ease;
+                margin-left: 0 !important;
+            }
+
+            .sidebar:not(.hidden) {
+                transform: translateX(0);
             }
 
             .sidebar.hidden {
-                margin-left: 0;
                 transform: translateX(-100%);
             }
 
@@ -1530,8 +1560,14 @@
 
             /* 主内容区 */
             .main-content {
-                width: 100%;
-                margin-left: 0;
+                width: 100% !important;
+                margin-left: 0 !important;
+                max-width: 100% !important;
+            }
+            
+            /* 切换侧边栏按钮 */
+            .toggle-sidebar-btn {
+                display: flex !important;
             }
 
             /* 欢迎界面 */
@@ -1599,6 +1635,7 @@
             /* 输入区域 */
             .input-section {
                 padding: 0.75rem 1rem 1rem;
+                padding-bottom: env(safe-area-inset-bottom);
             }
 
             .input-wrapper {
@@ -1606,12 +1643,19 @@
             }
 
             .input-textarea {
-                font-size: 1rem;
+                font-size: 16px !important; /* 防止iOS自动缩放 */
                 min-height: 44px;
+                max-height: 150px;
             }
 
             .input-actions {
                 padding: 0.5rem 0.75rem 0.75rem;
+            }
+            
+            /* 触摸优化 */
+            button, .message-action-btn {
+                min-height: 44px;
+                min-width: 44px;
             }
 
             .send-btn {
