@@ -17,6 +17,43 @@ let openaiClient = null;
 // 对话历史存储
 const conversations = new Map();
 
+// ==================== 🔑 服务器端 API 配置（所有设备共享）====================
+// 在这里配置 API Key 后，所有访问网站的用户都能直接使用，无需前端配置
+const SERVER_CONFIG = {
+    claude: {
+        apiKey: process.env.ANTHROPIC_API_KEY || '',  // Claude API Key
+        model: 'claude-3-5-sonnet-20241022'
+    },
+    openai: {
+        apiKey: process.env.OPENAI_API_KEY || '',  // OpenAI API Key
+        endpoint: 'https://api.openai.com/v1',
+        model: 'gpt-3.5-turbo'
+    },
+    gemini: {
+        apiKey: process.env.GEMINI_API_KEY || '',  // Google Gemini API Key
+        model: 'gemini-pro'
+    },
+    custom: {
+        apiKey: process.env.CUSTOM_API_KEY || 'sk-YWVsd3yPnEM5CXPV7c6rej17bbhRWfhCDm8IIrGqWdo8fiW1',  // 🌙 Kimi API Key（已配置）
+        endpoint: process.env.CUSTOM_API_ENDPOINT || 'https://api.moonshot.cn/v1/chat/completions',
+        model: process.env.CUSTOM_MODEL || 'moonshot-v1-8k',
+        auth: 'bearer'  // 认证方式
+    }
+};
+
+// 合并配置：优先使用前端传来的配置，如果没有则使用服务器默认配置
+function mergeConfig(provider, clientConfig) {
+    const serverConfig = SERVER_CONFIG[provider] || {};
+    return {
+        apiKey: clientConfig?.apiKey || serverConfig.apiKey,
+        endpoint: clientConfig?.endpoint || serverConfig.endpoint,
+        model: clientConfig?.model || serverConfig.model,
+        auth: clientConfig?.auth || serverConfig.auth,
+        stream: clientConfig?.stream
+    };
+}
+// ==================== 配置结束 ====================
+
 // ==================== Claude (Anthropic) ====================
 async function initAnthropic(apiKey) {
     if (!anthropicClient || anthropicClient.apiKey !== apiKey) {
@@ -132,6 +169,9 @@ app.post('/api/chat', async (req, res) => {
     try {
         const { message, conversationId, provider, config } = req.body;
 
+        // 🔑 合并服务器端配置和客户端配置
+        const finalConfig = mergeConfig(provider, config);
+
         // 获取或创建对话历史
         let history = conversations.get(conversationId) || [];
         history.push({ role: 'user', content: message });
@@ -141,22 +181,22 @@ app.post('/api/chat', async (req, res) => {
 
         switch (provider) {
             case 'claude':
-                response = await chatWithClaude(history, config);
+                response = await chatWithClaude(history, finalConfig);
                 assistantMessage = response.content[0].text;
                 break;
 
             case 'openai':
-                response = await chatWithOpenAI(history, config);
+                response = await chatWithOpenAI(history, finalConfig);
                 assistantMessage = response.choices[0].message.content;
                 break;
 
             case 'gemini':
-                response = await chatWithGemini(history, config);
+                response = await chatWithGemini(history, finalConfig);
                 assistantMessage = response.response.text();
                 break;
 
             case 'custom':
-                response = await chatWithCustom(history, config);
+                response = await chatWithCustom(history, finalConfig);
                 assistantMessage = response.message || response.content;
                 break;
 
@@ -189,6 +229,10 @@ app.post('/api/chat/stream', async (req, res) => {
     try {
         const { message, conversationId, provider, config } = req.body;
 
+        // 🔑 合并服务器端配置和客户端配置
+        const finalConfig = mergeConfig(provider, config);
+        finalConfig.stream = true;
+
         res.setHeader('Content-Type', 'text/event-stream');
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
@@ -197,11 +241,10 @@ app.post('/api/chat/stream', async (req, res) => {
         history.push({ role: 'user', content: message });
 
         let fullResponse = '';
-        config.stream = true;
 
         switch (provider) {
             case 'claude':
-                const claudeStream = await chatWithClaude(history, config);
+                const claudeStream = await chatWithClaude(history, finalConfig);
                 claudeStream.on('text', (text) => {
                     fullResponse += text;
                     res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
@@ -215,7 +258,7 @@ app.post('/api/chat/stream', async (req, res) => {
                 break;
 
             case 'openai':
-                const openaiStream = await chatWithOpenAI(history, config);
+                const openaiStream = await chatWithOpenAI(history, finalConfig);
                 for await (const chunk of openaiStream) {
                     const content = chunk.choices[0]?.delta?.content || '';
                     if (content) {
@@ -230,7 +273,7 @@ app.post('/api/chat/stream', async (req, res) => {
                 break;
 
             case 'gemini':
-                const geminiStream = await chatWithGemini(history, config);
+                const geminiStream = await chatWithGemini(history, finalConfig);
                 for await (const chunk of geminiStream.stream) {
                     const text = chunk.text();
                     fullResponse += text;
@@ -247,14 +290,14 @@ app.post('/api/chat/stream', async (req, res) => {
                 const fetch = require('node-fetch');
                 const customHeaders = {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${config.apiKey}`
+                    'Authorization': `Bearer ${finalConfig.apiKey}`
                 };
                 
-                const customResponse = await fetch(config.endpoint, {
+                const customResponse = await fetch(finalConfig.endpoint, {
                     method: 'POST',
                     headers: customHeaders,
                     body: JSON.stringify({
-                        model: config.model || 'moonshot-v1-8k',
+                        model: finalConfig.model || 'moonshot-v1-8k',
                         messages: history,
                         stream: true
                     })
