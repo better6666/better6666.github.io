@@ -853,13 +853,16 @@
             opacity: 1;
         }
 
+        /* ========== 移动端适配 ========== */
         @media (max-width: 768px) {
+            /* 侧边栏 */
             .sidebar {
                 position: fixed;
                 z-index: 100;
                 height: 100%;
                 left: 0;
                 top: 0;
+                transition: transform 0.3s ease;
             }
 
             .sidebar.hidden {
@@ -867,20 +870,211 @@
                 transform: translateX(-100%);
             }
 
+            .sidebar-backdrop {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 99;
+            }
+
+            .sidebar-backdrop.active {
+                display: block;
+            }
+
+            /* 主内容区 */
             .main-content {
                 width: 100%;
+                margin-left: 0;
+            }
+
+            /* 欢迎界面 */
+            .welcome-section {
+                padding: 1rem;
             }
 
             .welcome-title {
-                font-size: 1.5rem;
+                font-size: 1.25rem;
+                margin-bottom: 1rem;
+            }
+
+            .welcome-description {
+                font-size: 0.875rem;
+                margin-bottom: 1.5rem;
+            }
+
+            /* 快捷操作按钮 */
+            .quick-actions {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .quick-action-btn {
+                width: 100%;
+                padding: 0.875rem;
+                font-size: 0.875rem;
+            }
+
+            /* 顶部栏 */
+            .top-bar {
+                padding: 0.75rem 1rem;
+            }
+
+            .model-selector {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.75rem;
+            }
+
+            /* 切换侧边栏按钮 */
+            .toggle-sidebar-btn {
+                z-index: 50;
+                width: 36px;
+                height: 36px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            /* 消息容器 */
+            .messages-container {
+                padding: 1rem !important;
+            }
+
+            .message-bubble {
+                padding: 0.875rem;
+                max-width: 90%;
+            }
+
+            .message-text {
+                font-size: 0.9375rem;
+                line-height: 1.5;
+            }
+
+            /* 输入区域 */
+            .input-section {
+                padding: 0.75rem 1rem 1rem;
+            }
+
+            .input-wrapper {
+                padding: 0.75rem;
+            }
+
+            .input-textarea {
+                font-size: 1rem;
+                min-height: 44px;
+            }
+
+            .input-actions {
+                padding: 0.5rem 0.75rem 0.75rem;
+            }
+
+            .send-btn {
+                width: 36px;
+                height: 36px;
+                min-width: 36px;
+                min-height: 36px;
+            }
+
+            /* 附件按钮 */
+            .attach-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            /* 用户信息 */
+            .user-info {
+                padding: 0.75rem;
+            }
+
+            .user-details {
+                font-size: 0.8125rem;
+            }
+
+            /* 用户菜单下拉框 */
+            .user-menu-dropdown {
+                width: 280px;
+                max-height: 70vh;
+                overflow-y: auto;
+            }
+
+            /* 语言和Learn more子菜单 */
+            .language-submenu,
+            .learn-more-submenu {
+                width: 240px;
+            }
+
+            /* Recents 列表 */
+            .recent-item {
+                font-size: 0.8125rem;
+                padding: 0.625rem 0.75rem;
+            }
+
+            /* 聊天容器 */
+            .chat-container {
+                padding-bottom: env(safe-area-inset-bottom);
+            }
+        }
+
+        /* 小屏手机适配 (iPhone SE 等) */
+        @media (max-width: 375px) {
+            .welcome-title {
+                font-size: 1.125rem;
+            }
+
+            .quick-action-btn {
+                padding: 0.75rem;
+                font-size: 0.8125rem;
+            }
+
+            .message-text {
+                font-size: 0.875rem;
+            }
+
+            .input-textarea {
+                font-size: 0.9375rem;
+            }
+
+            .user-menu-dropdown {
+                width: calc(100vw - 2rem);
+                left: 1rem;
+                right: 1rem;
+            }
+
+            .language-submenu,
+            .learn-more-submenu {
+                width: calc(100vw - 2rem);
+            }
+        }
+
+        /* 横屏模式优化 */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .welcome-section {
+                padding: 0.75rem;
+            }
+
+            .welcome-title {
+                font-size: 1rem;
+                margin-bottom: 0.5rem;
             }
 
             .quick-actions {
-                flex-direction: column;
+                flex-direction: row;
+                flex-wrap: wrap;
             }
 
-            .toggle-sidebar-btn {
-                z-index: 50;
+            .quick-action-btn {
+                width: calc(50% - 0.25rem);
+            }
+
+            .messages-container {
+                padding: 0.75rem !important;
+            }
+
+            .input-section {
+                padding: 0.5rem 1rem;
             }
         }
     </style>
