@@ -3847,6 +3847,12 @@
             closeArtifactsBtn.addEventListener('click', () => {
                 if (artifactsPanel) artifactsPanel.classList.remove('active');
                 if (mainContent) mainContent.classList.remove('with-artifacts');
+                
+                // 恢复显示左侧栏
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.remove('hidden');
+                }
             });
         }
 
@@ -3991,6 +3997,12 @@
             
             artifactsPanel.classList.add('active');
             mainContent.classList.add('with-artifacts');
+            
+            // 自动收起左侧栏，腾出更多空间给对话区域
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.add('hidden');
+            }
         }
 
         // HTML 转义
