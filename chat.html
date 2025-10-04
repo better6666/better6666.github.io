@@ -1540,6 +1540,15 @@
 
         /* ========== 移动端适配 ========== */
         @media (max-width: 768px) {
+            /* 基础字体大小 */
+            html {
+                font-size: 14px; /* 减小基础字体 */
+            }
+            
+            body {
+                font-size: 0.875rem; /* 14px */
+            }
+            
             /* 侧边栏 - 默认完全隐藏 */
             .sidebar {
                 position: fixed !important;
@@ -1601,17 +1610,81 @@
 
             /* 欢迎界面 */
             .welcome-section {
-                padding: 1rem;
+                padding: 1rem !important;
             }
 
             .welcome-title {
-                font-size: 1.25rem;
-                margin-bottom: 1rem;
+                font-size: 1.125rem !important; /* 18px */
+                margin-bottom: 0.75rem !important;
             }
 
             .welcome-description {
-                font-size: 0.875rem;
-                margin-bottom: 1.5rem;
+                font-size: 0.8125rem !important; /* 13px */
+                margin-bottom: 1rem !important;
+            }
+            
+            /* 消息内容区域 */
+            .messages-container {
+                padding: 1rem !important;
+            }
+            
+            /* 消息文本内容 */
+            .message-text-content {
+                font-size: 0.875rem !important; /* 14px */
+                line-height: 1.5 !important;
+            }
+            
+            /* 标题 */
+            .message-text-content h1 {
+                font-size: 1.25rem !important; /* 20px */
+                margin: 0.75rem 0 0.5rem !important;
+            }
+            
+            .message-text-content h2 {
+                font-size: 1.125rem !important; /* 18px */
+                margin: 0.75rem 0 0.5rem !important;
+            }
+            
+            .message-text-content h3 {
+                font-size: 1rem !important; /* 16px */
+                margin: 0.625rem 0 0.375rem !important;
+            }
+            
+            .message-text-content h4 {
+                font-size: 0.9375rem !important; /* 15px */
+                margin: 0.5rem 0 0.375rem !important;
+            }
+            
+            /* 段落 */
+            .message-text-content p {
+                margin: 0.5rem 0 !important;
+            }
+            
+            /* 列表 */
+            .message-text-content ul,
+            .message-text-content ol {
+                margin: 0.5rem 0 !important;
+                padding-left: 1.5rem !important;
+            }
+            
+            .message-text-content li {
+                margin: 0.25rem 0 !important;
+            }
+            
+            /* 代码块 */
+            .message-text-content pre {
+                margin: 0.5rem 0 !important;
+                padding: 0.625rem !important;
+                font-size: 0.75rem !important; /* 12px */
+            }
+            
+            .message-text-content code {
+                font-size: 0.8125rem !important; /* 13px */
+                padding: 0.125rem 0.25rem !important;
+            }
+            
+            .message-text-content pre code {
+                font-size: 0.75rem !important; /* 12px */
             }
 
             /* 快捷操作按钮 */
@@ -1622,8 +1695,32 @@
 
             .quick-action-btn {
                 width: 100%;
-                padding: 0.875rem;
-                font-size: 0.875rem;
+                padding: 0.75rem !important;
+                font-size: 0.8125rem !important; /* 13px */
+            }
+            
+            /* Artifacts面板标题 */
+            .artifacts-title {
+                font-size: 0.9375rem !important; /* 15px */
+            }
+            
+            /* 按钮文字 */
+            button, .btn {
+                font-size: 0.8125rem !important; /* 13px */
+            }
+            
+            /* 模型选择器 */
+            .model-dropdown-btn {
+                font-size: 0.8125rem !important; /* 13px */
+                padding: 0.5rem 0.75rem !important;
+            }
+            
+            .model-name {
+                font-size: 0.8125rem !important; /* 13px */
+            }
+            
+            .model-description {
+                font-size: 0.75rem !important; /* 12px */
             }
 
             /* 顶部栏 */
@@ -1646,39 +1743,42 @@
                 justify-content: center;
             }
 
-            /* 消息容器 */
-            .messages-container {
-                padding: 1rem !important;
-            }
-
+            /* 消息容器（已在上面定义） */
             .message-bubble {
-                padding: 0.875rem;
-                max-width: 90%;
+                padding: 0.75rem !important;
+                max-width: 90% !important;
             }
 
             .message-text {
-                font-size: 0.9375rem;
-                line-height: 1.5;
+                font-size: 0.875rem !important; /* 14px */
+                line-height: 1.5 !important;
             }
 
             /* 输入区域 */
             .input-section {
-                padding: 0.75rem 1rem 1rem;
-                padding-bottom: env(safe-area-inset-bottom);
+                padding: 0.625rem 0.875rem 0.875rem !important; /* 减小padding */
+                padding-bottom: env(safe-area-inset-bottom) !important;
             }
 
             .input-wrapper {
-                padding: 0.75rem;
+                padding: 0.625rem !important; /* 减小padding */
             }
 
             .input-textarea {
-                font-size: 16px !important; /* 防止iOS自动缩放 */
-                min-height: 44px;
-                max-height: 150px;
+                font-size: 14px !important; /* 14px，不会触发iOS缩放 */
+                min-height: 40px !important;
+                max-height: 120px !important;
+                line-height: 1.4 !important;
             }
 
             .input-actions {
-                padding: 0.5rem 0.75rem 0.75rem;
+                padding: 0.375rem 0.625rem 0.625rem !important;
+            }
+            
+            /* 发送按钮 */
+            .send-btn {
+                width: 32px !important;
+                height: 32px !important;
             }
             
             /* 触摸优化 */
