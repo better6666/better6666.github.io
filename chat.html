@@ -790,6 +790,333 @@
             color: var(--text-300);
         }
 
+        /* 文件附件卡片 */
+        .file-attachments-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            padding: 0 0.75rem;
+        }
+
+        .file-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.875rem;
+            background-color: var(--bg-100);
+            border: 1px solid var(--border-200);
+            border-radius: 0.5rem;
+            max-width: 280px;
+            position: relative;
+        }
+
+        .file-card-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-card-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-100);
+            margin-bottom: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .file-card-meta {
+            font-size: 0.75rem;
+            color: var(--text-400);
+            margin-bottom: 0.5rem;
+        }
+
+        .file-card-badge {
+            display: inline-block;
+            padding: 0.125rem 0.5rem;
+            background-color: var(--bg-000);
+            border: 1px solid var(--border-200);
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-300);
+            text-transform: uppercase;
+        }
+
+        .file-card-remove {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: none;
+            background-color: transparent;
+            color: var(--text-400);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .file-card-remove:hover {
+            background-color: var(--bg-200);
+            color: var(--text-100);
+        }
+
+        .file-card-image {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        /* 消息操作按钮 */
+        .message-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border-300);
+        }
+
+        .message-action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border: none;
+            background-color: transparent;
+            color: var(--text-400);
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .message-action-btn:hover {
+            background-color: var(--bg-100);
+            color: var(--text-200);
+        }
+
+        .message-action-btn.active {
+            color: var(--accent-main);
+            background-color: var(--bg-100);
+        }
+
+        .message-action-btn svg {
+            width: 1.125rem;
+            height: 1.125rem;
+        }
+
+        .message-retry-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border: none;
+            background-color: transparent;
+            color: var(--text-300);
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s, color 0.2s;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-left: auto;
+            position: relative;
+        }
+
+        .message-retry-btn:hover {
+            background-color: var(--bg-100);
+            color: var(--text-200);
+        }
+
+        .message-retry-btn svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .retry-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 0.25rem;
+            background-color: var(--bg-000);
+            border: 1px solid var(--border-200);
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 0.25rem;
+            min-width: 180px;
+            display: none;
+            z-index: 100;
+        }
+
+        .retry-dropdown.active {
+            display: block;
+        }
+
+        .retry-dropdown-item {
+            padding: 0.625rem 0.875rem;
+            cursor: pointer;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            color: var(--text-200);
+            transition: background-color 0.2s;
+        }
+
+        .retry-dropdown-item:hover {
+            background-color: var(--bg-100);
+        }
+
+        .message-disclaimer {
+            font-size: 0.75rem;
+            color: var(--text-500);
+            text-align: center;
+            margin-top: 0.75rem;
+            padding: 0 2rem;
+        }
+
+        /* ==================== Artifacts 面板 ==================== */
+        .artifacts-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 45%;
+            height: 100vh;
+            background-color: var(--bg-000);
+            border-left: 1px solid var(--border-200);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .artifacts-panel.active {
+            transform: translateX(0);
+        }
+
+        .main-content.with-artifacts {
+            width: 55%;
+        }
+
+        .artifacts-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-200);
+            background-color: var(--bg-100);
+        }
+
+        .artifacts-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-100);
+            flex: 1;
+        }
+
+        .artifacts-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .artifacts-action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border: none;
+            background-color: transparent;
+            color: var(--text-400);
+            cursor: pointer;
+            border-radius: 0.375rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .artifacts-action-btn:hover {
+            background-color: var(--bg-200);
+            color: var(--text-200);
+        }
+
+        .artifacts-action-btn svg {
+            width: 1.125rem;
+            height: 1.125rem;
+        }
+
+        .artifacts-content {
+            flex: 1;
+            overflow: auto;
+            padding: 1.5rem;
+            background-color: var(--bg-000);
+        }
+
+        .artifacts-code {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            white-space: pre;
+        }
+
+        .artifacts-preview {
+            width: 100%;
+            height: 100%;
+            border: 1px solid var(--border-200);
+            border-radius: 0.5rem;
+            background-color: white;
+        }
+
+        .artifacts-markdown {
+            line-height: 1.8;
+            color: var(--text-100);
+        }
+
+        .artifacts-markdown h1,
+        .artifacts-markdown h2,
+        .artifacts-markdown h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-000);
+        }
+
+        .artifacts-markdown code {
+            background-color: var(--bg-100);
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .artifacts-markdown pre {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        /* 移动端 Artifacts */
+        @media (max-width: 768px) {
+            .artifacts-panel {
+                width: 100%;
+            }
+
+            .main-content.with-artifacts {
+                width: 100%;
+            }
+        }
+
         .send-btn {
             width: 2rem;
             height: 2rem;
@@ -1277,6 +1604,9 @@
                 <!-- Input Section -->
                 <div class="input-section">
                 <div class="input-wrapper">
+                    <!-- 文件附件显示区域 -->
+                    <div class="file-attachments-container" id="fileAttachmentsContainer"></div>
+                    
                     <textarea class="input-box" data-i18n="inputPlaceholder" placeholder="How can I help you today?" rows="1"></textarea>
                     <div class="input-actions">
                         <div class="input-tools">
@@ -1286,9 +1616,12 @@
                                     <line x1="5" y1="12" x2="19" y2="12"></line>
                                 </svg>
                                 
+                                <!-- 隐藏的文件输入 -->
+                                <input type="file" id="fileInput" style="display: none;" accept="image/*,.pdf,.txt,.doc,.docx,.csv,.json,.xml,.md" multiple>
+                                
                                 <!-- Attachment Menu -->
                                 <div class="attachment-menu" id="attachmentMenu">
-                                    <div class="attachment-item">
+                                    <div class="attachment-item" id="uploadFileBtn">
                                         <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
                                         </svg>
@@ -2153,10 +2486,31 @@
                 
                 const { provider, config } = providerData;
                 
+                // 构建消息内容（包含文件）
+                let fullMessage = message;
+                if (uploadedFiles.length > 0) {
+                    console.log('📎 Including', uploadedFiles.length, 'file(s) in message');
+                    fullMessage += '\n\n---\n**Attached Files:**\n';
+                    
+                    for (const file of uploadedFiles) {
+                        fullMessage += `\n### ${file.name}\n`;
+                        if (typeof file.content === 'string' && !file.content.startsWith('data:image')) {
+                            // 文本文件：直接附加内容
+                            fullMessage += `\`\`\`\n${file.content}\n\`\`\`\n`;
+                        } else if (file.type.startsWith('image/')) {
+                            // 图片文件：附加描述
+                            fullMessage += `[Image file: ${file.name}, ${formatFileSize(file.size)}]\n`;
+                        } else {
+                            fullMessage += `[File: ${file.name}, ${formatFileSize(file.size)}]\n`;
+                        }
+                    }
+                }
+                
                 console.log('📤 Sending request:');
                 console.log('  Provider:', provider);
                 console.log('  Config:', config);
                 console.log('  Message:', message);
+                console.log('  Files:', uploadedFiles.length);
                 
                 // 调用流式 API
                 const response = await fetch('/api/chat/stream', {
@@ -2165,7 +2519,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        message: message,
+                        message: fullMessage,
                         conversationId: currentConversationId,
                         provider: provider,
                         config: config
@@ -2224,6 +2578,14 @@
                                     }
                                     // 保存对话到历史
                                     saveConversationToHistory();
+                                    
+                                    // 检测并打开 Artifacts
+                                    window.detectAndOpenArtifacts(assistantMessage);
+                                    
+                                    // 清空文件附件
+                                    uploadedFiles = [];
+                                    fileAttachmentsContainer.innerHTML = '';
+                                    console.log('🗑️ Files cleared after sending');
                                 }
                             } catch (e) {
                                 console.error('Parse error:', e);
@@ -2393,6 +2755,179 @@
             messageText.textContent = text;
 
             messageContent.appendChild(messageText);
+            
+            // 为 assistant 消息添加操作按钮
+            if (role === 'assistant' && !isError) {
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'message-actions';
+                
+                // Copy 按钮
+                const copyBtn = document.createElement('button');
+                copyBtn.className = 'message-action-btn';
+                copyBtn.title = 'Copy';
+                copyBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                `;
+                copyBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    // 从 DOM 元素读取最新内容
+                    const textToCopy = messageText.textContent || text;
+                    console.log('🔍 Attempting to copy:', textToCopy.substring(0, 100));
+                    
+                    try {
+                        // 方法1: 现代 Clipboard API
+                        if (navigator.clipboard && window.isSecureContext) {
+                            await navigator.clipboard.writeText(textToCopy);
+                            console.log('✅ Copied using Clipboard API');
+                        } else {
+                            // 方法2: 传统 execCommand
+                            const textarea = document.createElement('textarea');
+                            textarea.value = textToCopy;
+                            textarea.style.position = 'fixed';
+                            textarea.style.top = '0';
+                            textarea.style.left = '0';
+                            textarea.style.width = '1px';
+                            textarea.style.height = '1px';
+                            textarea.style.padding = '0';
+                            textarea.style.border = 'none';
+                            textarea.style.outline = 'none';
+                            textarea.style.boxShadow = 'none';
+                            textarea.style.background = 'transparent';
+                            document.body.appendChild(textarea);
+                            textarea.focus();
+                            textarea.select();
+                            
+                            const successful = document.execCommand('copy');
+                            document.body.removeChild(textarea);
+                            
+                            if (successful) {
+                                console.log('✅ Copied using execCommand');
+                            } else {
+                                throw new Error('execCommand returned false');
+                            }
+                        }
+                        
+                        // 视觉反馈
+                        copyBtn.classList.add('active');
+                        copyBtn.title = 'Copied!';
+                        
+                        // 改变图标为对勾
+                        copyBtn.innerHTML = `
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        `;
+                        
+                        setTimeout(() => {
+                            copyBtn.classList.remove('active');
+                            copyBtn.title = 'Copy';
+                            // 恢复原图标
+                            copyBtn.innerHTML = `
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                            `;
+                        }, 1500);
+                    } catch (err) {
+                        console.error('❌ Copy failed:', err);
+                        // 最后的备用方案：提示用户手动复制
+                        const range = document.createRange();
+                        range.selectNode(messageText);
+                        window.getSelection().removeAllRanges();
+                        window.getSelection().addRange(range);
+                        alert('Please press Ctrl+C (or Cmd+C on Mac) to copy the selected text.');
+                    }
+                });
+                
+                // Good response 按钮
+                const goodBtn = document.createElement('button');
+                goodBtn.className = 'message-action-btn';
+                goodBtn.title = 'Good response';
+                goodBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                    </svg>
+                `;
+                goodBtn.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    if (this.classList.contains('active')) {
+                        badBtn.classList.remove('active');
+                    }
+                });
+                
+                // Bad response 按钮
+                const badBtn = document.createElement('button');
+                badBtn.className = 'message-action-btn';
+                badBtn.title = 'Bad response';
+                badBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+                    </svg>
+                `;
+                badBtn.addEventListener('click', function() {
+                    this.classList.toggle('active');
+                    if (this.classList.contains('active')) {
+                        goodBtn.classList.remove('active');
+                    }
+                });
+                
+                // Retry 按钮
+                const retryBtn = document.createElement('button');
+                retryBtn.className = 'message-retry-btn';
+                retryBtn.innerHTML = `
+                    Retry
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                `;
+                
+                // Retry 下拉菜单
+                const retryDropdown = document.createElement('div');
+                retryDropdown.className = 'retry-dropdown';
+                retryDropdown.innerHTML = `
+                    <div class="retry-dropdown-item">With no changes</div>
+                `;
+                retryBtn.appendChild(retryDropdown);
+                
+                retryBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    retryDropdown.classList.toggle('active');
+                });
+                
+                // 点击下拉选项
+                retryDropdown.querySelector('.retry-dropdown-item').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    console.log('🔄 Retry with no changes clicked');
+                    // TODO: 实现重新生成功能
+                    alert('Retry feature coming soon!');
+                    retryDropdown.classList.remove('active');
+                });
+                
+                // 点击外部关闭下拉菜单
+                document.addEventListener('click', () => {
+                    retryDropdown.classList.remove('active');
+                });
+                
+                actionsDiv.appendChild(copyBtn);
+                actionsDiv.appendChild(goodBtn);
+                actionsDiv.appendChild(badBtn);
+                actionsDiv.appendChild(retryBtn);
+                
+                messageContent.appendChild(actionsDiv);
+                
+                // 添加免责声明
+                const disclaimer = document.createElement('div');
+                disclaimer.className = 'message-disclaimer';
+                disclaimer.textContent = 'Claude can make mistakes. Please double-check responses.';
+                messageContent.appendChild(disclaimer);
+            }
+            
             messageDiv.appendChild(avatar);
             messageDiv.appendChild(messageContent);
             messagesContainer.appendChild(messageDiv);
@@ -2633,38 +3168,154 @@
             }
         });
 
-        // Attachment menu
+        // ==================== 文件上传功能 ====================
         const attachBtn = document.getElementById('attachBtn');
         const attachmentMenu = document.getElementById('attachmentMenu');
+        const fileInput = document.getElementById('fileInput');
+        const fileAttachmentsContainer = document.getElementById('fileAttachmentsContainer');
+        const uploadFileBtn = document.getElementById('uploadFileBtn');
+        
+        // 存储上传的文件数据
+        let uploadedFiles = [];
 
         attachBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             attachmentMenu.classList.toggle('active');
         });
 
-        // Handle attachment options
+        // 点击 "Upload a file" 触发文件选择
+        uploadFileBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            fileInput.click();
+            attachmentMenu.classList.remove('active');
+        });
+
+        // 处理文件选择
+        fileInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            
+            for (const file of files) {
+                console.log('📎 File selected:', file.name, file.type, file.size);
+                
+                // 读取文件内容
+                const fileData = {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    content: null,
+                    preview: null
+                };
+
+                // 根据文件类型处理
+                if (file.type.startsWith('image/')) {
+                    // 图片文件：读取为 base64
+                    fileData.content = await readFileAsDataURL(file);
+                    fileData.preview = fileData.content;
+                } else if (file.type.startsWith('text/') || 
+                          file.name.endsWith('.txt') || 
+                          file.name.endsWith('.md') || 
+                          file.name.endsWith('.json') ||
+                          file.name.endsWith('.csv')) {
+                    // 文本文件：读取内容
+                    fileData.content = await readFileAsText(file);
+                } else {
+                    // 其他文件：只保存基本信息
+                    fileData.content = `[File: ${file.name}]`;
+                }
+
+                uploadedFiles.push(fileData);
+                renderFileCard(fileData);
+            }
+
+            // 清空 input，允许重新选择相同文件
+            fileInput.value = '';
+        });
+
+        // 读取文件为 Base64
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // 读取文件为文本
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsText(file);
+            });
+        }
+
+        // 渲染文件卡片
+        function renderFileCard(fileData) {
+            const card = document.createElement('div');
+            card.className = 'file-card';
+            
+            // 获取文件扩展名
+            const ext = fileData.name.split('.').pop().toUpperCase();
+            
+            // 计算文件行数（如果是文本）
+            let linesCount = '';
+            if (typeof fileData.content === 'string' && !fileData.content.startsWith('data:')) {
+                const lines = fileData.content.split('\n').length;
+                linesCount = `${lines} lines`;
+            } else if (fileData.type.startsWith('image/')) {
+                linesCount = formatFileSize(fileData.size);
+            } else {
+                linesCount = formatFileSize(fileData.size);
+            }
+
+            card.innerHTML = `
+                <div class="file-card-content">
+                    <div class="file-card-name">${fileData.name}</div>
+                    <div class="file-card-meta">${linesCount}</div>
+                    <span class="file-card-badge">${ext}</span>
+                    ${fileData.preview ? `<img src="${fileData.preview}" class="file-card-image" alt="${fileData.name}">` : ''}
+                </div>
+                <button class="file-card-remove" title="Remove file">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            `;
+
+            // 删除按钮事件
+            const removeBtn = card.querySelector('.file-card-remove');
+            removeBtn.addEventListener('click', () => {
+                const index = uploadedFiles.findIndex(f => f.name === fileData.name);
+                if (index > -1) {
+                    uploadedFiles.splice(index, 1);
+                }
+                card.remove();
+                console.log('🗑️ File removed:', fileData.name);
+            });
+
+            fileAttachmentsContainer.appendChild(card);
+            console.log('✅ File card rendered:', fileData.name);
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            else return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        // Handle other attachment options
         document.querySelectorAll('.attachment-item').forEach(item => {
+            if (item.id === 'uploadFileBtn') return; // 已经处理过了
+            
             item.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const action = item.textContent.trim();
                 console.log('Attachment action:', action);
-                
-                if (action.includes('Upload a file')) {
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = '*/*';
-                    input.onchange = (e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                            console.log('File selected:', file.name);
-                            alert(`File selected: ${file.name}`);
-                        }
-                    };
-                    input.click();
-                } else {
-                    alert(`${action} feature would be implemented here!`);
-                }
-                
+                alert(`${action} feature would be implemented here!`);
                 attachmentMenu.classList.remove('active');
             });
         });
@@ -2732,12 +3383,137 @@
             textarea.value = '';
             textarea.style.height = 'auto';
             
+            // 清空文件附件
+            uploadedFiles = [];
+            fileAttachmentsContainer.innerHTML = '';
+            console.log('🗑️ Files cleared for new conversation');
+            
             // 更新 Recents 列表，取消所有高亮
             renderRecentsList();
             
             console.log('✅ New conversation started');
         });
+
+        // ==================== Artifacts 功能 ====================
+        const artifactsPanel = document.getElementById('artifactsPanel');
+        const artifactsTitle = document.getElementById('artifactsTitle');
+        const artifactsContent = document.getElementById('artifactsContent');
+        const closeArtifactsBtn = document.getElementById('closeArtifactsBtn');
+        const copyArtifactsBtn = document.getElementById('copyArtifactsBtn');
+        const mainContent = document.querySelector('.main-content');
+
+        // 关闭 Artifacts
+        closeArtifactsBtn.addEventListener('click', () => {
+            artifactsPanel.classList.remove('active');
+            mainContent.classList.remove('with-artifacts');
+        });
+
+        // 复制 Artifacts 内容
+        copyArtifactsBtn.addEventListener('click', async () => {
+            const content = artifactsContent.textContent || artifactsContent.innerText;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(content);
+                } else {
+                    const textarea = document.createElement('textarea');
+                    textarea.value = content;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                }
+                
+                copyArtifactsBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                `;
+                setTimeout(() => {
+                    copyArtifactsBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                    `;
+                }, 1500);
+            } catch (err) {
+                console.error('Copy failed:', err);
+            }
+        });
+
+        // 打开 Artifacts
+        function openArtifacts(title, content, type = 'code') {
+            artifactsTitle.textContent = title;
+            
+            if (type === 'code') {
+                artifactsContent.innerHTML = `<pre class="artifacts-code">${escapeHtml(content)}</pre>`;
+            } else if (type === 'markdown') {
+                artifactsContent.innerHTML = `<div class="artifacts-markdown">${content}</div>`;
+            } else if (type === 'html') {
+                artifactsContent.innerHTML = `<iframe class="artifacts-preview" srcdoc="${escapeHtml(content)}"></iframe>`;
+            }
+            
+            artifactsPanel.classList.add('active');
+            mainContent.classList.add('with-artifacts');
+        }
+
+        // HTML 转义
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // 检测代码块并自动打开 Artifacts
+        // 当接收到流式消息时，检测是否包含代码块
+        window.detectAndOpenArtifacts = function(message) {
+            // 匹配代码块 ```language\ncode\n```
+            const codeBlockRegex = /```(\w+)?\n([\s\S]+?)```/g;
+            const matches = [...message.matchAll(codeBlockRegex)];
+            
+            if (matches.length > 0) {
+                const firstMatch = matches[0];
+                const language = firstMatch[1] || 'text';
+                const code = firstMatch[2].trim();
+                
+                // 只对较长的代码块打开 Artifacts（超过 10 行）
+                if (code.split('\n').length > 10) {
+                    openArtifacts(`Code: ${language}`, code, 'code');
+                }
+            }
+        };
     </script>
+
+    <!-- Artifacts 面板 -->
+    <div class="artifacts-panel" id="artifactsPanel">
+        <div class="artifacts-header">
+            <div class="artifacts-title" id="artifactsTitle">Artifact</div>
+            <div class="artifacts-actions">
+                <button class="artifacts-action-btn" id="copyArtifactsBtn" title="Copy">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                </button>
+                <button class="artifacts-action-btn" id="closeArtifactsBtn" title="Close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="artifacts-content" id="artifactsContent">
+            <!-- Artifacts 内容将动态加载到这里 -->
+        </div>
+    </div>
 </body>
 </html>
 
