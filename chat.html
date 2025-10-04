@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Claude</title>
+    <title>Claude - Multi-AI v2.1</title>
     <style>
         * {
             margin: 0;
@@ -223,6 +223,8 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            height: 100vh;
+            overflow: hidden;
         }
 
         .toggle-sidebar-btn {
@@ -251,14 +253,21 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 2rem;
+            justify-content: flex-start;
+            padding: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
 
         .welcome-section {
             text-align: center;
             max-width: 48rem;
             width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 2rem;
         }
 
         .upgrade-badge {
@@ -299,7 +308,11 @@
         .input-section {
             width: 100%;
             max-width: 48rem;
-            position: relative;
+            position: sticky;
+            bottom: 0;
+            background-color: var(--bg-100);
+            padding: 1rem 2rem 2rem;
+            z-index: 10;
         }
 
         .input-wrapper {
@@ -946,161 +959,7 @@
                     Hey there, yuqingwei
                 </h1>
 
-                <div class="input-section">
-                    <div class="input-wrapper">
-                        <textarea class="input-box" placeholder="How can I help you today?" rows="1"></textarea>
-                        <div class="input-actions">
-                            <div class="input-tools">
-                                <button class="tool-btn" id="attachBtn" title="Attach files" style="position: relative;">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <line x1="12" y1="5" x2="12" y2="19"></line>
-                                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                                    </svg>
-                                    
-                                    <!-- Attachment Menu -->
-                                    <div class="attachment-menu" id="attachmentMenu">
-                                        <div class="attachment-item">
-                                            <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
-                                            </svg>
-                                            Upload a file
-                                        </div>
-                                        <div class="attachment-item">
-                                            <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <circle cx="12" cy="12" r="10"></circle>
-                                                <circle cx="12" cy="12" r="3"></circle>
-                                            </svg>
-                                            Take a screenshot
-                                        </div>
-                                        <div class="attachment-item">
-                                            <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                                            </svg>
-                                            Add from GitHub
-                                        </div>
-                                        <div class="attachment-item">
-                                            <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                                            </svg>
-                                            Use a project
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="9 18 15 12 9 6"></polyline>
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </button>
-                                <button class="tool-btn" title="Random prompt">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="16 3 21 3 21 8"></polyline>
-                                        <line x1="4" y1="20" x2="21" y2="3"></line>
-                                        <polyline points="21 16 21 21 16 21"></polyline>
-                                        <line x1="15" y1="15" x2="21" y2="21"></line>
-                                        <line x1="4" y1="4" x2="9" y2="9"></line>
-                                    </svg>
-                                </button>
-                                <button class="tool-btn" title="Recent conversations">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <polyline points="12 6 12 12 16 14"></polyline>
-                                    </svg>
-                                </button>
-                            </div>
-                            <div style="display: flex; align-items: center; gap: 0.5rem; position: relative;">
-                                <button class="model-selector" id="modelSelector">
-                                    <span id="selectedModel">Sonnet 4.5</span>
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                    </svg>
-                                    
-                                    <!-- Model Dropdown -->
-                                    <div class="model-dropdown" id="modelDropdown">
-                                        <div class="model-option" data-model="opus-4.1">
-                                            <div class="model-option-header">
-                                                <div class="model-name">Opus 4.1</div>
-                                            </div>
-                                            <div class="model-description">Powerful, large model for complex challenges</div>
-                                            <div class="model-limit">3 remaining until Oct 6</div>
-                                        </div>
-                                        
-                                        <div class="model-option selected" data-model="sonnet-4.5">
-                                            <div class="model-option-header">
-                                                <div class="model-name">Sonnet 4.5</div>
-                                                <svg class="model-checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                                    <polyline points="20 6 9 17 4 12"></polyline>
-                                                </svg>
-                                            </div>
-                                            <div class="model-description">Smartest model. Efficient for everyday use.</div>
-                                        </div>
-                                        
-                                        <div class="model-option" data-model="kimi">
-                                            <div class="model-option-header">
-                                                <div class="model-name">🌙 Kimi AI</div>
-                                            </div>
-                                            <div class="model-description">月之暗面 - 200k 超长文本处理</div>
-                                        </div>
-                                        
-                                        <div class="model-more" id="moreModels">
-                                            <span>More models</span>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <polyline points="9 18 15 12 9 6"></polyline>
-                                            </svg>
-                                        </div>
-                                        
-                                        <div class="model-submenu" id="submenu">
-                                            <div class="model-option" data-model="opus-4">
-                                                <div class="model-option-header">
-                                                    <div class="model-name">Opus 4</div>
-                                                </div>
-                                                <div class="model-limit">3 remaining until Oct 6</div>
-                                            </div>
-                                            
-                                            <div class="model-option" data-model="sonnet-4">
-                                                <div class="model-option-header">
-                                                    <div class="model-name">Sonnet 4</div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="model-option" data-model="sonnet-3.7">
-                                                <div class="model-option-header">
-                                                    <div class="model-name">
-                                                        Sonnet 3.7
-                                                        <span class="model-badge">PRO</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="model-option" data-model="opus-3">
-                                                <div class="model-option-header">
-                                                    <div class="model-name">
-                                                        Opus 3
-                                                        <span class="model-badge">PRO</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="model-option" data-model="haiku-3.5">
-                                                <div class="model-option-header">
-                                                    <div class="model-name">
-                                                        Haiku 3.5
-                                                        <span class="model-badge">PRO</span>
-                                                    </div>
-                                                </div>
-                                                <div class="model-description">Fastest model for daily tasks</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </button>
-                                <button class="send-btn" title="Send message">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <line x1="12" y1="19" x2="12" y2="5"></line>
-                                        <polyline points="5 12 12 5 19 12"></polyline>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="quick-actions">
+                <div class="quick-actions">
                         <button class="quick-action-btn">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="16 18 22 12 16 6"></polyline>
@@ -1142,23 +1001,166 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Input Section - 固定在底部 -->
+            <div class="input-section">
+                <div class="input-wrapper">
+                    <textarea class="input-box" placeholder="How can I help you today?" rows="1"></textarea>
+                    <div class="input-actions">
+                        <div class="input-tools">
+                            <button class="tool-btn" id="attachBtn" title="Attach files" style="position: relative;">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                
+                                <!-- Attachment Menu -->
+                                <div class="attachment-menu" id="attachmentMenu">
+                                    <div class="attachment-item">
+                                        <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                                        </svg>
+                                        Upload a file
+                                    </div>
+                                    <div class="attachment-item">
+                                        <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <circle cx="12" cy="12" r="3"></circle>
+                                        </svg>
+                                        Take a screenshot
+                                    </div>
+                                    <div class="attachment-item">
+                                        <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                                        </svg>
+                                        Add from GitHub
+                                    </div>
+                                    <div class="attachment-item">
+                                        <svg class="attachment-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                                        </svg>
+                                        Use a project
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </button>
+                            <button class="tool-btn" title="Random prompt">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="16 3 21 3 21 8"></polyline>
+                                    <line x1="4" y1="20" x2="21" y2="3"></line>
+                                    <polyline points="21 16 21 21 16 21"></polyline>
+                                    <line x1="15" y1="15" x2="21" y2="21"></line>
+                                    <line x1="4" y1="4" x2="9" y2="9"></line>
+                                </svg>
+                            </button>
+                            <button class="tool-btn" title="Recent conversations">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; position: relative;">
+                            <button class="model-selector" id="modelSelector">
+                                <span id="selectedModel">Sonnet 4.5</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                </svg>
+                                
+                                <!-- Model Dropdown -->
+                                <div class="model-dropdown" id="modelDropdown">
+                                    <div class="model-option" data-model="opus-4.1">
+                                        <div class="model-option-header">
+                                            <div class="model-name">Opus 4.1</div>
+                                        </div>
+                                        <div class="model-description">Powerful, large model for complex challenges</div>
+                                        <div class="model-limit">3 remaining until Oct 6</div>
+                                    </div>
+                                    
+                                    <div class="model-option selected" data-model="sonnet-4.5">
+                                        <div class="model-option-header">
+                                            <div class="model-name">Sonnet 4.5</div>
+                                            <svg class="model-checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+                                        <div class="model-description">Smartest model. Efficient for everyday use.</div>
+                                    </div>
+                                    
+                                    <div class="model-option" data-model="kimi">
+                                        <div class="model-option-header">
+                                            <div class="model-name">🌙 Kimi AI</div>
+                                        </div>
+                                        <div class="model-description">月之暗面 - 200k 超长文本处理</div>
+                                    </div>
+                                    
+                                    <div class="model-more" id="moreModels">
+                                        <span>More models</span>
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                        </svg>
+                                    </div>
+                                    
+                                    <div class="model-submenu" id="submenu">
+                                        <div class="model-option" data-model="opus-4">
+                                            <div class="model-option-header">
+                                                <div class="model-name">Opus 4</div>
+                                            </div>
+                                            <div class="model-limit">3 remaining until Oct 6</div>
+                                        </div>
+                                        
+                                        <div class="model-option" data-model="sonnet-4">
+                                            <div class="model-option-header">
+                                                <div class="model-name">Sonnet 4</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="model-option" data-model="sonnet-3.7">
+                                            <div class="model-option-header">
+                                                <div class="model-name">
+                                                    Sonnet 3.7
+                                                    <span class="model-badge">PRO</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="model-option" data-model="opus-3">
+                                            <div class="model-option-header">
+                                                <div class="model-name">
+                                                    Opus 3
+                                                    <span class="model-badge">PRO</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="model-option" data-model="haiku-3.5">
+                                            <div class="model-option-header">
+                                                <div class="model-name">
+                                                    Haiku 3.5
+                                                    <span class="model-badge">PRO</span>
+                                                </div>
+                                            </div>
+                                            <div class="model-description">Fastest model for daily tasks</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </button>
+                            <button class="send-btn" title="Send message">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="19" x2="12" y2="5"></line>
+                                    <polyline points="5 12 12 5 19 12"></polyline>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
     <script>
-        // 全局错误处理 - 防止页面崩溃
-        window.addEventListener('error', function(event) {
-            console.error('错误被捕获:', event.error);
-            event.preventDefault();
-            return true;
-        });
-
-        window.addEventListener('unhandledrejection', function(event) {
-            console.error('Promise错误被捕获:', event.reason);
-            event.preventDefault();
-            return true;
-        });
-
         // Toggle sidebar
         const sidebar = document.getElementById('sidebar');
         const toggleBtn = document.getElementById('toggleSidebar');
@@ -1228,175 +1230,6 @@
         let currentModel = 'sonnet-4.5';
         let currentProvider = 'claude'; // 默认使用 Claude
         let isStreaming = false;
-        let userSessionId = null; // 🔑 用户会话ID（区分不同用户）
-        
-        // 对话历史存储（现在存储在服务器，按会话ID隔离）
-        const conversationHistory = new Map(); // { conversationId: { title, messages: [], timestamp } }
-        
-        // 🔑 获取或创建用户会话ID
-        async function getUserSessionId() {
-            // 使用sessionStorage（关闭浏览器标签页就清除，适合多用户）
-            let sessionId = sessionStorage.getItem('userSessionId');
-            
-            if (!sessionId) {
-                // 从服务器获取新的会话ID
-                try {
-                    const response = await fetch('/api/session');
-                    const data = await response.json();
-                    if (data.success) {
-                        sessionId = data.sessionId;
-                        sessionStorage.setItem('userSessionId', sessionId);
-                        console.log('✅ 新用户会话创建:', sessionId);
-                    }
-                } catch (error) {
-                    console.error('获取会话ID失败:', error);
-                    sessionId = 'temp-session-' + Date.now();
-                    sessionStorage.setItem('userSessionId', sessionId);
-                }
-            } else {
-                console.log('✅ 使用现有会话:', sessionId);
-            }
-            
-            return sessionId;
-        }
-        
-        // 🔑 从服务器加载对话历史（按会话ID）
-        async function loadConversationsFromServer() {
-            try {
-                if (!userSessionId) {
-                    console.log('会话ID未初始化，跳过加载历史');
-                    return;
-                }
-                
-                const response = await fetch(`/api/conversations/${userSessionId}`);
-                const data = await response.json();
-                
-                if (data.success && data.conversations) {
-                    conversationHistory.clear();
-                    data.conversations.forEach(conv => {
-                        conversationHistory.set(conv.conversationId, {
-                            title: conv.title,
-                            messages: conv.messages,
-                            timestamp: conv.timestamp
-                        });
-                    });
-                    console.log('✅ 从服务器加载', conversationHistory.size, '个对话');
-                }
-            } catch (error) {
-                console.error('加载对话历史失败:', error);
-            }
-        }
-        
-        // ⚠️ 已弃用：不再使用localStorage，改用服务器存储
-        // function saveConversationsToStorage() { ... }
-        
-        // 🔑 页面加载时初始化会话ID并加载对话历史
-        (async function initializeSession() {
-            try {
-                userSessionId = await getUserSessionId();
-                await loadConversationsFromServer();
-                await restoreSidebarConversations();
-            } catch (error) {
-                console.error('初始化会话失败:', error);
-            }
-        })();
-        
-        // 恢复侧边栏对话列表
-        function restoreSidebarConversations() {
-            try {
-                const navSection = document.querySelector('.nav-section:last-of-type');
-                if (!navSection) return;
-                
-                const recentsTitle = navSection.querySelector('.recents-title');
-                if (!recentsTitle) return;
-                
-                // 清除现有的对话项（保留示例）
-                const existingItems = navSection.querySelectorAll('.recent-item[data-conversation-id]');
-                existingItems.forEach(item => item.remove());
-                
-                // 按时间戳倒序排序对话
-                const conversations = Array.from(conversationHistory.entries())
-                    .sort((a, b) => b[1].timestamp - a[1].timestamp);
-                
-                // 添加所有对话到侧边栏
-                conversations.forEach(([id, conv]) => {
-                    const newItem = document.createElement('div');
-                    newItem.className = 'recent-item';
-                    newItem.textContent = conv.title;
-                    newItem.dataset.conversationId = id;
-                    newItem.style.cursor = 'pointer';
-                    
-                    // 添加点击事件
-                    newItem.addEventListener('click', function() {
-                        loadConversation(this.dataset.conversationId);
-                    });
-                    
-                    // 添加删除按钮（悬停时显示）
-                    const deleteBtn = document.createElement('span');
-                    deleteBtn.innerHTML = '×';
-                    deleteBtn.style.cssText = `
-                        position: absolute;
-                        right: 0.75rem;
-                        opacity: 0;
-                        font-size: 1.25rem;
-                        color: var(--text-400);
-                        cursor: pointer;
-                        transition: opacity 0.2s;
-                    `;
-                    deleteBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        deleteConversation(id);
-                    });
-                    
-                    newItem.style.position = 'relative';
-                    newItem.appendChild(deleteBtn);
-                    
-                    newItem.addEventListener('mouseenter', () => {
-                        deleteBtn.style.opacity = '1';
-                    });
-                    newItem.addEventListener('mouseleave', () => {
-                        deleteBtn.style.opacity = '0';
-                    });
-                    
-                    // 插入到 RECENTS 标题后
-                    if (recentsTitle.nextSibling) {
-                        navSection.insertBefore(newItem, recentsTitle.nextSibling);
-                    } else {
-                        navSection.appendChild(newItem);
-                    }
-                });
-                
-                console.log('Restored', conversations.length, 'conversations to sidebar');
-            } catch (error) {
-                console.error('Error restoring sidebar:', error);
-            }
-        }
-        
-        // 删除对话
-        function deleteConversation(conversationId) {
-            if (confirm('确定要删除这个对话吗？')) {
-                // 从 Map 中删除
-                conversationHistory.delete(conversationId);
-                
-                // ⚠️ 不再使用localStorage，对话已存储在服务器
-                
-                // 从侧边栏移除
-                const item = document.querySelector(`.recent-item[data-conversation-id="${conversationId}"]`);
-                if (item) {
-                    item.remove();
-                }
-                
-                // 如果删除的是当前对话，创建新对话
-                if (conversationId === currentConversationId) {
-                    newChatBtn.click();
-                }
-                
-                console.log('Deleted conversation:', conversationId);
-            }
-        }
-        
-        // 页面加载时恢复侧边栏
-        restoreSidebarConversations();
 
         // 从配置读取可用的 AI 提供商
         function loadAISettings() {
@@ -1408,62 +1241,54 @@
         function getProviderConfig(modelName) {
             const providers = loadAISettings();
             
-            // 根据模型名称判断 provider（优先级：模型名称 > 本地配置）
-            // 这样即使没有本地配置，也能使用服务器端配置
-            
             // 检查是否是 Kimi/Custom
-            if (modelName.includes('kimi') || modelName.includes('moonshot')) {
-                return {
-                    provider: 'custom',
-                    config: (providers.custom && providers.custom.enabled) ? {
-                        apiKey: providers.custom.apiKey,
-                        endpoint: providers.custom.endpoint,
-                        model: 'moonshot-v1-8k',
-                        stream: true
-                    } : {
-                        // 没有本地配置时，发送空配置，让服务器使用默认配置
-                        stream: true
-                    }
-                };
+            if (providers.custom && providers.custom.enabled) {
+                if (modelName.includes('kimi') || modelName.includes('moonshot')) {
+                    return {
+                        provider: 'custom',
+                        config: {
+                            apiKey: providers.custom.apiKey,
+                            endpoint: providers.custom.endpoint,
+                            model: 'moonshot-v1-8k',
+                            stream: true
+                        }
+                    };
+                }
             }
             
             // 检查是否是 OpenAI
-            if (modelName.includes('gpt') || modelName.includes('openai')) {
-                return {
-                    provider: 'openai',
-                    config: (providers.openai && providers.openai.enabled) ? {
-                        apiKey: providers.openai.apiKey,
-                        endpoint: providers.openai.endpoint,
-                        model: providers.openai.model || 'gpt-3.5-turbo',
-                        stream: true
-                    } : {
-                        stream: true
-                    }
-                };
-            }
-            
-            // 检查是否是 Gemini
-            if (modelName.includes('gemini')) {
-                return {
-                    provider: 'gemini',
-                    config: (providers.gemini && providers.gemini.enabled) ? {
-                        apiKey: providers.gemini.apiKey,
-                        model: providers.gemini.model || 'gemini-pro',
-                        stream: true
-                    } : {
-                        stream: true
-                    }
-                };
+            if (providers.openai && providers.openai.enabled) {
+                if (modelName.includes('gpt') || modelName.includes('openai')) {
+                    return {
+                        provider: 'openai',
+                        config: {
+                            apiKey: providers.openai.apiKey,
+                            endpoint: providers.openai.endpoint,
+                            model: providers.openai.model || 'gpt-3.5-turbo',
+                            stream: true
+                        }
+                    };
+                }
             }
             
             // 默认使用 Claude
+            if (providers.claude && providers.claude.enabled) {
+                return {
+                    provider: 'claude',
+                    config: {
+                        apiKey: providers.claude.apiKey,
+                        model: providers.claude.model || 'claude-3-5-sonnet-20241022',
+                        stream: true
+                    }
+                };
+            }
+            
+            // 如果没有配置，使用默认 Claude
             return {
                 provider: 'claude',
-                config: (providers.claude && providers.claude.enabled) ? {
-                    apiKey: providers.claude.apiKey,
-                    model: providers.claude.model || 'claude-3-5-sonnet-20241022',
-                    stream: true
-                } : {
+                config: {
+                    apiKey: 'your-api-key',
+                    model: 'claude-3-5-sonnet-20241022',
                     stream: true
                 }
             };
@@ -1477,12 +1302,6 @@
             // 添加用户消息到界面
             addMessage(message, 'user');
             
-            // 如果是新对话的第一条消息，添加到侧边栏
-            const messagesContainer = document.querySelector('.messages-container');
-            if (messagesContainer && messagesContainer.children.length === 1) {
-                addConversationToSidebar(message);
-            }
-            
             // 清空输入框
             textarea.value = '';
             textarea.style.height = 'auto';
@@ -1494,20 +1313,20 @@
                 // 获取当前选择的提供商和配置
                 const providerData = getProviderConfig(currentModel);
                 
-                if (!providerData) {
-                    addMessage('❌ 错误：无法识别当前模型，请刷新页面重试', 'assistant', true);
+                // 检查是否有有效配置
+                if (!providerData || !providerData.config || !providerData.config.apiKey || 
+                    providerData.config.apiKey === 'your-api-key') {
+                    addMessage('❌ 错误：当前AI未配置API Key，请先访问配置页面进行配置！', 'assistant', true);
                     isStreaming = false;
                     return;
                 }
                 
                 const { provider, config } = providerData;
                 
-                // 📝 注意：如果前端没有配置 API Key，后端会自动使用服务器端默认配置
-                console.log('✅ 使用提供商:', provider, '| 模型:', currentModel);
-                console.log('📤 发送配置:', config);
+                console.log('Using provider:', provider, 'Model:', currentModel);
                 
-                // 调用流式 API（使用相对路径，支持手机访问）
-                const response = await fetch('/api/chat/stream', {
+                // 调用流式 API
+                const response = await fetch('http://localhost:3000/api/chat/stream', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1516,8 +1335,7 @@
                         message: message,
                         conversationId: currentConversationId,
                         provider: provider,
-                        config: config,  // 前端配置 或 空配置（让后端使用服务器配置）
-                        sessionId: userSessionId  // 🔑 用户会话ID
+                        config: config
                     })
                 });
                 
@@ -1549,15 +1367,12 @@
                                         messageElement = addMessage('', 'assistant');
                                     }
                                     
-                                    // 安全更新消息内容
-                                    if (messageElement) {
-                                        const textElement = messageElement.querySelector('.message-text');
-                                        if (textElement) {
-                                            textElement.textContent = assistantMessage;
-                                            // 滚动到底部
-                                            messageElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                                        }
-                                    }
+                                    // 更新消息内容
+                                    const textElement = messageElement.querySelector('.message-text');
+                                    textElement.textContent = assistantMessage;
+                                    
+                                    // 滚动到底部
+                                    messageElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
                                 } else if (data.type === 'error') {
                                     console.error('Stream error:', data.content);
                                     if (!messageElement) {
@@ -1582,8 +1397,8 @@
                     errorMsg = '❌ 连接失败：无法连接到服务器，请确保后端服务正在运行';
                 } else if (error.message.includes('401') || error.message.includes('authentication')) {
                     errorMsg = '❌ 认证失败：API Key 无效，请检查配置';
-                } else if (error.message.includes('429') || error.message.includes('RPM') || error.message.includes('max RPM')) {
-                    errorMsg = '⏱️ API 请求频率限制：您发送消息太快了，请等待 2-3 秒后再试\n\n💡 提示：Kimi API 免费版有速率限制（每分钟 3 次请求），请放慢发送速度';
+                } else if (error.message.includes('429')) {
+                    errorMsg = '❌ 请求过于频繁：请稍后再试';
                 } else if (error.message.includes('insufficient')) {
                     errorMsg = '❌ 余额不足：请充值后再使用';
                 }
@@ -1591,190 +1406,24 @@
                 addMessage(errorMsg, 'assistant', true);
             } finally {
                 isStreaming = false;
-                // ✅ 确保输入框始终可见
-                const inputSection = document.querySelector('.input-section');
-                if (inputSection) {
-                    inputSection.style.display = 'flex';
-                    inputSection.style.visibility = 'visible';
-                }
             }
         }
 
-        // 添加对话到侧边栏
-        function addConversationToSidebar(firstMessage) {
-            try {
-                // 获取 RECENTS 区域
-                const navSection = document.querySelector('.nav-section:last-of-type');
-                if (!navSection) return;
-                
-                // 创建新的对话项
-                const newItem = document.createElement('div');
-                newItem.className = 'recent-item';
-                
-                // 截取前30个字符作为标题
-                const title = firstMessage.length > 30 
-                    ? firstMessage.substring(0, 30) + '...' 
-                    : firstMessage;
-                newItem.textContent = title;
-                
-                // 存储对话ID到元素上
-                newItem.dataset.conversationId = currentConversationId;
-                
-                // 添加点击事件
-                newItem.style.cursor = 'pointer';
-                newItem.addEventListener('click', function() {
-                    loadConversation(this.dataset.conversationId);
-                });
-                
-                // 添加删除按钮（悬停时显示）
-                const deleteBtn = document.createElement('span');
-                deleteBtn.innerHTML = '×';
-                deleteBtn.style.cssText = `
-                    position: absolute;
-                    right: 0.75rem;
-                    opacity: 0;
-                    font-size: 1.25rem;
-                    color: var(--text-400);
-                    cursor: pointer;
-                    transition: opacity 0.2s;
-                `;
-                deleteBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    deleteConversation(currentConversationId);
-                });
-                
-                newItem.style.position = 'relative';
-                newItem.appendChild(deleteBtn);
-                
-                newItem.addEventListener('mouseenter', () => {
-                    deleteBtn.style.opacity = '1';
-                });
-                newItem.addEventListener('mouseleave', () => {
-                    deleteBtn.style.opacity = '0';
-                });
-                
-                // 初始化对话历史
-                if (!conversationHistory.has(currentConversationId)) {
-                    conversationHistory.set(currentConversationId, {
-                        title: title,
-                        messages: [],
-                        timestamp: Date.now()
-                    });
-                    // ⚠️ 不再使用localStorage，对话已存储在服务器
-                }
-                
-                // 插入到 RECENTS 标题后的第一个位置
-                const recentsTitle = navSection.querySelector('.recents-title');
-                if (recentsTitle && recentsTitle.nextSibling) {
-                    navSection.insertBefore(newItem, recentsTitle.nextSibling);
-                } else {
-                    navSection.appendChild(newItem);
-                }
-                
-                console.log('Added conversation to sidebar:', title, currentConversationId);
-            } catch (error) {
-                console.error('Error adding conversation to sidebar:', error);
-            }
-        }
-        
-        // 加载对话历史
-        function loadConversation(conversationId) {
-            try {
-                console.log('Loading conversation:', conversationId);
-                
-                const history = conversationHistory.get(conversationId);
-                if (!history) {
-                    console.error('Conversation not found:', conversationId);
-                    return;
-                }
-                
-                // 切换当前对话ID
-                currentConversationId = conversationId;
-                
-                // 清空当前消息显示
-                const messagesContainer = document.querySelector('.messages-container');
-                if (messagesContainer) {
-                    messagesContainer.remove();
-                }
-                
-                // 显示欢迎界面（如果消息为空）
-                const welcomeSection = document.querySelector('.welcome-section');
-                if (history.messages.length === 0) {
-                    if (welcomeSection) {
-                        const welcomeTitle = welcomeSection.querySelector('.welcome-title');
-                        const upgradeBadge = welcomeSection.querySelector('.upgrade-badge');
-                        const quickActions = welcomeSection.querySelector('.quick-actions');
-                        if (welcomeTitle) welcomeTitle.style.display = 'flex';
-                        if (upgradeBadge) upgradeBadge.style.display = 'flex';
-                        if (quickActions) quickActions.style.display = 'flex';
-                    }
-                    return;
-                }
-                
-                // 重新显示历史消息（不保存到历史，因为已经在历史中了）
-                history.messages.forEach(msg => {
-                    addMessage(msg.content, msg.role, msg.isError || false, false);
-                });
-                
-                console.log('Loaded', history.messages.length, 'messages');
-                
-            } catch (error) {
-                console.error('Error loading conversation:', error);
-            }
-        }
-        
         // 添加消息到界面
-        function addMessage(text, role, isError = false, saveToHistory = true) {
+        function addMessage(text, role, isError = false) {
             try {
                 const welcomeSection = document.querySelector('.welcome-section');
-                const inputSection = document.querySelector('.input-section');
-                const chatContainer = document.querySelector('.chat-container');
                 
-                // ✅ 确保输入框永远存在且可见
-                if (inputSection) {
-                    inputSection.style.display = 'flex';
-                    inputSection.style.visibility = 'visible';
-                }
-                
-                // 如果是第一条消息，重新布局界面
+                // 如果是第一条消息，隐藏欢迎界面，创建消息容器
                 if (welcomeSection && !document.querySelector('.messages-container')) {
-                    // 隐藏欢迎内容
-                    const welcomeTitle = document.querySelector('.welcome-title');
-                    const upgradeBadge = document.querySelector('.upgrade-badge');
-                    const quickActions = document.querySelector('.quick-actions');
-                    if (welcomeTitle) welcomeTitle.style.display = 'none';
-                    if (upgradeBadge) upgradeBadge.style.display = 'none';
-                    if (quickActions) quickActions.style.display = 'none';
+                    welcomeSection.style.display = 'none';
                     
-                    // 将输入区域移到 chat-container 的底部（与 welcome-section 同级）
+                    const chatContainer = document.querySelector('.chat-container');
                     if (!chatContainer) {
                         console.error('Chat container not found!');
                         return null;
                     }
                     
-                    if (inputSection && inputSection.parentElement !== chatContainer) {
-                        chatContainer.appendChild(inputSection);
-                        // 调整 chat-container 为 flex 布局
-                        chatContainer.style.cssText = `
-                            flex: 1;
-                            display: flex;
-                            flex-direction: column;
-                            align-items: center;
-                            justify-content: flex-start;
-                            padding: 0;
-                        `;
-                        // 调整 input-section 样式，固定在底部
-                        inputSection.style.cssText = `
-                            width: 100%;
-                            max-width: 48rem;
-                            padding: 1rem 2rem;
-                            background: transparent;
-                            display: flex;
-                            visibility: visible;
-                        `;
-                    }
-                    
-                    // 创建消息容器
                     const messagesContainer = document.createElement('div');
                     messagesContainer.className = 'messages-container';
                     messagesContainer.style.cssText = `
@@ -1786,98 +1435,79 @@
                         margin: 0 auto;
                     `;
                     
-                    // 将消息容器插入到输入框之前
-                    chatContainer.insertBefore(messagesContainer, inputSection);
+                    const inputSection = document.querySelector('.input-section');
+                    if (inputSection) {
+                        chatContainer.insertBefore(messagesContainer, inputSection);
+                    } else {
+                        chatContainer.appendChild(messagesContainer);
+                    }
                 }
             } catch (error) {
                 console.error('Error in addMessage (initial setup):', error);
                 return null;
             }
 
-            // ✅ 再次确保输入框可见
-            const inputSection = document.querySelector('.input-section');
-            if (inputSection) {
-                inputSection.style.display = 'flex';
-                inputSection.style.visibility = 'visible';
-            }
-
             const messagesContainer = document.querySelector('.messages-container');
-            if (!messagesContainer) {
-                console.error('Messages container not found after setup!');
-                return null;
-            }
-            
-            try {
-                const messageDiv = document.createElement('div');
-                messageDiv.className = `message message-${role}`;
-                messageDiv.style.cssText = `
-                    display: flex;
-                    gap: 1rem;
-                    margin-bottom: 1.5rem;
-                    ${role === 'user' ? 'flex-direction: row-reverse;' : ''}
-                `;
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${role}`;
+            messageDiv.style.cssText = `
+                display: flex;
+                gap: 1rem;
+                margin-bottom: 1.5rem;
+                ${role === 'user' ? 'flex-direction: row-reverse;' : ''}
+            `;
 
-                const avatar = document.createElement('div');
-                avatar.style.cssText = `
-                    width: 2rem;
-                    height: 2rem;
-                    border-radius: 50%;
-                    background-color: ${role === 'user' ? '#171717' : '#d97757'};
-                    color: white;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    font-weight: 600;
-                    font-size: 0.875rem;
-                    flex-shrink: 0;
-                `;
-                avatar.textContent = role === 'user' ? 'Y' : 'C';
+            const avatar = document.createElement('div');
+            avatar.style.cssText = `
+                width: 2rem;
+                height: 2rem;
+                border-radius: 50%;
+                background-color: ${role === 'user' ? '#171717' : '#d97757'};
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: 600;
+                font-size: 0.875rem;
+                flex-shrink: 0;
+            `;
+            avatar.textContent = role === 'user' ? 'Y' : 'C';
 
-                const messageContent = document.createElement('div');
-                messageContent.style.cssText = `
-                    flex: 1;
-                    ${role === 'user' ? 'text-align: right;' : ''}
-                `;
+            const messageContent = document.createElement('div');
+            messageContent.style.cssText = `
+                flex: 1;
+                ${role === 'user' ? 'text-align: right;' : ''}
+            `;
 
-                const messageText = document.createElement('div');
-                messageText.className = 'message-text';
-                messageText.style.cssText = `
-                    background-color: ${role === 'user' ? '#f4f4f4' : '#ffffff'};
-                    padding: 0.875rem 1rem;
-                    border-radius: 1rem;
-                    color: var(--text-100);
-                    line-height: 1.6;
-                    white-space: pre-wrap;
-                    word-wrap: break-word;
-                    ${isError ? 'color: #ef4444; border: 1px solid #fecaca;' : ''}
-                    ${role === 'assistant' ? 'border: 0.5px solid #ebebeb;' : ''}
-                `;
-                messageText.textContent = text;
+            const messageText = document.createElement('div');
+            messageText.className = 'message-text';
+            messageText.style.cssText = `
+                background-color: ${role === 'user' ? '#f4f4f4' : '#ffffff'};
+                padding: 0.875rem 1rem;
+                border-radius: 1rem;
+                color: var(--text-100);
+                line-height: 1.6;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                ${isError ? 'color: #ef4444; border: 1px solid #fecaca;' : ''}
+                ${role === 'assistant' ? 'border: 0.5px solid #ebebeb;' : ''}
+            `;
+            messageText.textContent = text;
 
-                messageContent.appendChild(messageText);
-                messageDiv.appendChild(avatar);
-                messageDiv.appendChild(messageContent);
-                messagesContainer.appendChild(messageDiv);
+            messageContent.appendChild(messageText);
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(messageContent);
+            messagesContainer.appendChild(messageDiv);
 
-                // 保存消息到对话历史（仅当 saveToHistory 为 true 时）
-                if (saveToHistory) {
-                    const history = conversationHistory.get(currentConversationId);
-                    if (history && !isError) {
-                        history.messages.push({
-                            role: role,
-                            content: text,
-                            isError: isError,
-                            timestamp: Date.now()
-                        });
-                        // ⚠️ 不再使用localStorage，对话已存储在服务器
-                    }
+            // ✅ 自动滚动到底部
+            requestAnimationFrame(() => {
+                const chatContainer = document.querySelector('.chat-container');
+                if (chatContainer) {
+                    chatContainer.scrollTop = chatContainer.scrollHeight;
                 }
+            });
 
-                return messageDiv;
-            } catch (error) {
-                console.error('Error in addMessage (creating message):', error);
-                return null;
-            }
+            return messageDiv;
         }
 
         // Model selector dropdown
@@ -2067,33 +1697,16 @@
                 messagesContainer.remove();
             }
             
-            // 完全重置界面到初始状态
-            const inputSection = document.querySelector('.input-section');
-            const chatContainer = document.querySelector('.chat-container');
+            // 显示欢迎界面
             const welcomeSection = document.querySelector('.welcome-section');
-            
-            // 如果输入框被移到了 chat-container 底部，移回 welcome-section
-            if (inputSection && inputSection.parentElement === chatContainer) {
-                welcomeSection.appendChild(inputSection);
-            }
-            
-            // 恢复所有样式到初始状态
-            if (chatContainer) {
-                chatContainer.style.cssText = '';
-            }
-            if (inputSection) {
-                inputSection.style.cssText = '';
-            }
             if (welcomeSection) {
-                welcomeSection.style.display = 'block';
-                
-                // 显示欢迎内容
-                const welcomeTitle = welcomeSection.querySelector('.welcome-title');
-                const upgradeBadge = welcomeSection.querySelector('.upgrade-badge');
-                const quickActions = welcomeSection.querySelector('.quick-actions');
-                if (welcomeTitle) welcomeTitle.style.display = 'flex';
-                if (upgradeBadge) upgradeBadge.style.display = 'flex';
-                if (quickActions) quickActions.style.display = 'flex';
+                welcomeSection.style.display = 'flex'; // 使用 flex 而不是 block
+            }
+            
+            // 滚动到顶部
+            const chatContainer = document.querySelector('.chat-container');
+            if (chatContainer) {
+                chatContainer.scrollTop = 0;
             }
             
             // 清空输入框
