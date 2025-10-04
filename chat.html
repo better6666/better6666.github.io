@@ -1228,39 +1228,78 @@
         let currentModel = 'sonnet-4.5';
         let currentProvider = 'claude'; // 默认使用 Claude
         let isStreaming = false;
+        let userSessionId = null; // 🔑 用户会话ID（区分不同用户）
         
-        // 对话历史存储（持久化）
+        // 对话历史存储（现在存储在服务器，按会话ID隔离）
         const conversationHistory = new Map(); // { conversationId: { title, messages: [], timestamp } }
         
-        // 从 localStorage 加载对话历史
-        function loadConversationsFromStorage() {
+        // 🔑 获取或创建用户会话ID
+        async function getUserSessionId() {
+            // 使用sessionStorage（关闭浏览器标签页就清除，适合多用户）
+            let sessionId = sessionStorage.getItem('userSessionId');
+            
+            if (!sessionId) {
+                // 从服务器获取新的会话ID
+                try {
+                    const response = await fetch('/api/session');
+                    const data = await response.json();
+                    if (data.success) {
+                        sessionId = data.sessionId;
+                        sessionStorage.setItem('userSessionId', sessionId);
+                        console.log('✅ 新用户会话创建:', sessionId);
+                    }
+                } catch (error) {
+                    console.error('获取会话ID失败:', error);
+                    sessionId = 'temp-session-' + Date.now();
+                    sessionStorage.setItem('userSessionId', sessionId);
+                }
+            } else {
+                console.log('✅ 使用现有会话:', sessionId);
+            }
+            
+            return sessionId;
+        }
+        
+        // 🔑 从服务器加载对话历史（按会话ID）
+        async function loadConversationsFromServer() {
             try {
-                const stored = localStorage.getItem('conversationHistory');
-                if (stored) {
-                    const data = JSON.parse(stored);
-                    Object.entries(data).forEach(([id, conv]) => {
-                        conversationHistory.set(id, conv);
+                if (!userSessionId) {
+                    console.log('会话ID未初始化，跳过加载历史');
+                    return;
+                }
+                
+                const response = await fetch(`/api/conversations/${userSessionId}`);
+                const data = await response.json();
+                
+                if (data.success && data.conversations) {
+                    conversationHistory.clear();
+                    data.conversations.forEach(conv => {
+                        conversationHistory.set(conv.conversationId, {
+                            title: conv.title,
+                            messages: conv.messages,
+                            timestamp: conv.timestamp
+                        });
                     });
-                    console.log('Loaded', conversationHistory.size, 'conversations from storage');
+                    console.log('✅ 从服务器加载', conversationHistory.size, '个对话');
                 }
             } catch (error) {
-                console.error('Error loading conversations:', error);
+                console.error('加载对话历史失败:', error);
             }
         }
         
-        // 保存对话历史到 localStorage
-        function saveConversationsToStorage() {
+        // ⚠️ 已弃用：不再使用localStorage，改用服务器存储
+        // function saveConversationsToStorage() { ... }
+        
+        // 🔑 页面加载时初始化会话ID并加载对话历史
+        (async function initializeSession() {
             try {
-                const data = Object.fromEntries(conversationHistory);
-                localStorage.setItem('conversationHistory', JSON.stringify(data));
-                console.log('Saved', conversationHistory.size, 'conversations to storage');
+                userSessionId = await getUserSessionId();
+                await loadConversationsFromServer();
+                await restoreSidebarConversations();
             } catch (error) {
-                console.error('Error saving conversations:', error);
+                console.error('初始化会话失败:', error);
             }
-        }
-        
-        // 页面加载时恢复对话历史
-        loadConversationsFromStorage();
+        })();
         
         // 恢复侧边栏对话列表
         function restoreSidebarConversations() {
@@ -1339,8 +1378,7 @@
                 // 从 Map 中删除
                 conversationHistory.delete(conversationId);
                 
-                // 保存到 localStorage
-                saveConversationsToStorage();
+                // ⚠️ 不再使用localStorage，对话已存储在服务器
                 
                 // 从侧边栏移除
                 const item = document.querySelector(`.recent-item[data-conversation-id="${conversationId}"]`);
@@ -1478,7 +1516,8 @@
                         message: message,
                         conversationId: currentConversationId,
                         provider: provider,
-                        config: config  // 前端配置 或 空配置（让后端使用服务器配置）
+                        config: config,  // 前端配置 或 空配置（让后端使用服务器配置）
+                        sessionId: userSessionId  // 🔑 用户会话ID
                     })
                 });
                 
@@ -1543,8 +1582,8 @@
                     errorMsg = '❌ 连接失败：无法连接到服务器，请确保后端服务正在运行';
                 } else if (error.message.includes('401') || error.message.includes('authentication')) {
                     errorMsg = '❌ 认证失败：API Key 无效，请检查配置';
-                } else if (error.message.includes('429')) {
-                    errorMsg = '❌ 请求过于频繁：请稍后再试';
+                } else if (error.message.includes('429') || error.message.includes('RPM') || error.message.includes('max RPM')) {
+                    errorMsg = '⏱️ API 请求频率限制：您发送消息太快了，请等待 2-3 秒后再试\n\n💡 提示：Kimi API 免费版有速率限制（每分钟 3 次请求），请放慢发送速度';
                 } else if (error.message.includes('insufficient')) {
                     errorMsg = '❌ 余额不足：请充值后再使用';
                 }
@@ -1552,6 +1591,12 @@
                 addMessage(errorMsg, 'assistant', true);
             } finally {
                 isStreaming = false;
+                // ✅ 确保输入框始终可见
+                const inputSection = document.querySelector('.input-section');
+                if (inputSection) {
+                    inputSection.style.display = 'flex';
+                    inputSection.style.visibility = 'visible';
+                }
             }
         }
 
@@ -1615,8 +1660,7 @@
                         messages: [],
                         timestamp: Date.now()
                     });
-                    // 保存到 localStorage
-                    saveConversationsToStorage();
+                    // ⚠️ 不再使用localStorage，对话已存储在服务器
                 }
                 
                 // 插入到 RECENTS 标题后的第一个位置
@@ -1683,6 +1727,14 @@
         function addMessage(text, role, isError = false, saveToHistory = true) {
             try {
                 const welcomeSection = document.querySelector('.welcome-section');
+                const inputSection = document.querySelector('.input-section');
+                const chatContainer = document.querySelector('.chat-container');
+                
+                // ✅ 确保输入框永远存在且可见
+                if (inputSection) {
+                    inputSection.style.display = 'flex';
+                    inputSection.style.visibility = 'visible';
+                }
                 
                 // 如果是第一条消息，重新布局界面
                 if (welcomeSection && !document.querySelector('.messages-container')) {
@@ -1695,8 +1747,6 @@
                     if (quickActions) quickActions.style.display = 'none';
                     
                     // 将输入区域移到 chat-container 的底部（与 welcome-section 同级）
-                    const inputSection = document.querySelector('.input-section');
-                    const chatContainer = document.querySelector('.chat-container');
                     if (!chatContainer) {
                         console.error('Chat container not found!');
                         return null;
@@ -1719,6 +1769,8 @@
                             max-width: 48rem;
                             padding: 1rem 2rem;
                             background: transparent;
+                            display: flex;
+                            visibility: visible;
                         `;
                     }
                     
@@ -1740,6 +1792,13 @@
             } catch (error) {
                 console.error('Error in addMessage (initial setup):', error);
                 return null;
+            }
+
+            // ✅ 再次确保输入框可见
+            const inputSection = document.querySelector('.input-section');
+            if (inputSection) {
+                inputSection.style.display = 'flex';
+                inputSection.style.visibility = 'visible';
             }
 
             const messagesContainer = document.querySelector('.messages-container');
@@ -1810,8 +1869,7 @@
                             isError: isError,
                             timestamp: Date.now()
                         });
-                        // 保存到 localStorage
-                        saveConversationsToStorage();
+                        // ⚠️ 不再使用localStorage，对话已存储在服务器
                     }
                 }
 

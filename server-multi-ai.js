@@ -14,8 +14,9 @@ app.use(express.static(__dirname));
 let anthropicClient = null;
 let openaiClient = null;
 
-// 对话历史存储
-const conversations = new Map();
+// 对话历史存储（按会话ID区分不同用户）
+// 数据结构：Map<sessionId, Map<conversationId, messages>>
+const userSessions = new Map();
 
 // ==================== 🔑 服务器端 API 配置（所有设备共享）====================
 // 在这里配置 API Key 后，所有访问网站的用户都能直接使用，无需前端配置
@@ -164,17 +165,86 @@ async function chatWithCustom(messages, config) {
     return await response.json();
 }
 
+// ==================== 获取或创建用户会话 ====================
+app.get('/api/session', (req, res) => {
+    try {
+        // 生成唯一的会话ID
+        const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        // 创建新的会话存储
+        userSessions.set(sessionId, new Map());
+        
+        console.log('Created new session:', sessionId);
+        
+        res.json({
+            success: true,
+            sessionId: sessionId
+        });
+    } catch (error) {
+        console.error('Error creating session:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+// ==================== 获取用户的对话历史 ====================
+app.get('/api/conversations/:sessionId', (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        
+        const sessionData = userSessions.get(sessionId);
+        if (!sessionData) {
+            return res.json({
+                success: true,
+                conversations: []
+            });
+        }
+        
+        // 将 Map 转换为数组返回
+        const conversations = [];
+        sessionData.forEach((messages, conversationId) => {
+            if (messages.length > 0) {
+                conversations.push({
+                    conversationId: conversationId,
+                    title: messages[0].content.substring(0, 30),
+                    messages: messages,
+                    timestamp: messages[0].timestamp || Date.now()
+                });
+            }
+        });
+        
+        res.json({
+            success: true,
+            conversations: conversations
+        });
+    } catch (error) {
+        console.error('Error getting conversations:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
 // ==================== 统一聊天接口 ====================
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, conversationId, provider, config } = req.body;
+        const { message, conversationId, provider, config, sessionId } = req.body;
 
         // 🔑 合并服务器端配置和客户端配置
         const finalConfig = mergeConfig(provider, config);
 
+        // 获取用户会话数据
+        if (!userSessions.has(sessionId)) {
+            userSessions.set(sessionId, new Map());
+        }
+        const sessionData = userSessions.get(sessionId);
+        
         // 获取或创建对话历史
-        let history = conversations.get(conversationId) || [];
-        history.push({ role: 'user', content: message });
+        let history = sessionData.get(conversationId) || [];
+        history.push({ role: 'user', content: message, timestamp: Date.now() });
 
         let response;
         let assistantMessage;
@@ -205,8 +275,8 @@ app.post('/api/chat', async (req, res) => {
         }
 
         // 保存助手消息
-        history.push({ role: 'assistant', content: assistantMessage });
-        conversations.set(conversationId, history);
+        history.push({ role: 'assistant', content: assistantMessage, timestamp: Date.now() });
+        sessionData.set(conversationId, history);
 
         res.json({
             success: true,
@@ -227,7 +297,7 @@ app.post('/api/chat', async (req, res) => {
 // ==================== 流式聊天接口 ====================
 app.post('/api/chat/stream', async (req, res) => {
     try {
-        const { message, conversationId, provider, config } = req.body;
+        const { message, conversationId, provider, config, sessionId } = req.body;
 
         // 🔑 合并服务器端配置和客户端配置
         const finalConfig = mergeConfig(provider, config);
@@ -237,8 +307,14 @@ app.post('/api/chat/stream', async (req, res) => {
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
 
-        let history = conversations.get(conversationId) || [];
-        history.push({ role: 'user', content: message });
+        // 获取用户会话数据
+        if (!userSessions.has(sessionId)) {
+            userSessions.set(sessionId, new Map());
+        }
+        const sessionData = userSessions.get(sessionId);
+        
+        let history = sessionData.get(conversationId) || [];
+        history.push({ role: 'user', content: message, timestamp: Date.now() });
 
         let fullResponse = '';
 
@@ -250,8 +326,8 @@ app.post('/api/chat/stream', async (req, res) => {
                     res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
                 });
                 claudeStream.on('end', () => {
-                    history.push({ role: 'assistant', content: fullResponse });
-                    conversations.set(conversationId, history);
+                    history.push({ role: 'assistant', content: fullResponse, timestamp: Date.now() });
+                    sessionData.set(conversationId, history);
                     res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
                     res.end();
                 });
@@ -266,8 +342,8 @@ app.post('/api/chat/stream', async (req, res) => {
                         res.write(`data: ${JSON.stringify({ type: 'text', content })}\n\n`);
                     }
                 }
-                history.push({ role: 'assistant', content: fullResponse });
-                conversations.set(conversationId, history);
+                history.push({ role: 'assistant', content: fullResponse, timestamp: Date.now() });
+                sessionData.set(conversationId, history);
                 res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
                 res.end();
                 break;
@@ -279,8 +355,8 @@ app.post('/api/chat/stream', async (req, res) => {
                     fullResponse += text;
                     res.write(`data: ${JSON.stringify({ type: 'text', content: text })}\n\n`);
                 }
-                history.push({ role: 'assistant', content: fullResponse });
-                conversations.set(conversationId, history);
+                history.push({ role: 'assistant', content: fullResponse, timestamp: Date.now() });
+                sessionData.set(conversationId, history);
                 res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
                 res.end();
                 break;
@@ -305,7 +381,9 @@ app.post('/api/chat/stream', async (req, res) => {
 
                 if (!customResponse.ok) {
                     const errorData = await customResponse.json();
-                    throw new Error(errorData.error?.message || 'Custom API request failed');
+                    const errorMessage = errorData.error?.message || errorData.message || 'Custom API request failed';
+                    console.error('Custom API Error:', errorData);
+                    throw new Error(errorMessage);
                 }
 
                 // 处理流式响应
@@ -332,8 +410,8 @@ app.post('/api/chat/stream', async (req, res) => {
                 });
 
                 reader.on('end', () => {
-                    history.push({ role: 'assistant', content: fullResponse });
-                    conversations.set(conversationId, history);
+                    history.push({ role: 'assistant', content: fullResponse, timestamp: Date.now() });
+                    sessionData.set(conversationId, history);
                     res.write(`data: ${JSON.stringify({ type: 'end' })}\n\n`);
                     res.end();
                 });
