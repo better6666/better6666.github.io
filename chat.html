@@ -1285,6 +1285,145 @@
             margin: 1rem 0;
         }
 
+        /* ==================== 消息Markdown样式 ==================== */
+        .message-text-content {
+            line-height: 1.7;
+            color: #262626;
+        }
+
+        .message-text-content h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            color: #171717;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 0.5rem;
+        }
+
+        .message-text-content h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 1.25rem;
+            margin-bottom: 0.625rem;
+            color: #171717;
+        }
+
+        .message-text-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            color: #262626;
+        }
+
+        .message-text-content p {
+            margin-bottom: 1rem;
+        }
+
+        .message-text-content strong {
+            font-weight: 600;
+            color: #171717;
+        }
+
+        .message-text-content em {
+            font-style: italic;
+        }
+
+        .message-text-content code {
+            background-color: #f3f4f6;
+            color: #dc2626;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-size: 0.875em;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+
+        .message-text-content pre {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem 1.25rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .message-text-content pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            border-radius: 0;
+            font-size: inherit;
+        }
+
+        .message-text-content ul,
+        .message-text-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .message-text-content li {
+            margin-bottom: 0.375rem;
+        }
+
+        .message-text-content ul li {
+            list-style-type: disc;
+        }
+
+        .message-text-content ol li {
+            list-style-type: decimal;
+        }
+
+        .message-text-content blockquote {
+            border-left: 3px solid #d97757;
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: #525252;
+            font-style: italic;
+        }
+
+        .message-text-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.875rem;
+        }
+
+        .message-text-content table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+            text-align: left;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e5e5e5;
+        }
+
+        .message-text-content table td {
+            padding: 0.625rem 0.875rem;
+            border: 1px solid #e5e5e5;
+        }
+
+        .message-text-content table tr:nth-child(even) {
+            background-color: #fafaf9;
+        }
+
+        .message-text-content hr {
+            border: none;
+            border-top: 1px solid #e5e5e5;
+            margin: 1.5rem 0;
+        }
+
+        .message-text-content a {
+            color: #d97757;
+            text-decoration: none;
+        }
+
+        .message-text-content a:hover {
+            text-decoration: underline;
+        }
+
         /* 移动端 Artifacts */
         @media (max-width: 768px) {
             .artifacts-panel {
@@ -2013,12 +2152,24 @@
         </div>
     </div>
 
+    <!-- Markdown渲染库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+
     <script>
         // ==================== 思考链处理 ====================
         function updateMessageWithThinking(textElement, fullMessage, provider) {
             // 只对 Gemini 显示思考链
             if (provider !== 'gemini') {
-                textElement.textContent = fullMessage;
+                // 使用Markdown渲染AI回复
+                if (typeof marked !== 'undefined') {
+                    textElement.innerHTML = '';
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'message-text-content';
+                    contentDiv.innerHTML = marked.parse(fullMessage);
+                    textElement.appendChild(contentDiv);
+                } else {
+                    textElement.textContent = fullMessage;
+                }
                 return;
             }
 
@@ -2070,21 +2221,42 @@
                     textElement.appendChild(thinkingChain);
                 }
 
-                // 添加回答部分
+                // 添加回答部分（使用Markdown渲染）
                 if (answerMatch) {
                     const answerText = answerMatch[1].trim();
                     const answerDiv = document.createElement('div');
-                    answerDiv.style.whiteSpace = 'pre-wrap';
-                    answerDiv.style.wordWrap = 'break-word';
-                    answerDiv.textContent = answerText;
+                    answerDiv.className = 'message-text-content';
+                    if (typeof marked !== 'undefined') {
+                        answerDiv.innerHTML = marked.parse(answerText);
+                    } else {
+                        answerDiv.style.whiteSpace = 'pre-wrap';
+                        answerDiv.style.wordWrap = 'break-word';
+                        answerDiv.textContent = answerText;
+                    }
                     textElement.appendChild(answerDiv);
                 } else if (!thinkingMatch) {
-                    // 如果没有找到任何标记，显示原始内容
-                    textElement.textContent = fullMessage;
+                    // 如果没有找到任何标记，使用Markdown显示原始内容
+                    if (typeof marked !== 'undefined') {
+                        const contentDiv = document.createElement('div');
+                        contentDiv.className = 'message-text-content';
+                        contentDiv.innerHTML = marked.parse(fullMessage);
+                        textElement.innerHTML = '';
+                        textElement.appendChild(contentDiv);
+                    } else {
+                        textElement.textContent = fullMessage;
+                    }
                 }
             } else {
-                // 没有思考标记，直接显示
-                textElement.textContent = fullMessage;
+                // 没有思考标记，使用Markdown直接显示
+                if (typeof marked !== 'undefined') {
+                    const contentDiv = document.createElement('div');
+                    contentDiv.className = 'message-text-content';
+                    contentDiv.innerHTML = marked.parse(fullMessage);
+                    textElement.innerHTML = '';
+                    textElement.appendChild(contentDiv);
+                } else {
+                    textElement.textContent = fullMessage;
+                }
             }
         }
 
@@ -3162,12 +3334,21 @@
                 border-radius: 1rem;
                 color: var(--text-100);
                 line-height: 1.6;
-                white-space: pre-wrap;
+                ${role === 'user' ? 'white-space: pre-wrap;' : ''}
                 word-wrap: break-word;
                 ${isError ? 'color: #ef4444; border: 1px solid #fecaca;' : ''}
                 ${role === 'assistant' ? 'border: 0.5px solid #ebebeb;' : ''}
             `;
-            messageText.textContent = text;
+            
+            // AI消息使用Markdown渲染，用户消息保持纯文本
+            if (role === 'assistant' && !isError && typeof marked !== 'undefined') {
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-text-content';
+                contentDiv.innerHTML = marked.parse(text);
+                messageText.appendChild(contentDiv);
+            } else {
+                messageText.textContent = text;
+            }
 
             messageContent.appendChild(messageText);
             
