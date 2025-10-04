@@ -2159,6 +2159,8 @@
                     contentDiv.className = 'message-text-content';
                     contentDiv.innerHTML = marked.parse(fullMessage);
                     textElement.appendChild(contentDiv);
+                    // 保存原始Markdown文本用于复制
+                    textElement.setAttribute('data-original-markdown', fullMessage);
                 } else {
                     textElement.textContent = fullMessage;
                 }
@@ -2234,6 +2236,7 @@
                         contentDiv.innerHTML = marked.parse(fullMessage);
                         textElement.innerHTML = '';
                         textElement.appendChild(contentDiv);
+                        textElement.setAttribute('data-original-markdown', fullMessage);
                     } else {
                         textElement.textContent = fullMessage;
                     }
@@ -2246,6 +2249,7 @@
                     contentDiv.innerHTML = marked.parse(fullMessage);
                     textElement.innerHTML = '';
                     textElement.appendChild(contentDiv);
+                    textElement.setAttribute('data-original-markdown', fullMessage);
                 } else {
                     textElement.textContent = fullMessage;
                 }
@@ -3338,6 +3342,8 @@
                 contentDiv.className = 'message-text-content';
                 contentDiv.innerHTML = marked.parse(text);
                 messageText.appendChild(contentDiv);
+                // 保存原始Markdown文本用于复制（Claude的做法）
+                messageText.setAttribute('data-original-markdown', text);
             } else {
                 messageText.textContent = text;
             }
@@ -3349,10 +3355,10 @@
                 const actionsDiv = document.createElement('div');
                 actionsDiv.className = 'message-actions';
                 
-                // Copy 按钮（纯文本复制，无格式）
+                // Copy 按钮（复制Markdown格式，类似Claude）
                 const copyBtn = document.createElement('button');
                 copyBtn.className = 'message-action-btn';
-                copyBtn.title = '复制纯文本（无格式）- 可直接粘贴到Word/飞书等';
+                copyBtn.title = '复制内容（Markdown格式）- 粘贴到飞书/Notion等保留格式';
                 copyBtn.innerHTML = `
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
@@ -3363,18 +3369,20 @@
                     e.preventDefault();
                     e.stopPropagation();
                     
-                    // 重要：使用 textContent 确保只获取纯文本，不包含HTML标签和格式
-                    const textToCopy = messageText.textContent || text;
-                    console.log('📋 Copying PLAIN TEXT (no formatting)');
+                    // Claude的做法：优先复制Markdown原文（如果有），否则复制纯文本
+                    const originalMarkdown = messageText.getAttribute('data-original-markdown');
+                    const textToCopy = originalMarkdown || messageText.textContent || text;
+                    
+                    const copyFormat = originalMarkdown ? 'Markdown' : 'Plain Text';
+                    console.log(`📋 Copying ${copyFormat}`);
                     console.log('📝 Text length:', textToCopy.length, 'chars');
                     console.log('Preview:', textToCopy.substring(0, 100) + '...');
                     
                     try {
-                        // 方法1: 现代 Clipboard API - 只写入纯文本格式
+                        // 方法1: 现代 Clipboard API
                         if (navigator.clipboard && window.isSecureContext) {
-                            // writeText() 只写入纯文本，不包含任何格式
                             await navigator.clipboard.writeText(textToCopy);
-                            console.log('✅ Plain text copied successfully (Clipboard API)');
+                            console.log(`✅ ${copyFormat} copied successfully (Clipboard API)`);
                         } else {
                             // 方法2: 传统 execCommand（兼容旧浏览器）
                             // 创建临时textarea只包含纯文本
@@ -3398,15 +3406,16 @@
                             document.body.removeChild(textarea);
                             
                             if (successful) {
-                                console.log('✅ Plain text copied successfully (execCommand)');
+                                console.log(`✅ ${copyFormat} copied successfully (execCommand)`);
                             } else {
                                 throw new Error('execCommand returned false');
                             }
                         }
                         
-                        // 视觉反馈 - 明确提示纯文本已复制
+                        // 视觉反馈 - 显示已复制（类似Claude）
                         copyBtn.classList.add('active');
-                        copyBtn.title = '✅ 已复制纯文本！可直接粘贴';
+                        const successMsg = originalMarkdown ? '✅ Markdown已复制！' : '✅ 已复制！';
+                        copyBtn.title = successMsg;
                         
                         // 改变图标为对勾
                         copyBtn.innerHTML = `
@@ -3417,7 +3426,7 @@
                         
                         setTimeout(() => {
                             copyBtn.classList.remove('active');
-                            copyBtn.title = '复制纯文本（无格式）- 可直接粘贴到Word/飞书等';
+                            copyBtn.title = '复制内容（Markdown格式）- 粘贴到飞书/Notion等保留格式';
                             // 恢复原图标
                             copyBtn.innerHTML = `
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
