@@ -1050,11 +1050,38 @@
             height: 1.125rem;
         }
 
+        .artifacts-action-btn {
+            gap: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            width: auto;
+        }
+
         .artifacts-content {
             flex: 1;
             overflow: auto;
             padding: 1.5rem;
             background-color: var(--bg-000);
+        }
+
+        .artifacts-edit-panel {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid var(--border-200);
+            background-color: var(--bg-100);
+        }
+
+        .artifacts-edit-panel input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border-200);
+            border-radius: 0.5rem;
+            background-color: var(--bg-000);
+            color: var(--text-200);
+            font-size: 0.875rem;
+        }
+
+        .artifacts-edit-panel input:focus {
+            outline: none;
+            border-color: var(--primary-color);
         }
 
         .artifacts-code {
@@ -1800,6 +1827,40 @@
         </div>
     </main>
 
+    <!-- Artifacts 面板 -->
+    <div class="artifacts-panel" id="artifactsPanel">
+        <div class="artifacts-header">
+            <div class="artifacts-title" id="artifactsTitle">Artifact</div>
+            <div class="artifacts-actions">
+                <button class="artifacts-action-btn" id="editArtifactsBtn" title="让 AI 修改">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    修改
+                </button>
+                <button class="artifacts-action-btn" id="copyArtifactsBtn" title="复制">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                </button>
+                <button class="artifacts-action-btn" id="closeArtifactsBtn" title="关闭">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="artifacts-content" id="artifactsContent">
+            <!-- Artifacts 内容将动态加载到这里 -->
+        </div>
+        <div class="artifacts-edit-panel" id="artifactsEditPanel" style="display: none;">
+            <input type="text" id="artifactsEditInput" placeholder="告诉 AI 如何修改这段代码...（按 Enter 发送）" />
+        </div>
+    </div>
+
     <script>
         // ==================== 多语言支持 ====================
         const translations = {
@@ -2493,6 +2554,8 @@
                 
                 // 构建消息内容（包含文件）
                 let fullMessage = message;
+                let hasImages = false;
+                
                 if (uploadedFiles.length > 0) {
                     console.log('📎 Including', uploadedFiles.length, 'file(s) in message');
                     fullMessage += '\n\n---\n**Attached Files:**\n';
@@ -2503,11 +2566,18 @@
                             // 文本文件：直接附加内容
                             fullMessage += `\`\`\`\n${file.content}\n\`\`\`\n`;
                         } else if (file.type.startsWith('image/')) {
-                            // 图片文件：附加描述
-                            fullMessage += `[Image file: ${file.name}, ${formatFileSize(file.size)}]\n`;
+                            // 图片文件：包含 base64 数据让 AI 分析
+                            hasImages = true;
+                            fullMessage += `\n**[图片数据]**\n`;
+                            fullMessage += `![${file.name}](${file.content})\n`;
+                            fullMessage += `\n请分析这张图片并回答我的问题。\n`;
                         } else {
                             fullMessage += `[File: ${file.name}, ${formatFileSize(file.size)}]\n`;
                         }
+                    }
+                    
+                    if (hasImages) {
+                        fullMessage += '\n\n💡 提示：AI 已收到图片数据，请描述图片内容或回答相关问题。\n';
                     }
                 }
                 
@@ -2566,6 +2636,11 @@
                                     
                                     // 滚动到底部
                                     messageElement.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                                    
+                                    // 实时检测代码块并打开 Artifacts
+                                    if (assistantMessage.includes('```')) {
+                                        window.detectAndOpenArtifacts(assistantMessage);
+                                    }
                                 } else if (data.type === 'error') {
                                     console.error('Stream error:', data.content);
                                     if (!messageElement) {
@@ -3452,6 +3527,91 @@
             });
         }
 
+        // 让 AI 修改 Artifacts
+        const editArtifactsBtn = document.getElementById('editArtifactsBtn');
+        const artifactsEditPanel = document.getElementById('artifactsEditPanel');
+        const artifactsEditInput = document.getElementById('artifactsEditInput');
+        
+        if (editArtifactsBtn) {
+            editArtifactsBtn.addEventListener('click', () => {
+                if (artifactsEditPanel) {
+                    artifactsEditPanel.style.display = artifactsEditPanel.style.display === 'none' ? 'block' : 'none';
+                    if (artifactsEditPanel.style.display === 'block') {
+                        artifactsEditInput.focus();
+                    }
+                }
+            });
+        }
+
+        if (artifactsEditInput) {
+            artifactsEditInput.addEventListener('keydown', async (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const instruction = artifactsEditInput.value.trim();
+                    if (!instruction) return;
+
+                    const currentCode = artifactsContent.textContent || artifactsContent.innerText;
+                    const prompt = `请根据以下指令修改代码：\n\n指令：${instruction}\n\n当前代码：\n\`\`\`\n${currentCode}\n\`\`\`\n\n请只返回修改后的完整代码，不要有其他说明。`;
+
+                    artifactsEditInput.value = '';
+                    artifactsEditInput.placeholder = 'AI 正在修改中...';
+                    artifactsEditInput.disabled = true;
+
+                    try {
+                        const providerData = getProviderConfig(currentModel);
+                        const { provider, config } = providerData;
+
+                        const response = await fetch('/api/chat/stream', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                message: prompt,
+                                history: [],
+                                provider,
+                                config
+                            })
+                        });
+
+                        const reader = response.body.getReader();
+                        const decoder = new TextDecoder();
+                        let modifiedCode = '';
+
+                        while (true) {
+                            const { done, value } = await reader.read();
+                            if (done) break;
+
+                            const chunk = decoder.decode(value);
+                            const lines = chunk.split('\n');
+
+                            for (const line of lines) {
+                                if (line.startsWith('data: ')) {
+                                    try {
+                                        const data = JSON.parse(line.slice(6));
+                                        if (data.type === 'text') {
+                                            modifiedCode += data.content;
+                                        }
+                                    } catch (e) {}
+                                }
+                            }
+                        }
+
+                        // 提取代码块
+                        const codeMatch = modifiedCode.match(/```[\w]*\n([\s\S]*?)\n```/);
+                        const finalCode = codeMatch ? codeMatch[1] : modifiedCode;
+
+                        artifactsContent.innerHTML = `<pre class="artifacts-code">${escapeHtml(finalCode)}</pre>`;
+                        
+                    } catch (error) {
+                        console.error('AI modification failed:', error);
+                        alert('修改失败，请重试');
+                    } finally {
+                        artifactsEditInput.placeholder = '告诉 AI 如何修改这段代码...（按 Enter 发送）';
+                        artifactsEditInput.disabled = false;
+                    }
+                }
+            });
+        }
+
         // 打开 Artifacts
         function openArtifacts(title, content, type = 'code') {
             if (!artifactsTitle || !artifactsContent || !artifactsPanel || !mainContent) {
@@ -3487,6 +3647,7 @@
 
         // 检测代码块并自动打开 Artifacts
         // 当接收到流式消息时，检测是否包含代码块
+        let lastDetectedCode = '';
         window.detectAndOpenArtifacts = function(message) {
             // 匹配代码块 ```language\ncode\n```
             const codeBlockRegex = /```(\w+)?\n([\s\S]+?)```/g;
@@ -3497,37 +3658,15 @@
                 const language = firstMatch[1] || 'text';
                 const code = firstMatch[2].trim();
                 
-                // 只对较长的代码块打开 Artifacts（超过 10 行）
-                if (code.split('\n').length > 10) {
+                // 降低门槛：只要有代码块就打开（至少 3 行）
+                if (code.split('\n').length >= 3 && code !== lastDetectedCode) {
+                    lastDetectedCode = code;
+                    console.log('📝 Opening Artifacts with code:', language);
                     openArtifacts(`Code: ${language}`, code, 'code');
                 }
             }
         };
     </script>
-
-    <!-- Artifacts 面板 -->
-    <div class="artifacts-panel" id="artifactsPanel">
-        <div class="artifacts-header">
-            <div class="artifacts-title" id="artifactsTitle">Artifact</div>
-            <div class="artifacts-actions">
-                <button class="artifacts-action-btn" id="copyArtifactsBtn" title="Copy">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                    </svg>
-                </button>
-                <button class="artifacts-action-btn" id="closeArtifactsBtn" title="Close">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
-        </div>
-        <div class="artifacts-content" id="artifactsContent">
-            <!-- Artifacts 内容将动态加载到这里 -->
-        </div>
-    </div>
 </body>
 </html>
 
