@@ -261,13 +261,16 @@
 
         .welcome-section {
             text-align: center;
-            max-width: 48rem;
+            max-width: 56rem;
             width: 100%;
             flex: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
             padding: 2rem;
+            min-height: 0;
+            gap: 2.5rem;
         }
 
         .upgrade-badge {
@@ -279,7 +282,7 @@
             border-radius: 1rem;
             font-size: 0.875rem;
             color: var(--text-300);
-            margin-bottom: 2rem;
+            margin: 0;
         }
 
         .upgrade-link {
@@ -289,11 +292,11 @@
         }
 
         .welcome-title {
-            font-size: 2rem;
+            font-size: 2.25rem;
             font-weight: 400;
             font-family: 'Charter', 'Bitstream Charter', 'Sitka Text', 'Cambria', serif;
             color: var(--text-100);
-            margin-bottom: 2rem;
+            margin: 0;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -307,11 +310,16 @@
 
         .input-section {
             width: 100%;
-            max-width: 48rem;
+            max-width: 52rem;
+            margin: 0 auto;
+            padding: 1rem 2rem 2rem;
+            background-color: var(--bg-100);
+        }
+        
+        /* 当 input-section 移出 welcome-section 后，固定在底部 */
+        .chat-container > .input-section {
             position: sticky;
             bottom: 0;
-            background-color: var(--bg-100);
-            padding: 1rem 2rem 2rem;
             z-index: 10;
         }
 
@@ -349,6 +357,12 @@
             border-top: 0.5px solid #ebebeb;
         }
 
+        .model-selector-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
         .input-tools {
             display: flex;
             gap: 0.5rem;
@@ -373,7 +387,7 @@
             color: var(--text-200);
         }
 
-        .model-selector {
+        .model-selector-btn {
             display: flex;
             align-items: center;
             gap: 0.5rem;
@@ -384,12 +398,116 @@
             font-size: 0.875rem;
             color: var(--text-300);
             cursor: pointer;
+            transition: background-color 0.2s;
             transition: background-color 0.15s;
             position: relative;
         }
 
-        .model-selector:hover {
+        .model-selector-btn:hover {
             background-color: rgba(0, 0, 0, 0.04);
+        }
+
+        .model-dropdown-menu {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            margin-bottom: 0.5rem;
+            background-color: var(--bg-000);
+            border: 1px solid var(--border-200);
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            min-width: 320px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+            z-index: 1000;
+        }
+
+        .model-dropdown-menu.active {
+            display: block;
+        }
+
+        .model-option-item {
+            padding: 0.875rem 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid var(--border-100);
+        }
+
+        .model-option-item:last-child {
+            border-bottom: none;
+        }
+
+        .model-option-item:hover {
+            background-color: var(--bg-100);
+        }
+
+        .model-option-item.selected {
+            background-color: var(--bg-100);
+        }
+
+        .model-option-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+        }
+
+        .model-name {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: var(--text-100);
+        }
+
+        .model-description {
+            font-size: 0.8125rem;
+            color: var(--text-400);
+            line-height: 1.4;
+        }
+
+        .model-limit {
+            font-size: 0.8125rem;
+            color: var(--text-400);
+            margin-top: 0.25rem;
+        }
+
+        .checkmark {
+            width: 18px;
+            height: 18px;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+
+        .pro-badge {
+            padding: 0.125rem 0.375rem;
+            background-color: var(--accent);
+            color: white;
+            font-size: 0.625rem;
+            font-weight: 600;
+            border-radius: 0.25rem;
+            margin-left: 0.5rem;
+        }
+
+        .model-more-btn {
+            padding: 0.875rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-100);
+            transition: background-color 0.2s;
+        }
+
+        .model-more-btn:hover {
+            background-color: var(--bg-100);
+        }
+
+        .model-submenu-items {
+            background-color: var(--bg-050);
+        }
+
+        .model-submenu-items .model-option-item {
+            padding-left: 1.5rem;
         }
 
         .model-dropdown {
@@ -692,9 +810,11 @@
         .quick-actions {
             display: flex;
             gap: 0.75rem;
-            margin-top: 1rem;
+            margin-top: 0;
             flex-wrap: wrap;
             justify-content: center;
+            max-width: 52rem;
+            width: 100%;
         }
 
         .quick-action-btn {
@@ -874,47 +994,81 @@
                         </div>
                     </div>
                     
-                    <div class="user-menu-item">Get help</div>
-                    
-                    <div class="user-menu-section">
-                        <div class="user-menu-item">
-                            About Anthropic
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                <polyline points="15 3 21 3 21 9"></polyline>
-                                <line x1="10" y1="14" x2="21" y2="3"></line>
-                            </svg>
-                        </div>
-                        <div class="user-menu-item">
-                            Usage policy
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                <polyline points="15 3 21 3 21 9"></polyline>
-                                <line x1="10" y1="14" x2="21" y2="3"></line>
-                            </svg>
-                        </div>
-                        <div class="user-menu-item">
-                            Privacy policy
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                                <polyline points="15 3 21 3 21 9"></polyline>
-                                <line x1="10" y1="14" x2="21" y2="3"></line>
-                            </svg>
-                        </div>
-                        <div class="user-menu-item">Your privacy choices</div>
-                        <div class="user-menu-item">
-                            Keyboard shortcuts
-                            <span style="font-size: 0.75rem; color: var(--text-400);">Ctrl+?</span>
+                    <div class="user-menu-item has-submenu" id="getHelpMenuItem" style="position: relative;">
+                        Get help
+                        <svg class="submenu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                        
+                        <!-- Get Help Submenu -->
+                        <div class="language-submenu" id="getHelpSubmenu">
+                            <div class="user-menu-item">
+                                About Anthropic
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </div>
+                            <div class="user-menu-item">
+                                Usage policy
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </div>
+                            <div class="user-menu-item">
+                                Privacy policy
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </div>
+                            <div class="user-menu-item">Your privacy choices</div>
+                            <div class="user-menu-item">
+                                Keyboard shortcuts
+                                <span style="font-size: 0.75rem; color: var(--text-400);">Ctrl+?</span>
+                            </div>
                         </div>
                     </div>
                     
                     <div class="user-menu-section">
                         <div class="user-menu-item" onclick="window.location.href='upgrade.html'">Upgrade plan</div>
-                        <div class="user-menu-item">
+                        <div class="user-menu-item has-submenu" id="learnMoreMenuItem" style="position: relative;">
                             Learn more
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <svg class="submenu-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="9 18 15 12 9 6"></polyline>
                             </svg>
+                            
+                            <!-- Learn More Submenu -->
+                            <div class="language-submenu" id="learnMoreSubmenu">
+                                <div class="user-menu-item">
+                                    Help Center
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                </div>
+                                <div class="user-menu-item">
+                                    API Documentation
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                </div>
+                                <div class="user-menu-item">
+                                    Blog
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                        <polyline points="15 3 21 3 21 9"></polyline>
+                                        <line x1="10" y1="14" x2="21" y2="3"></line>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                         <div class="user-menu-item">Log out</div>
                     </div>
@@ -956,54 +1110,11 @@
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="claude-icon" fill="#D97757">
                         <path d="M11.376 24L10.776 23.544L10.44 22.8L10.776 21.312L11.16 19.392L11.472 17.856L11.76 15.96L11.928 15.336L11.904 15.288L11.784 15.312L10.344 17.28L8.16 20.232L6.432 22.056L6.024 22.224L5.304 21.864L5.376 21.192L5.784 20.616L8.16 17.568L9.6 15.672L10.536 14.592L10.512 14.448H10.464L4.128 18.576L3 18.72L2.496 18.264L2.568 17.52L2.808 17.28L4.704 15.96L9.432 13.32L9.504 13.08L9.432 12.96H9.192L8.4 12.912L5.712 12.84L3.384 12.744L1.104 12.624L0.528 12.504L0 11.784L0.048 11.424L0.528 11.112L1.224 11.16L2.736 11.28L5.016 11.424L6.672 11.52L9.12 11.784H9.504L9.552 11.616L9.432 11.52L9.336 11.424L6.96 9.84L4.416 8.16L3.072 7.176L2.352 6.672L1.992 6.216L1.848 5.208L2.496 4.488L3.384 4.56L3.6 4.608L4.488 5.304L6.384 6.768L8.88 8.616L9.24 8.904L9.408 8.808V8.736L9.24 8.472L7.896 6.024L6.456 3.528L5.808 2.496L5.64 1.872C5.576 1.656 5.544 1.416 5.544 1.152L6.288 0.144001L6.696 0L7.704 0.144001L8.112 0.504001L8.736 1.92L9.72 4.152L11.28 7.176L11.736 8.088L11.976 8.904L12.072 9.168H12.24V9.024L12.36 7.296L12.6 5.208L12.84 2.52L12.912 1.752L13.296 0.840001L14.04 0.360001L14.616 0.624001L15.096 1.32L15.024 1.752L14.76 3.6L14.184 6.504L13.824 8.472H14.04L14.28 8.208L15.264 6.912L16.92 4.848L17.64 4.032L18.504 3.12L19.056 2.688H20.088L20.832 3.816L20.496 4.992L19.44 6.336L18.552 7.464L17.28 9.168L16.512 10.536L16.584 10.632H16.752L19.608 10.008L21.168 9.744L22.992 9.432L23.832 9.816L23.928 10.2L23.592 11.016L21.624 11.496L19.32 11.952L15.888 12.768L15.84 12.792L15.888 12.864L17.424 13.008L18.096 13.056H19.728L22.752 13.272L23.544 13.8L24 14.424L23.928 14.928L22.704 15.528L21.072 15.144L17.232 14.232L15.936 13.92H15.744V14.016L16.848 15.096L18.84 16.896L21.36 19.224L21.48 19.8L21.168 20.28L20.832 20.232L18.624 18.552L17.76 17.808L15.84 16.2H15.72V16.368L16.152 17.016L18.504 20.544L18.624 21.624L18.456 21.96L17.832 22.176L17.184 22.056L15.792 20.136L14.376 17.952L13.224 16.008L13.104 16.104L12.408 23.352L12.096 23.712L11.376 24Z"></path>
                     </svg>
-                    Hey there, yuqingwei
+                    Good afternoon, yuqingwei
                 </h1>
 
-                <div class="quick-actions">
-                        <button class="quick-action-btn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="16 18 22 12 16 6"></polyline>
-                                <polyline points="8 6 2 12 8 18"></polyline>
-                            </svg>
-                            Code
-                        </button>
-                        <button class="quick-action-btn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 20h9"></path>
-                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                            </svg>
-                            Write
-                        </button>
-                        <button class="quick-action-btn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-                            </svg>
-                            Learn
-                        </button>
-                        <button class="quick-action-btn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                                <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                                <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                            </svg>
-                            Life stuff
-                        </button>
-                        <button class="quick-action-btn">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                            </svg>
-                            Claude's choice
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Input Section - 固定在底部 -->
-            <div class="input-section">
+                <!-- Input Section -->
+                <div class="input-section">
                 <div class="input-wrapper">
                     <textarea class="input-box" placeholder="How can I help you today?" rows="1"></textarea>
                     <div class="input-actions">
@@ -1048,114 +1159,144 @@
                             </button>
                             <button class="tool-btn" title="Random prompt">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="16 3 21 3 21 8"></polyline>
-                                    <line x1="4" y1="20" x2="21" y2="3"></line>
-                                    <polyline points="21 16 21 21 16 21"></polyline>
-                                    <line x1="15" y1="15" x2="21" y2="21"></line>
-                                    <line x1="4" y1="4" x2="9" y2="9"></line>
+                                    <path d="M12 2v6m0 12v6M4.93 4.93l4.24 4.24m5.66 5.66l4.24 4.24M2 12h6m12 0h6M4.93 19.07l4.24-4.24m5.66-5.66l4.24-4.24"></path>
                                 </svg>
                             </button>
-                            <button class="tool-btn" title="Recent conversations">
+                            <button class="tool-btn" title="Add time context">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <circle cx="12" cy="12" r="10"></circle>
                                     <polyline points="12 6 12 12 16 14"></polyline>
                                 </svg>
                             </button>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 0.5rem; position: relative;">
-                            <button class="model-selector" id="modelSelector">
-                                <span id="selectedModel">Sonnet 4.5</span>
+                        <div class="model-selector-wrapper" style="position: relative;">
+                            <button class="model-selector-btn" id="modelSelectorBtn">
+                                <span id="selectedModelText">Sonnet 4.5</span>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                     <polyline points="6 9 12 15 18 9"></polyline>
                                 </svg>
+                            </button>
+                            
+                            <!-- Model Dropdown Menu -->
+                            <div class="model-dropdown-menu" id="modelDropdownMenu">
+                                <div class="model-option-item" data-model="kimi">
+                                    <div class="model-option-header">
+                                        <span class="model-name">🌙 Kimi AI</span>
+                                    </div>
+                                    <div class="model-description">月之暗面 - 200k 超长文本处理</div>
+                                </div>
                                 
-                                <!-- Model Dropdown -->
-                                <div class="model-dropdown" id="modelDropdown">
-                                    <div class="model-option" data-model="opus-4.1">
-                                        <div class="model-option-header">
-                                            <div class="model-name">Opus 4.1</div>
-                                        </div>
-                                        <div class="model-description">Powerful, large model for complex challenges</div>
-                                        <div class="model-limit">3 remaining until Oct 6</div>
-                                    </div>
-                                    
-                                    <div class="model-option selected" data-model="sonnet-4.5">
-                                        <div class="model-option-header">
-                                            <div class="model-name">Sonnet 4.5</div>
-                                            <svg class="model-checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                                                <polyline points="20 6 9 17 4 12"></polyline>
-                                            </svg>
-                                        </div>
-                                        <div class="model-description">Smartest model. Efficient for everyday use.</div>
-                                    </div>
-                                    
-                                    <div class="model-option" data-model="kimi">
-                                        <div class="model-option-header">
-                                            <div class="model-name">🌙 Kimi AI</div>
-                                        </div>
-                                        <div class="model-description">月之暗面 - 200k 超长文本处理</div>
-                                    </div>
-                                    
-                                    <div class="model-more" id="moreModels">
-                                        <span>More models</span>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polyline points="9 18 15 12 9 6"></polyline>
+                                <div class="model-option-item selected" data-model="sonnet-4.5">
+                                    <div class="model-option-header">
+                                        <span class="model-name">Sonnet 4.5</span>
+                                        <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
                                         </svg>
                                     </div>
-                                    
-                                    <div class="model-submenu" id="submenu">
-                                        <div class="model-option" data-model="opus-4">
-                                            <div class="model-option-header">
-                                                <div class="model-name">Opus 4</div>
-                                            </div>
-                                            <div class="model-limit">3 remaining until Oct 6</div>
+                                    <div class="model-description">Smartest model. Efficient for everyday use.</div>
+                                </div>
+                                
+                                <div class="model-option-item" data-model="opus-4.1">
+                                    <div class="model-option-header">
+                                        <span class="model-name">Opus 4.1</span>
+                                    </div>
+                                    <div class="model-description">Powerful, large model for complex challenges</div>
+                                    <div class="model-limit">3 remaining until Oct 6</div>
+                                </div>
+                                
+                                <div class="model-more-btn" id="moreModelsBtn">
+                                    <span>More models</span>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="9 18 15 12 9 6"></polyline>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Submenu -->
+                                <div class="model-submenu-items" id="moreModelsSubmenu" style="display: none;">
+                                    <div class="model-option-item" data-model="opus-4">
+                                        <div class="model-option-header">
+                                            <span class="model-name">Opus 4</span>
                                         </div>
-                                        
-                                        <div class="model-option" data-model="sonnet-4">
-                                            <div class="model-option-header">
-                                                <div class="model-name">Sonnet 4</div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="model-option" data-model="sonnet-3.7">
-                                            <div class="model-option-header">
-                                                <div class="model-name">
-                                                    Sonnet 3.7
-                                                    <span class="model-badge">PRO</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="model-option" data-model="opus-3">
-                                            <div class="model-option-header">
-                                                <div class="model-name">
-                                                    Opus 3
-                                                    <span class="model-badge">PRO</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="model-option" data-model="haiku-3.5">
-                                            <div class="model-option-header">
-                                                <div class="model-name">
-                                                    Haiku 3.5
-                                                    <span class="model-badge">PRO</span>
-                                                </div>
-                                            </div>
-                                            <div class="model-description">Fastest model for daily tasks</div>
+                                        <div class="model-limit">3 remaining until Oct 6</div>
+                                    </div>
+                                    <div class="model-option-item" data-model="sonnet-4">
+                                        <div class="model-option-header">
+                                            <span class="model-name">Sonnet 4</span>
                                         </div>
                                     </div>
+                                    <div class="model-option-item" data-model="sonnet-3.7">
+                                        <div class="model-option-header">
+                                            <span class="model-name">Sonnet 3.7</span>
+                                            <span class="pro-badge">PRO</span>
+                                        </div>
+                                    </div>
+                                    <div class="model-option-item" data-model="opus-3">
+                                        <div class="model-option-header">
+                                            <span class="model-name">Opus 3</span>
+                                            <span class="pro-badge">PRO</span>
+                                        </div>
+                                    </div>
+                                    <div class="model-option-item" data-model="haiku-3.5">
+                                        <div class="model-option-header">
+                                            <span class="model-name">Haiku 3.5</span>
+                                            <span class="pro-badge">PRO</span>
+                                        </div>
+                                        <div class="model-description">Fastest model for daily tasks</div>
+                                    </div>
                                 </div>
-                            </button>
-                            <button class="send-btn" title="Send message">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <line x1="12" y1="19" x2="12" y2="5"></line>
-                                    <polyline points="5 12 12 5 19 12"></polyline>
+                            </div>
+                            
+                            <button class="send-btn" id="sendBtn" title="Send message">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
                                 </svg>
                             </button>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Quick Actions - 在输入框下方 -->
+            <div class="quick-actions">
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="16 18 22 12 16 6"></polyline>
+                                <polyline points="8 6 2 12 8 18"></polyline>
+                            </svg>
+                            Code
+                        </button>
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 20h9"></path>
+                                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                            Write
+                        </button>
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+                                <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+                            </svg>
+                            Learn
+                        </button>
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                            </svg>
+                            Life stuff
+                        </button>
+                        <button class="quick-action-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                            </svg>
+                            Claude's choice
+                        </button>
+                    </div>
             </div>
         </div>
     </main>
@@ -1239,94 +1380,112 @@
 
         // 根据模型名称确定提供商和配置
         function getProviderConfig(modelName) {
-            const providers = loadAISettings();
+            console.log('getProviderConfig called with:', modelName);
             
-            // 检查是否是 Kimi/Custom
-            if (providers.custom && providers.custom.enabled) {
-                if (modelName.includes('kimi') || modelName.includes('moonshot')) {
-                    return {
-                        provider: 'custom',
-                        config: {
-                            apiKey: providers.custom.apiKey,
-                            endpoint: providers.custom.endpoint,
-                            model: 'moonshot-v1-8k',
-                            stream: true
-                        }
-                    };
-                }
-            }
-            
-            // 检查是否是 OpenAI
-            if (providers.openai && providers.openai.enabled) {
-                if (modelName.includes('gpt') || modelName.includes('openai')) {
-                    return {
-                        provider: 'openai',
-                        config: {
-                            apiKey: providers.openai.apiKey,
-                            endpoint: providers.openai.endpoint,
-                            model: providers.openai.model || 'gpt-3.5-turbo',
-                            stream: true
-                        }
-                    };
-                }
-            }
-            
-            // 默认使用 Claude
-            if (providers.claude && providers.claude.enabled) {
+            // Kimi AI - 使用服务器端配置
+            if (modelName === 'kimi' || modelName.includes('kimi') || modelName.includes('moonshot')) {
                 return {
-                    provider: 'claude',
+                    provider: 'custom',
                     config: {
-                        apiKey: providers.claude.apiKey,
-                        model: providers.claude.model || 'claude-3-5-sonnet-20241022',
+                        model: 'moonshot-v1-8k',
                         stream: true
                     }
                 };
             }
             
-            // 如果没有配置，使用默认 Claude
+            // OpenAI models
+            if (modelName.includes('gpt') || modelName.includes('chatgpt')) {
+                return {
+                    provider: 'openai',
+                    config: {
+                        model: modelName,
+                        stream: true
+                    }
+                };
+            }
+            
+            // Google Gemini
+            if (modelName.includes('gemini')) {
+                return {
+                    provider: 'gemini',
+                    config: {
+                        model: modelName,
+                        stream: true
+                    }
+                };
+            }
+            
+            // Claude models (default)
             return {
                 provider: 'claude',
                 config: {
-                    apiKey: 'your-api-key',
-                    model: 'claude-3-5-sonnet-20241022',
+                    model: modelName.includes('sonnet') || modelName.includes('opus') || modelName.includes('haiku') 
+                        ? mapClaudeModel(modelName) 
+                        : 'claude-3-5-sonnet-20241022',
                     stream: true
                 }
             };
         }
 
+        // 映射模型名称到API模型ID
+        function mapClaudeModel(modelName) {
+            const modelMap = {
+                'sonnet-4.5': 'claude-3-5-sonnet-20241022',
+                'sonnet-4': 'claude-3-5-sonnet-20241022',
+                'opus-4.1': 'claude-opus-4-20241022',
+                'opus-4': 'claude-opus-4-20241022',
+                'sonnet-3.7': 'claude-3-7-sonnet-20250219',
+                'opus-3': 'claude-3-opus-20240229',
+                'haiku-3.5': 'claude-3-5-haiku-20241022'
+            };
+            return modelMap[modelName] || 'claude-3-5-sonnet-20241022';
+        }
+
         // 发送消息函数
         async function sendMessage() {
-            const message = textarea.value.trim();
-            if (!message || isStreaming) return;
-
-            // 添加用户消息到界面
-            addMessage(message, 'user');
+            console.log('=== sendMessage called ===');
+            console.log('currentModel:', currentModel);
             
-            // 清空输入框
-            textarea.value = '';
-            textarea.style.height = 'auto';
-
-            // 设置为流式请求状态
-            isStreaming = true;
+            const message = textarea.value.trim();
+            if (!message || isStreaming) {
+                console.log('❌ Cannot send: message empty or already streaming');
+                return;
+            }
 
             try {
-                // 获取当前选择的提供商和配置
-                const providerData = getProviderConfig(currentModel);
+                console.log('✅ Adding user message to UI...');
+                // 添加用户消息到界面
+                addMessage(message, 'user');
+                console.log('✅ User message added');
                 
-                // 检查是否有有效配置
-                if (!providerData || !providerData.config || !providerData.config.apiKey || 
-                    providerData.config.apiKey === 'your-api-key') {
-                    addMessage('❌ 错误：当前AI未配置API Key，请先访问配置页面进行配置！', 'assistant', true);
+                // 清空输入框
+                textarea.value = '';
+                textarea.style.height = 'auto';
+
+                // 设置为流式请求状态
+                isStreaming = true;
+
+                // 获取当前选择的提供商和配置
+                console.log('🔍 Getting provider config for:', currentModel);
+                const providerData = getProviderConfig(currentModel);
+                console.log('✅ Provider data:', providerData);
+                
+                if (!providerData) {
+                    console.error('❌ No provider data returned!');
+                    addMessage('❌ 错误：无法识别的模型类型', 'assistant', true);
                     isStreaming = false;
                     return;
                 }
                 
                 const { provider, config } = providerData;
                 
-                console.log('Using provider:', provider, 'Model:', currentModel);
+                console.log('📤 Sending request:');
+                console.log('  Provider:', provider);
+                console.log('  Config:', config);
+                console.log('  Message:', message);
                 
                 // 调用流式 API
-                const response = await fetch('http://localhost:3000/api/chat/stream', {
+                const response = await fetch('/api/chat/stream', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1411,19 +1570,39 @@
 
         // 添加消息到界面
         function addMessage(text, role, isError = false) {
+            console.log('📝 addMessage called:', { text: text.substring(0, 50), role, isError });
+            
             try {
                 const welcomeSection = document.querySelector('.welcome-section');
+                console.log('welcomeSection:', welcomeSection);
                 
                 // 如果是第一条消息，隐藏欢迎界面，创建消息容器
                 if (welcomeSection && !document.querySelector('.messages-container')) {
-                    welcomeSection.style.display = 'none';
+                    console.log('✅ First message - hiding welcome section');
                     
                     const chatContainer = document.querySelector('.chat-container');
+                    console.log('chatContainer:', chatContainer);
+                    
                     if (!chatContainer) {
-                        console.error('Chat container not found!');
+                        console.error('❌ Chat container not found!');
                         return null;
                     }
                     
+                    // ✅ 关键修复：先将 input-section 移到 chat-container 外面
+                    let inputSection = document.querySelector('.input-section');
+                    console.log('inputSection:', inputSection);
+                    console.log('inputSection.parentElement:', inputSection?.parentElement?.className);
+                    
+                    if (inputSection && inputSection.parentElement === welcomeSection) {
+                        console.log('✅ Moving input section out of welcome section');
+                        chatContainer.appendChild(inputSection);
+                        console.log('✅ Input section moved, new parent:', inputSection.parentElement.className);
+                    }
+                    
+                    // ✅ 然后再隐藏 welcome-section
+                    welcomeSection.style.display = 'none';
+                    
+                    console.log('✅ Creating messages container...');
                     const messagesContainer = document.createElement('div');
                     messagesContainer.className = 'messages-container';
                     messagesContainer.style.cssText = `
@@ -1435,19 +1614,44 @@
                         margin: 0 auto;
                     `;
                     
-                    const inputSection = document.querySelector('.input-section');
-                    if (inputSection) {
-                        chatContainer.insertBefore(messagesContainer, inputSection);
+                    // ✅ 改用 insertBefore 配合验证父元素
+                    inputSection = document.querySelector('.input-section'); // 重新获取引用
+                    console.log('Before insertBefore - inputSection parent:', inputSection?.parentElement?.className);
+                    console.log('chatContainer children:', Array.from(chatContainer.children).map(c => c.className));
+                    
+                    if (inputSection && inputSection.parentElement === chatContainer) {
+                        console.log('✅ Inserting messages container before input section');
+                        try {
+                            chatContainer.insertBefore(messagesContainer, inputSection);
+                            console.log('✅ insertBefore succeeded!');
+                        } catch (error) {
+                            console.error('❌ insertBefore failed:', error);
+                            // 如果失败，直接 appendChild
+                            chatContainer.appendChild(messagesContainer);
+                            console.log('✅ Used appendChild as fallback');
+                        }
                     } else {
+                        console.log('⚠️ inputSection is not a direct child, using appendChild');
                         chatContainer.appendChild(messagesContainer);
                     }
+                    console.log('✅ Messages container created and inserted');
                 }
             } catch (error) {
-                console.error('Error in addMessage (initial setup):', error);
+                console.error('❌ Error in addMessage (initial setup):', error);
+                console.error('Error stack:', error.stack);
                 return null;
             }
 
             const messagesContainer = document.querySelector('.messages-container');
+            console.log('messagesContainer:', messagesContainer);
+            
+            if (!messagesContainer) {
+                console.error('❌ Messages container not found!');
+                return null;
+            }
+            
+            console.log('✅ Creating message element...');
+            
             const messageDiv = document.createElement('div');
             messageDiv.className = `message message-${role}`;
             messageDiv.style.cssText = `
@@ -1511,76 +1715,92 @@
         }
 
         // Model selector dropdown
-        const modelSelector = document.getElementById('modelSelector');
-        const modelDropdown = document.getElementById('modelDropdown');
-        const selectedModelSpan = document.getElementById('selectedModel');
-        const moreModelsBtn = document.getElementById('moreModels');
-        const submenu = document.getElementById('submenu');
-        const modelOptions = document.querySelectorAll('.model-option');
+        const modelSelectorBtn = document.getElementById('modelSelectorBtn');
+        const modelDropdownMenu = document.getElementById('modelDropdownMenu');
+        const selectedModelText = document.getElementById('selectedModelText');
+        const moreModelsBtn = document.getElementById('moreModelsBtn');
+        const moreModelsSubmenu = document.getElementById('moreModelsSubmenu');
 
         // Toggle dropdown
-        modelSelector.addEventListener('click', (e) => {
-            e.stopPropagation();
-            modelDropdown.classList.toggle('active');
-        });
+        if (modelSelectorBtn && modelDropdownMenu) {
+            modelSelectorBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                modelDropdownMenu.classList.toggle('active');
+            });
+        }
 
         // Toggle submenu
-        moreModelsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            submenu.classList.toggle('active');
-            const arrow = moreModelsBtn.querySelector('svg polyline');
-            if (submenu.classList.contains('active')) {
-                arrow.setAttribute('points', '6 9 12 15 18 9'); // Down arrow
-            } else {
-                arrow.setAttribute('points', '9 18 15 12 9 6'); // Right arrow
-            }
-        });
+        if (moreModelsBtn && moreModelsSubmenu) {
+            moreModelsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = moreModelsSubmenu.style.display === 'block';
+                moreModelsSubmenu.style.display = isVisible ? 'none' : 'block';
+            });
+        }
 
         // Select model
-        modelOptions.forEach(option => {
+        document.querySelectorAll('.model-option-item').forEach(option => {
             option.addEventListener('click', (e) => {
                 e.stopPropagation();
-                const modelName = option.querySelector('.model-name').textContent.trim();
-                const modelData = option.dataset.model;
                 
-                // Update selected model display
-                selectedModelSpan.textContent = modelName;
-                
-                // Update current model
-                currentModel = modelData;
-                
-                // Update selected state
-                modelOptions.forEach(opt => opt.classList.remove('selected'));
-                option.classList.add('selected');
-                
-                // Remove checkmark from all options
-                document.querySelectorAll('.model-checkmark').forEach(check => check.remove());
-                
-                // Add checkmark to selected option
-                const checkmark = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                checkmark.setAttribute('class', 'model-checkmark');
-                checkmark.setAttribute('viewBox', '0 0 24 24');
-                checkmark.setAttribute('fill', 'none');
-                checkmark.setAttribute('stroke', 'currentColor');
-                checkmark.setAttribute('stroke-width', '2.5');
-                const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-                polyline.setAttribute('points', '20 6 9 17 4 12');
-                checkmark.appendChild(polyline);
-                option.querySelector('.model-option-header').appendChild(checkmark);
-                
-                // Close dropdown
-                modelDropdown.classList.remove('active');
-                submenu.classList.remove('active');
-                
-                console.log('Selected model:', modelData, '(' + currentModel + ')');
+                try {
+                    const modelName = option.querySelector('.model-name').textContent.trim();
+                    const modelData = option.dataset.model;
+                    
+                    console.log('=== Model Selection ===');
+                    console.log('Model Name:', modelName);
+                    console.log('Model Data:', modelData);
+                    
+                    // Update selected model display
+                    if (selectedModelText) {
+                        selectedModelText.textContent = modelName;
+                        console.log('✅ Updated display text to:', modelName);
+                    }
+                    
+                    // Update current model
+                    currentModel = modelData;
+                    console.log('✅ Updated currentModel to:', currentModel);
+                    
+                    // Update selected state
+                    document.querySelectorAll('.model-option-item').forEach(opt => {
+                        opt.classList.remove('selected');
+                        opt.querySelector('.checkmark')?.remove();
+                    });
+                    option.classList.add('selected');
+                    
+                    // Add checkmark to selected option
+                    if (!option.querySelector('.checkmark')) {
+                        const checkmark = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        checkmark.setAttribute('class', 'checkmark');
+                        checkmark.setAttribute('viewBox', '0 0 24 24');
+                        checkmark.setAttribute('fill', 'none');
+                        checkmark.setAttribute('stroke', 'currentColor');
+                        checkmark.setAttribute('stroke-width', '2.5');
+                        const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+                        polyline.setAttribute('points', '20 6 9 17 4 12');
+                        checkmark.appendChild(polyline);
+                        option.querySelector('.model-option-header').appendChild(checkmark);
+                    }
+                    
+                    // Close dropdown
+                    if (modelDropdownMenu) {
+                        modelDropdownMenu.classList.remove('active');
+                    }
+                    
+                    console.log('======================');
+                } catch (error) {
+                    console.error('❌ Error in model selection:', error);
+                }
             });
         });
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
-            if (!modelSelector.contains(e.target)) {
-                modelDropdown.classList.remove('active');
-                submenu.classList.remove('active');
+            if (modelSelectorBtn && modelDropdownMenu && !modelSelectorBtn.closest('.model-selector-wrapper').contains(e.target)) {
+                modelDropdownMenu.classList.remove('active');
+                if (moreModelsSubmenu) {
+                    moreModelsSubmenu.style.display = 'none';
+                }
             }
         });
 
@@ -1607,6 +1827,38 @@
                 }, 300);
             }
         });
+
+        // Get help submenu
+        const getHelpMenuItem = document.getElementById('getHelpMenuItem');
+        const getHelpSubmenu = document.getElementById('getHelpSubmenu');
+        if (getHelpMenuItem && getHelpSubmenu) {
+            getHelpMenuItem.addEventListener('mouseenter', () => {
+                getHelpSubmenu.classList.add('active');
+            });
+            getHelpMenuItem.addEventListener('mouseleave', (e) => {
+                if (!getHelpSubmenu.contains(e.relatedTarget)) {
+                    setTimeout(() => {
+                        getHelpSubmenu.classList.remove('active');
+                    }, 300);
+                }
+            });
+        }
+
+        // Learn more submenu
+        const learnMoreMenuItem = document.getElementById('learnMoreMenuItem');
+        const learnMoreSubmenu = document.getElementById('learnMoreSubmenu');
+        if (learnMoreMenuItem && learnMoreSubmenu) {
+            learnMoreMenuItem.addEventListener('mouseenter', () => {
+                learnMoreSubmenu.classList.add('active');
+            });
+            learnMoreMenuItem.addEventListener('mouseleave', (e) => {
+                if (!learnMoreSubmenu.contains(e.relatedTarget)) {
+                    setTimeout(() => {
+                        learnMoreSubmenu.classList.remove('active');
+                    }, 300);
+                }
+            });
+        }
 
         // Select language
         document.querySelectorAll('.language-option').forEach(option => {

@@ -1,0 +1,182 @@
+✅ NotFoundError 已修复！界面空白问题解决！
+
+========================================
+问题诊断：
+========================================
+
+❌ 错误信息：
+NotFoundError: Failed to execute 'insertBefore' on 'Node': 
+The node before which the new node is to be inserted is not a child of this node.
+
+❌ 根本原因：
+`input-section` 在 `welcome-section` 内部，不是 `chat-container` 的直接子元素。
+当尝试 `chatContainer.insertBefore(messagesContainer, inputSection)` 时失败。
+
+========================================
+修复方案：
+========================================
+
+1. ✅ 在隐藏 `welcome-section` 之前，先将 `input-section` 移到 `chat-container`
+2. ✅ 然后再隐藏 `welcome-section`
+3. ✅ 创建 `messages-container` 并插入到 `input-section` 之前
+4. ✅ 添加 CSS：`.chat-container > .input-section` 使用 `position: sticky` 固定在底部
+
+========================================
+修复内容（JavaScript）：
+========================================
+
+```javascript
+// ✅ 关键修复：先将 input-section 移到 chat-container 外面
+const inputSection = document.querySelector('.input-section');
+if (inputSection && inputSection.parentElement === welcomeSection) {
+    console.log('✅ Moving input section out of welcome section');
+    chatContainer.appendChild(inputSection);
+}
+
+// ✅ 然后再隐藏 welcome-section
+welcomeSection.style.display = 'none';
+
+// ✅ 创建 messages-container
+const messagesContainer = document.createElement('div');
+messagesContainer.className = 'messages-container';
+// ...
+
+// ✅ 插入到 input-section 之前
+chatContainer.insertBefore(messagesContainer, inputSection);
+```
+
+========================================
+修复内容（CSS）：
+========================================
+
+```css
+.input-section {
+    width: 100%;
+    max-width: 52rem;
+    margin: 0 auto;
+    padding: 1rem 2rem 2rem;
+    background-color: var(--bg-100);
+}
+
+/* 当 input-section 移出 welcome-section 后，固定在底部 */
+.chat-container > .input-section {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+}
+```
+
+========================================
+测试步骤：
+========================================
+
+1. **强制刷新浏览器**
+   按 Ctrl + Shift + R
+   ⚠️ 非常重要！
+
+2. **清除缓存**
+   按 F12 → Console → 执行：
+   ```javascript
+   localStorage.clear()
+   sessionStorage.clear()
+   location.reload()
+   ```
+
+3. **选择 Kimi AI**
+   - 点击模型选择器（显示 "Sonnet 4.5"）
+   - 选择 "🌙 Kimi AI"
+   - Console 应显示：
+     ```
+     === Model Selection ===
+     Model Name: 🌙 Kimi AI
+     Model Data: kimi
+     ✅ Updated currentModel to: kimi
+     ```
+
+4. **发送测试消息**
+   - 输入 "你好"
+   - 点击发送按钮
+   - Console 应显示：
+     ```
+     === sendMessage called ===
+     currentModel: kimi
+     ✅ Adding user message to UI...
+     ✅ Moving input section out of welcome section
+     ✅ Creating messages container...
+     ✅ Inserting messages container before input section
+     ```
+
+5. **验证结果**
+   ✅ 用户消息显示在界面上
+   ✅ Kimi 开始回复
+   ✅ 输入框固定在底部
+   ✅ 界面没有变空白
+   ✅ 没有红色错误
+
+========================================
+预期效果：
+========================================
+
+📱 欢迎界面：
+┌─────────────────────┐
+│ Good afternoon      │
+│                     │
+│ [输入框在中间]      │
+│                     │
+│ [Code] [Write] ...  │
+└─────────────────────┘
+
+📱 对话界面：
+┌─────────────────────┐
+│ 👤 你好             │
+│ 🤖 你好！我是Kimi   │
+│ 👤 ...              │
+│ 🤖 ...              │
+├─────────────────────┤
+│ [输入框固定在底部]  │
+└─────────────────────┘
+
+========================================
+常见问题：
+========================================
+
+Q: 还是空白？
+A: 确保已经强制刷新（Ctrl + Shift + R）
+
+Q: 输入框消失了？
+A: 查看 Console，应该显示"Moving input section out of welcome section"
+
+Q: 还有 NotFoundError？
+A: 截图 Console 发给我，可能还有其他问题
+
+Q: Kimi 不回复？
+A: 检查服务器终端，可能是 API 限流（每分钟3次）
+
+========================================
+调试命令：
+========================================
+
+如果还有问题，在 Console 执行以下命令查看状态：
+
+```javascript
+// 查看 input-section 的父元素
+console.log('input-section parent:', document.querySelector('.input-section')?.parentElement?.className);
+
+// 查看 messages-container 是否存在
+console.log('messages-container:', document.querySelector('.messages-container'));
+
+// 查看 welcome-section 是否隐藏
+console.log('welcome-section display:', getComputedStyle(document.querySelector('.welcome-section')).display);
+```
+
+========================================
+服务器状态：
+========================================
+
+✅ 服务器已重启
+✅ 端口：3000
+✅ 访问：http://localhost:3000/chat.html
+✅ 修复：NotFoundError 已解决
+
+现在请强制刷新浏览器并测试！🚀
+

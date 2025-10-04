@@ -1,0 +1,155 @@
+✅ 已添加完整的调试日志系统！
+
+========================================
+问题：选择Kimi后发送消息，界面变空白
+========================================
+
+这通常是JavaScript出错导致的。
+
+========================================
+已完成的修复：
+========================================
+
+1. ✅ **简化了 getProviderConfig 函数**
+   - 移除了对 localStorage 的依赖
+   - 直接根据 modelName 返回正确的 provider
+   - Kimi 会正确映射到 'custom' provider
+
+2. ✅ **增强了错误处理**
+   - 所有关键函数都包裹在 try-catch 中
+   - 添加了详细的 console.log 日志
+   - 防止单个错误导致整个页面崩溃
+
+3. ✅ **添加了详细日志**
+   - 模型选择：打印选中的模型名称和数据
+   - 发送消息：打印每一步的执行状态
+   - 添加消息：打印DOM操作的每一步
+
+========================================
+调试步骤：
+========================================
+
+1. **强制刷新浏览器**
+   按 Ctrl + Shift + R
+   ⚠️ 这是最重要的步骤！
+
+2. **打开开发者工具**
+   按 F12 打开 Console
+
+3. **清除旧数据**
+   在 Console 中执行：
+   ```javascript
+   localStorage.clear()
+   sessionStorage.clear()
+   location.reload()
+   ```
+
+4. **选择 Kimi AI**
+   - 点击模型选择器
+   - 选择 "🌙 Kimi AI"
+   - 查看 Console 输出：
+   ```
+   === Model Selection ===
+   Model Name: 🌙 Kimi AI
+   Model Data: kimi
+   ✅ Updated display text to: 🌙 Kimi AI
+   ✅ Updated currentModel to: kimi
+   ======================
+   ```
+
+5. **输入并发送消息**
+   - 输入 "你好"
+   - 点击发送按钮
+   - 查看 Console 详细输出：
+   ```
+   === sendMessage called ===
+   currentModel: kimi
+   ✅ Adding user message to UI...
+   📝 addMessage called: {...}
+   welcomeSection: [object HTMLDivElement]
+   ✅ First message - hiding welcome section
+   ...
+   🔍 Getting provider config for: kimi
+   getProviderConfig called with: kimi
+   ✅ Provider data: {provider: 'custom', config: {...}}
+   📤 Sending request:
+     Provider: custom
+     Config: {model: 'moonshot-v1-8k', stream: true}
+     Message: 你好
+   ```
+
+6. **检查错误**
+   如果有任何 ❌ 或红色错误信息：
+   - 截图发送给我
+   - 复制完整的错误堆栈
+   - 告诉我是在哪一步出错的
+
+========================================
+常见错误及解决方案：
+========================================
+
+错误1: "Messages container not found!"
+解决: 检查 welcome-section 和 input-section 是否在 HTML 中存在
+
+错误2: "Cannot read property of undefined"
+解决: 查看是哪个属性，检查元素是否正确查询
+
+错误3: "HTTP 403" 或 "Request not allowed"
+解决: 这是选择了 Claude 但没有配置 API Key
+     请确保选择的是 Kimi AI，不是 Sonnet 4.5
+
+错误4: 界面完全空白，Console 没有任何输出
+解决: 
+  1. 强制刷新浏览器 (Ctrl + Shift + R)
+  2. 清除缓存
+  3. 关闭浏览器再重新打开
+
+========================================
+日志说明：
+========================================
+
+✅ = 成功完成的操作
+❌ = 失败的操作
+📝 = 添加消息
+🔍 = 查询/检查
+📤 = 发送请求
+=== === = 分隔不同的功能模块
+
+========================================
+测试检查清单：
+========================================
+
+[ ] 1. 浏览器已强制刷新
+[ ] 2. 开发者工具 Console 已打开
+[ ] 3. localStorage 和 sessionStorage 已清除
+[ ] 4. 选择 Kimi AI 后 Console 显示正确日志
+[ ] 5. 发送消息后 Console 显示完整流程
+[ ] 6. 用户消息显示在界面上
+[ ] 7. Kimi 的回复正常显示
+[ ] 8. 输入框始终在底部可见
+[ ] 9. 没有红色错误信息
+[ ] 10. 界面没有变空白
+
+========================================
+如果还是空白：
+========================================
+
+请提供以下信息：
+1. 📸 完整的 Console 截图（包含所有日志）
+2. 📸 空白界面的截图
+3. 🔴 所有红色错误消息的完整文本
+4. 🔢 出错是在哪一步（选择模型？发送消息？收到回复？）
+
+我会根据这些信息精确定位问题！
+
+========================================
+服务器状态：
+========================================
+
+✅ 服务器已重启
+✅ 端口：3000
+✅ 访问：http://localhost:3000/chat.html
+✅ 调试日志：已启用
+
+现在请按照上述步骤测试并发送 Console 日志！🔍
+
