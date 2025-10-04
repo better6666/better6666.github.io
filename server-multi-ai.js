@@ -41,8 +41,8 @@ const SERVER_CONFIG = {
         model: 'gpt-3.5-turbo'
     },
     gemini: {
-        apiKey: process.env.GEMINI_API_KEY || '',  // Google Gemini API Key
-        model: 'gemini-pro'
+        apiKey: process.env.GEMINI_API_KEY || 'AIzaSyDXYDslr_G05gonG8eB_AfjapZQNoZfmig',  // Google Gemini API Key
+        model: 'gemini-2.5-pro'  // 最新的 2.5 Pro 版本
     },
     custom: {
         apiKey: process.env.CUSTOM_API_KEY || 'sk-YWVsd3yPnEM5CXPV7c6rej17bbhRWfhCDm8IIrGqWdo8fiW1',  // 🌙 Kimi API Key（已配置）
@@ -130,7 +130,7 @@ async function chatWithOpenAI(messages, config) {
 async function chatWithGemini(messages, config) {
     const { GoogleGenerativeAI } = require('@google/generative-ai');
     const genAI = new GoogleGenerativeAI(config.apiKey);
-    const model = genAI.getGenerativeModel({ model: config.model || 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: config.model || 'gemini-2.5-pro' });
 
     // 转换消息格式
     const history = messages.slice(0, -1).map(msg => ({
@@ -448,7 +448,7 @@ app.post('/api/chat/stream', async (req, res) => {
 app.post('/api/test/:provider', async (req, res) => {
     try {
         const { provider } = req.params;
-        const { apiKey, endpoint } = req.body;
+        const { apiKey, endpoint, model } = req.body;
 
         let result = { success: false };
 
@@ -481,9 +481,10 @@ app.post('/api/test/:provider', async (req, res) => {
             case 'gemini':
                 const { GoogleGenerativeAI } = require('@google/generative-ai');
                 const genAI = new GoogleGenerativeAI(apiKey);
-                const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-                const geminiTest = await model.generateContent('Hi');
-                result = { success: true, model: 'gemini-pro' };
+                const geminiModel = model || config.gemini.model || 'gemini-2.5-pro';
+                const geminiInstance = genAI.getGenerativeModel({ model: geminiModel });
+                const geminiTest = await geminiInstance.generateContent('Hi');
+                result = { success: true, model: geminiModel };
                 break;
 
             case 'custom':

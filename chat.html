@@ -1673,13 +1673,6 @@
                             
                             <!-- Model Dropdown Menu -->
                             <div class="model-dropdown-menu" id="modelDropdownMenu">
-                                <div class="model-option-item" data-model="kimi">
-                                    <div class="model-option-header">
-                                        <span class="model-name">🌙 Kimi AI</span>
-                                    </div>
-                                    <div class="model-description">月之暗面 - 200k 超长文本处理</div>
-                                </div>
-                                
                                 <div class="model-option-item selected" data-model="sonnet-4.5">
                                     <div class="model-option-header">
                                         <span class="model-name">Sonnet 4.5</span>
@@ -1707,6 +1700,18 @@
                                 
                                 <!-- Submenu -->
                                 <div class="model-submenu-items" id="moreModelsSubmenu" style="display: none;">
+                                    <div class="model-option-item" data-model="gemini-2.5-pro">
+                                        <div class="model-option-header">
+                                            <span class="model-name">💎 Gemini 2.5 Pro</span>
+                                        </div>
+                                        <div class="model-description">Google's latest & most advanced AI</div>
+                                    </div>
+                                    <div class="model-option-item" data-model="kimi">
+                                        <div class="model-option-header">
+                                            <span class="model-name">🌙 Kimi AI</span>
+                                        </div>
+                                        <div class="model-description">月之暗面 - 200k 超长文本处理</div>
+                                    </div>
                                     <div class="model-option-item" data-model="opus-4">
                                         <div class="model-option-header">
                                             <span class="model-name">Opus 4</span>
@@ -3403,13 +3408,16 @@
         const mainContent = document.querySelector('.main-content');
 
         // 关闭 Artifacts
-        closeArtifactsBtn.addEventListener('click', () => {
-            artifactsPanel.classList.remove('active');
-            mainContent.classList.remove('with-artifacts');
-        });
+        if (closeArtifactsBtn) {
+            closeArtifactsBtn.addEventListener('click', () => {
+                if (artifactsPanel) artifactsPanel.classList.remove('active');
+                if (mainContent) mainContent.classList.remove('with-artifacts');
+            });
+        }
 
         // 复制 Artifacts 内容
-        copyArtifactsBtn.addEventListener('click', async () => {
+        if (copyArtifactsBtn) {
+            copyArtifactsBtn.addEventListener('click', async () => {
             const content = artifactsContent.textContent || artifactsContent.innerText;
             try {
                 if (navigator.clipboard && window.isSecureContext) {
@@ -3441,10 +3449,16 @@
             } catch (err) {
                 console.error('Copy failed:', err);
             }
-        });
+            });
+        }
 
         // 打开 Artifacts
         function openArtifacts(title, content, type = 'code') {
+            if (!artifactsTitle || !artifactsContent || !artifactsPanel || !mainContent) {
+                console.warn('Artifacts elements not found');
+                return;
+            }
+            
             artifactsTitle.textContent = title;
             
             if (type === 'code') {
