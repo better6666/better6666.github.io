@@ -2821,6 +2821,8 @@
 
         // 加载对话
         function loadConversation(conversationId) {
+            console.log('🔄 loadConversation called, ID:', conversationId);
+            
             let history;
             try {
                 const stored = localStorage.getItem('conversationHistory');
@@ -2832,17 +2834,21 @@
                 console.error('❌ Failed to parse history:', e);
                 history = [];
             }
+            
             const conversation = history.find(conv => conv.id === conversationId);
             
             if (!conversation) {
                 console.error('❌ Conversation not found:', conversationId);
+                alert('对话历史加载失败，可能已被删除');
                 return;
             }
 
             console.log('📂 Loading conversation:', conversation.title);
+            console.log('  Messages count:', conversation.messages?.length || 0);
 
             // 保存当前对话（如果有消息）
             if (currentConversationMessages.length > 0) {
+                console.log('💾 Saving current conversation before switch');
                 saveConversationToHistory();
             }
 
@@ -2851,22 +2857,44 @@
             currentConversationMessages = conversation.messages || [];
             currentModel = conversation.model || 'sonnet-4.5';
 
+            console.log('  Switched to conversation, messages:', currentConversationMessages.length);
+
             // 清除当前界面
             const messagesContainer = document.querySelector('.messages-container');
             if (messagesContainer) {
+                console.log('  Removing old messages container');
                 messagesContainer.remove();
             }
 
-            // 隐藏欢迎界面
-            const welcomeSection = document.querySelector('.welcome-section');
-            if (welcomeSection) {
-                welcomeSection.style.display = 'none';
-            }
-
-            // 创建消息容器
+            // 确保输入框在正确的位置
             const chatContainer = document.querySelector('.chat-container');
             const inputSection = document.querySelector('.input-section');
+            const welcomeSection = document.querySelector('.welcome-section');
             
+            console.log('Elements found:', {
+                chatContainer: !!chatContainer,
+                inputSection: !!inputSection,
+                welcomeSection: !!welcomeSection
+            });
+
+            if (!chatContainer || !inputSection) {
+                console.error('❌ Required elements not found!');
+                return;
+            }
+
+            // 隐藏欢迎界面
+            if (welcomeSection) {
+                welcomeSection.style.display = 'none';
+                console.log('  Welcome section hidden');
+            }
+            
+            // 确保输入框在chatContainer中
+            if (inputSection.parentElement !== chatContainer) {
+                console.log('  Moving input section to chat container');
+                chatContainer.appendChild(inputSection);
+            }
+
+            // 创建新的消息容器
             const newMessagesContainer = document.createElement('div');
             newMessagesContainer.className = 'messages-container';
             newMessagesContainer.style.cssText = `
@@ -2879,13 +2907,24 @@
             `;
             
             chatContainer.insertBefore(newMessagesContainer, inputSection);
+            console.log('  New messages container created');
 
             // 重新渲染消息（不保存到历史，因为已经在历史中）
-            currentConversationMessages.forEach(msg => {
+            console.log('  Rendering', currentConversationMessages.length, 'messages');
+            currentConversationMessages.forEach((msg, index) => {
+                console.log(`    Message ${index + 1}:`, msg.role, msg.content.substring(0, 50) + '...');
                 addMessage(msg.content, msg.role, false, false);
             });
 
-            console.log('✅ Conversation loaded');
+            // 滚动到底部
+            setTimeout(() => {
+                newMessagesContainer.scrollTop = newMessagesContainer.scrollHeight;
+            }, 100);
+
+            // 更新 Recents 列表高亮
+            renderRecentsList();
+
+            console.log('✅ Conversation loaded successfully!');
         }
 
         // 渲染 Recents 列表
