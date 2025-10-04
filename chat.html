@@ -54,6 +54,7 @@
 
         .sidebar.hidden {
             margin-left: -260px;
+            width: 0;
         }
 
         .sidebar-header {
@@ -1117,32 +1118,29 @@
             transform: translateX(0);
         }
 
-        /* Artifacts打开时，主内容区域调整宽度（不包含左侧栏） */
+        /* Artifacts打开时，主内容区域调整宽度 */
         .main-content.with-artifacts {
             width: 50%;
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        /* 左侧栏隐藏时，主内容区域需要从左边开始 */
-        body:has(.sidebar.hidden) .main-content.with-artifacts {
-            margin-left: 0;
+            max-width: 50%;
+            flex: 0 0 50%;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .artifacts-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 1.25rem 1.5rem;
-            border-bottom: 1px solid #e5e5e5;
-            background-color: #ffffff;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid #e0e0e0;
+            background-color: #f8f8f8;
         }
 
         .artifacts-title {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            color: #171717;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #404040;
             flex: 1;
-            letter-spacing: -0.01em;
+            letter-spacing: -0.005em;
         }
 
         .artifacts-actions {
@@ -1155,29 +1153,29 @@
             align-items: center;
             justify-content: center;
             gap: 0.375rem;
-            padding: 0.5rem 0.875rem;
-            height: 2rem;
-            border: 1px solid #e5e5e5;
-            background-color: #ffffff;
+            padding: 0.375rem 0.75rem;
+            height: 1.875rem;
+            border: 1px solid #d4d4d4;
+            background-color: transparent;
             color: #525252;
             cursor: pointer;
             border-radius: 0.375rem;
             font-size: 0.8125rem;
-            font-weight: 500;
+            font-weight: 400;
             transition: all 0.15s ease;
             white-space: nowrap;
         }
 
         .artifacts-action-btn:hover {
             background-color: #f5f5f5;
-            border-color: #d4d4d4;
+            border-color: #a3a3a3;
             color: #171717;
         }
 
         .artifacts-action-btn svg {
-            width: 1rem;
-            height: 1rem;
-            stroke-width: 2;
+            width: 0.875rem;
+            height: 0.875rem;
+            stroke-width: 2.5;
         }
 
         .artifacts-content {
@@ -2123,20 +2121,14 @@
         <div class="artifacts-header">
             <div class="artifacts-title" id="artifactsTitle">Artifact</div>
             <div class="artifacts-actions">
-                <button class="artifacts-action-btn" id="editArtifactsBtn" title="让 AI 修改">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                    </svg>
-                    修改
-                </button>
-                <button class="artifacts-action-btn" id="copyArtifactsBtn" title="复制">
+                <button class="artifacts-action-btn" id="copyArtifactsBtn" title="Copy code">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
                     </svg>
+                    Copy
                 </button>
-                <button class="artifacts-action-btn" id="closeArtifactsBtn" title="关闭">
+                <button class="artifacts-action-btn" id="closeArtifactsBtn" title="Close">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -4115,20 +4107,10 @@
         }
 
         // 让 AI 修改 Artifacts
-        const editArtifactsBtn = document.getElementById('editArtifactsBtn');
+        // 编辑功能已移除
+        // const editArtifactsBtn = document.getElementById('editArtifactsBtn');
         const artifactsEditPanel = document.getElementById('artifactsEditPanel');
         const artifactsEditInput = document.getElementById('artifactsEditInput');
-        
-        if (editArtifactsBtn) {
-            editArtifactsBtn.addEventListener('click', () => {
-                if (artifactsEditPanel) {
-                    artifactsEditPanel.style.display = artifactsEditPanel.style.display === 'none' ? 'block' : 'none';
-                    if (artifactsEditPanel.style.display === 'block') {
-                        artifactsEditInput.focus();
-                    }
-                }
-            });
-        }
 
         if (artifactsEditInput) {
             artifactsEditInput.addEventListener('keydown', async (e) => {
@@ -4255,7 +4237,9 @@
                 if (code.split('\n').length >= 3 && code !== lastDetectedCode) {
                     lastDetectedCode = code;
                     console.log('📝 Opening Artifacts with code:', language);
-                    openArtifacts(`Code: ${language}`, code, 'code');
+                    // 格式化语言名称（首字母大写）
+                    const displayLanguage = language.charAt(0).toUpperCase() + language.slice(1);
+                    openArtifacts(`Code: ${displayLanguage}`, code, 'code');
                 }
             }
         };
