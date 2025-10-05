@@ -60,7 +60,7 @@
             transition: all 0.3s ease;
         }
 
-        /* 桌面端：左侧栏隐藏时 */
+        /* 桌面端：左侧栏隐藏时 - 完全隐藏，只保留切换按钮 */
         @media (min-width: 769px) {
             .sidebar.hidden {
                 margin-left: -260px;
@@ -68,6 +68,80 @@
                 overflow: hidden;
                 flex-shrink: 0;
                 flex-basis: 0;
+                transition: all 0.3s ease;
+            }
+            
+            /* 主内容区域完全扩展 */
+            .sidebar.hidden ~ .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            
+            /* 内容容器居中 */
+            .sidebar.hidden ~ .main-content .chat-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+            
+            /* 欢迎区域和消息容器居中 - Claude官网风格 */
+            .sidebar.hidden ~ .main-content .welcome-section {
+                max-width: 768px !important;
+                width: 100% !important;
+                margin: 0 auto !important;
+                padding-left: 3rem !important;
+                padding-right: 3rem !important;
+            }
+            
+            .sidebar.hidden ~ .main-content .messages-container {
+                max-width: 768px !important;
+                width: 100% !important;
+                margin: 0 auto !important;
+                padding-left: 3rem !important;
+                padding-right: 3rem !important;
+            }
+            
+            /* input-section居中 */
+            .sidebar.hidden ~ .main-content .welcome-section .input-section {
+                max-width: 100% !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            .sidebar.hidden ~ .main-content .input-wrapper {
+                width: 100% !important;
+            }
+            
+            /* 切换按钮保持在左上角 */
+            .sidebar.hidden ~ .main-content .toggle-sidebar-btn {
+                left: 1rem !important;
+            }
+        }
+        
+        /* 中屏笔记本：侧边栏隐藏时内容更宽 */
+        @media (min-width: 1024px) and (max-width: 1439px) {
+            .sidebar.hidden ~ .main-content .welcome-section,
+            .sidebar.hidden ~ .main-content .messages-container {
+                max-width: 850px !important;
+            }
+        }
+        
+        /* 大屏：侧边栏隐藏时内容更宽 */
+        @media (min-width: 1440px) {
+            .sidebar.hidden ~ .main-content .welcome-section,
+            .sidebar.hidden ~ .main-content .messages-container {
+                max-width: 900px !important;
+            }
+        }
+        
+        /* 超大屏：限制最大宽度 */
+        @media (min-width: 1920px) {
+            .sidebar.hidden ~ .main-content .welcome-section,
+            .sidebar.hidden ~ .main-content .messages-container {
+                max-width: 1000px !important;
             }
         }
 
@@ -274,6 +348,7 @@
             padding: 0;
             overflow-y: auto; /* 滚动条在chat-container */
             overflow-x: hidden;
+            width: 100%;
         }
         
         /* 为聊天内容添加居中wrapper（排除input-section） - 响应式宽度 */
@@ -365,7 +440,16 @@
             align-items: center;
             padding: 1.5rem;
             min-height: 0;
-            gap: 2rem;
+            gap: 1.5rem;
+        }
+        
+        /* 欢迎界面：input-section应该在welcome-section内 */
+        .welcome-section .input-section {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+            background: transparent;
         }
 
         /* 平板及以上增加welcome-section的间距 */
@@ -1744,6 +1828,8 @@
             display: flex;
             gap: 0.75rem;
             margin-top: 0;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
             flex-wrap: wrap;
             justify-content: center;
             max-width: 52rem;

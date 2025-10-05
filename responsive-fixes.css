@@ -21,6 +21,56 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+/* ========== 桌面端侧边栏隐藏修复 ========== */
+@media (min-width: 768px) {
+    /* 侧边栏隐藏时，主内容区域扩展到全宽 */
+    .sidebar.hidden ~ .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    /* 确保body使用flex布局 */
+    body {
+        display: flex;
+        flex-direction: row;
+    }
+    
+    /* 主内容区域flex自适应 */
+    .main-content {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    /* 侧边栏隐藏动画 */
+    .sidebar {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .sidebar.hidden {
+        margin-left: -260px;
+        width: 0;
+        overflow: hidden;
+        flex-shrink: 0;
+        flex-basis: 0;
+    }
+    
+    /* 侧边栏隐藏时，聊天容器居中显示 */
+    .sidebar.hidden ~ .main-content .chat-container {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+    
+    /* 侧边栏隐藏时，输入框居中 */
+    .sidebar.hidden ~ .main-content .input-section {
+        margin: 0 auto;
+    }
+    
+    /* 切换按钮位置调整 */
+    .sidebar.hidden ~ .main-content .toggle-sidebar-btn {
+        left: 1rem;
+    }
+}
+
 /* ========== 移动端优化（手机） ========== */
 @media (max-width: 767px) {
     /* 基础字体 - 16px 防止iOS自动缩放 */
