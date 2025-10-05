@@ -1,0 +1,672 @@
+/* ========================================
+   响应式布局优化补丁
+   针对手机端和电脑端的显示问题
+   ======================================== */
+
+/* ========== 全局基础优化 ========== */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+    -moz-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    overscroll-behavior-y: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========== 移动端优化（手机） ========== */
+@media (max-width: 767px) {
+    /* 基础字体 - 16px 防止iOS自动缩放 */
+    html {
+        font-size: 16px !important;
+    }
+    
+    body {
+        font-size: 1rem;
+        line-height: 1.5;
+        overflow-x: hidden;
+    }
+    
+    /* 侧边栏 - 抽屉式设计 */
+    .sidebar {
+        position: fixed !important;
+        z-index: 100 !important;
+        height: 100vh !important;
+        width: 280px !important;
+        max-width: 85vw !important;
+        left: 0 !important;
+        top: 0 !important;
+        transform: translateX(-100%) !important;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        margin-left: 0 !important;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .sidebar.mobile-visible {
+        transform: translateX(0) !important;
+    }
+    
+    /* 遮罩层 */
+    .sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .sidebar-backdrop.active {
+        display: block;
+        opacity: 1;
+    }
+    
+    /* 主内容区 - 全宽显示 */
+    .main-content {
+        width: 100% !important;
+        margin-left: 0 !important;
+        max-width: 100% !important;
+        flex: 1 !important;
+    }
+    
+    /* 切换侧边栏按钮 - 触摸友好 */
+    .toggle-sidebar-btn {
+        display: flex !important;
+        position: fixed !important;
+        top: 0.75rem;
+        left: 0.75rem;
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        z-index: 50;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* 聊天容器 */
+    .chat-container {
+        padding-top: 4rem !important; /* 为顶部按钮留空间 */
+        padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+    }
+    
+    /* 欢迎界面 */
+    .welcome-section {
+        padding: 1.5rem 1rem !important;
+        gap: 1.5rem !important;
+    }
+    
+    .welcome-title {
+        font-size: 1.75rem !important;
+        line-height: 1.2 !important;
+    }
+    
+    .upgrade-badge {
+        font-size: 0.875rem !important;
+        padding: 0.5rem 0.875rem !important;
+    }
+    
+    /* 消息区域 */
+    .messages-container {
+        padding: 1rem 1rem !important;
+        max-width: 100% !important;
+    }
+    
+    .message-bubble {
+        padding: 0.875rem 1rem !important;
+        max-width: 100% !important;
+    }
+    
+    .message-text-content {
+        font-size: 1rem !important;
+        line-height: 1.6 !important;
+    }
+    
+    .message-text-content h1 {
+        font-size: 1.5rem !important;
+        margin: 1rem 0 0.75rem !important;
+    }
+    
+    .message-text-content h2 {
+        font-size: 1.25rem !important;
+        margin: 0.875rem 0 0.625rem !important;
+    }
+    
+    .message-text-content h3 {
+        font-size: 1.125rem !important;
+        margin: 0.75rem 0 0.5rem !important;
+    }
+    
+    .message-text-content p {
+        margin: 0.75rem 0 !important;
+    }
+    
+    .message-text-content pre {
+        font-size: 0.875rem !important;
+        padding: 0.875rem !important;
+        margin: 0.75rem 0 !important;
+        overflow-x: auto !important;
+    }
+    
+    .message-text-content code {
+        font-size: 0.875rem !important;
+    }
+    
+    /* 输入区域 - 优化布局 */
+    .input-section {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0.75rem !important;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 0.75rem) !important;
+        margin: 0 !important;
+    }
+    
+    .input-wrapper {
+        padding: 0.625rem 0.75rem !important;
+        border-radius: 1.5rem !important;
+        gap: 0.5rem !important;
+    }
+    
+    .input-textarea {
+        font-size: 16px !important; /* 16px 防止iOS自动缩放 */
+        line-height: 1.5 !important;
+        min-height: 44px !important;
+        max-height: 160px !important;
+        padding: 0.625rem 0.5rem !important;
+    }
+    
+    .input-actions {
+        gap: 0.5rem !important;
+        padding: 0 !important;
+        flex-shrink: 0;
+    }
+    
+    /* 所有按钮 - 符合触摸标准（44x44px） */
+    .attach-btn,
+    .image-btn,
+    .tool-btn,
+    .send-btn {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    .attach-btn svg,
+    .image-btn svg,
+    .tool-btn svg,
+    .send-btn svg {
+        width: 20px !important;
+        height: 20px !important;
+    }
+    
+    /* 快捷操作按钮 */
+    .quick-actions {
+        flex-direction: column !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+    }
+    
+    .quick-action-btn {
+        width: 100% !important;
+        padding: 0.75rem 1rem !important;
+        justify-content: flex-start !important;
+        min-height: 48px !important;
+        font-size: 0.9375rem !important;
+    }
+    
+    /* 模型选择器 */
+    .model-dropdown-btn {
+        padding: 0.5rem 0.75rem !important;
+        font-size: 0.875rem !important;
+        min-height: 44px !important;
+    }
+    
+    .model-dropdown {
+        width: 100% !important;
+        max-width: calc(100vw - 2rem) !important;
+        left: 1rem !important;
+        right: 1rem !important;
+        max-height: 60vh !important;
+    }
+    
+    .model-option {
+        padding: 0.875rem 1rem !important;
+        min-height: 56px !important;
+    }
+    
+    .model-name {
+        font-size: 0.9375rem !important;
+    }
+    
+    .model-description {
+        font-size: 0.8125rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    /* 消息操作按钮 */
+    .message-action-btn {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+    }
+    
+    .message-action-btn svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+    
+    /* Artifacts面板 - 全屏显示 */
+    .artifacts-panel {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        z-index: 201 !important;
+    }
+    
+    .artifacts-header {
+        padding: 1rem !important;
+    }
+    
+    .artifacts-title {
+        font-size: 1rem !important;
+    }
+    
+    .artifacts-action-btn {
+        min-height: 44px !important;
+        padding: 0.625rem 1rem !important;
+        font-size: 0.9375rem !important;
+    }
+    
+    /* 文件附件卡片 */
+    .file-attachments-container {
+        flex-direction: column !important;
+        padding: 0.5rem 1rem !important;
+    }
+    
+    .file-card {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+    
+    /* 侧边栏内容 */
+    .sidebar-header {
+        padding: 1rem !important;
+    }
+    
+    .logo-section {
+        padding: 0.5rem 0.5rem 0.75rem !important;
+    }
+    
+    .logo-text {
+        font-size: 1.125rem !important;
+    }
+    
+    .new-chat-btn {
+        padding: 0.75rem 1rem !important;
+        min-height: 48px !important;
+        font-size: 0.9375rem !important;
+    }
+    
+    .sidebar-nav {
+        padding: 0.75rem !important;
+    }
+    
+    .nav-item {
+        padding: 0.75rem 1rem !important;
+        min-height: 48px !important;
+        font-size: 0.9375rem !important;
+    }
+    
+    .recent-item {
+        padding: 0.625rem 1rem !important;
+        min-height: 44px !important;
+        font-size: 0.9375rem !important;
+    }
+    
+    .sidebar-footer {
+        padding: 1rem !important;
+    }
+    
+    .user-info {
+        padding: 0.75rem 0.5rem !important;
+        min-height: 56px !important;
+    }
+    
+    .user-avatar {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        font-size: 1rem !important;
+    }
+    
+    .user-name {
+        font-size: 0.9375rem !important;
+    }
+    
+    .user-plan {
+        font-size: 0.8125rem !important;
+    }
+    
+    /* 用户菜单 */
+    .user-menu-dropdown {
+        width: calc(100vw - 2rem) !important;
+        max-width: 320px !important;
+        left: 1rem !important;
+        max-height: 70vh !important;
+    }
+    
+    .user-menu-item {
+        padding: 0.875rem 1rem !important;
+        min-height: 52px !important;
+        font-size: 0.9375rem !important;
+    }
+}
+
+/* ========== 小屏手机（iPhone SE 等） ========== */
+@media (max-width: 375px) {
+    .sidebar {
+        width: 90vw !important;
+    }
+    
+    .welcome-title {
+        font-size: 1.5rem !important;
+    }
+    
+    .user-menu-dropdown {
+        width: calc(100vw - 1.5rem) !important;
+        left: 0.75rem !important;
+    }
+}
+
+/* ========== 横屏模式优化 ========== */
+@media (max-height: 500px) and (orientation: landscape) and (max-width: 767px) {
+    .welcome-section {
+        padding: 1rem !important;
+        gap: 1rem !important;
+    }
+    
+    .welcome-title {
+        font-size: 1.25rem !important;
+    }
+    
+    .quick-actions {
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+    }
+    
+    .quick-action-btn {
+        width: calc(50% - 0.25rem) !important;
+        min-height: 44px !important;
+    }
+    
+    .messages-container {
+        padding: 0.75rem 1rem !important;
+    }
+    
+    .input-section {
+        padding: 0.5rem 0.75rem !important;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem) !important;
+    }
+}
+
+/* ========== 平板端（iPad 等） ========== */
+@media (min-width: 768px) and (max-width: 1023px) {
+    html {
+        font-size: 16px;
+    }
+    
+    .sidebar {
+        width: 260px;
+        position: relative;
+        transform: translateX(0) !important;
+    }
+    
+    .sidebar-backdrop {
+        display: none !important;
+    }
+    
+    .toggle-sidebar-btn {
+        display: flex;
+        position: absolute;
+    }
+    
+    .chat-container {
+        padding-top: 1rem;
+    }
+    
+    .input-section {
+        max-width: 720px;
+        padding: 1rem 2rem;
+    }
+    
+    .messages-container {
+        max-width: 720px;
+        padding: 2rem;
+    }
+}
+
+/* ========== 笔记本电脑 ========== */
+@media (min-width: 1024px) and (max-width: 1439px) {
+    html {
+        font-size: 16px;
+    }
+    
+    .input-section {
+        max-width: 800px;
+        padding: 1rem 2.5rem 2rem;
+    }
+    
+    .messages-container {
+        max-width: 800px;
+        padding: 2rem 2.5rem;
+    }
+}
+
+/* ========== 大屏电脑 ========== */
+@media (min-width: 1440px) {
+    html {
+        font-size: 16px;
+    }
+    
+    .input-section {
+        max-width: 900px;
+        padding: 1rem 3rem 2rem;
+    }
+    
+    .messages-container {
+        max-width: 900px;
+        padding: 2.5rem 3rem;
+    }
+}
+
+/* ========== 超大屏幕 ========== */
+@media (min-width: 1920px) {
+    .input-section {
+        max-width: 1000px;
+    }
+    
+    .messages-container {
+        max-width: 1000px;
+    }
+}
+
+/* ========== Config页面优化 ========== */
+@media (max-width: 767px) {
+    .config-container {
+        padding: 1.5rem !important;
+        margin: 0 !important;
+        border-radius: 0 !important;
+        min-height: 100vh;
+    }
+    
+    .config-container h1 {
+        font-size: 1.5rem !important;
+    }
+    
+    .tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+    
+    .tabs::-webkit-scrollbar {
+        display: none;
+    }
+    
+    .tab {
+        flex-shrink: 0;
+        padding: 0.625rem 1rem !important;
+        font-size: 0.9375rem !important;
+    }
+    
+    .ai-provider {
+        padding: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    
+    .provider-logo {
+        width: 2.5rem !important;
+        height: 2.5rem !important;
+        font-size: 1.25rem !important;
+    }
+    
+    .provider-name {
+        font-size: 1.125rem !important;
+    }
+    
+    .provider-description {
+        font-size: 0.8125rem !important;
+    }
+    
+    .form-group {
+        margin-bottom: 0.875rem !important;
+    }
+    
+    .form-group label {
+        font-size: 0.9375rem !important;
+    }
+    
+    .form-group input,
+    .form-group select {
+        padding: 0.75rem !important;
+        font-size: 16px !important; /* 防止iOS缩放 */
+    }
+    
+    .btn {
+        padding: 0.75rem 1.25rem !important;
+        font-size: 0.9375rem !important;
+        min-height: 48px !important;
+    }
+    
+    .actions {
+        flex-direction: column !important;
+        gap: 0.75rem !important;
+    }
+    
+    .actions .btn {
+        width: 100% !important;
+    }
+    
+    .toggle-switch {
+        width: 3rem !important;
+        height: 1.75rem !important;
+    }
+    
+    .toggle-switch::before {
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+    }
+    
+    .toggle-switch.active::before {
+        transform: translateX(1.25rem) !important;
+    }
+}
+
+/* ========== Index页面优化 ========== */
+@media (max-width: 767px) {
+    .container {
+        padding: 0;
+    }
+    
+    .logo-container {
+        padding-top: 2rem !important;
+    }
+    
+    .main-content {
+        padding: 0 1rem !important;
+    }
+    
+    .form-wrapper {
+        max-width: 100% !important;
+    }
+    
+    .checkbox-container {
+        padding: 1rem !important;
+    }
+    
+    .checkbox-wrapper {
+        gap: 0.875rem !important;
+    }
+    
+    .checkbox-text {
+        font-size: 0.9375rem !important;
+        line-height: 1.5 !important;
+    }
+    
+    .submit-button {
+        height: 3rem !important;
+        font-size: 1rem !important;
+    }
+    
+    footer {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 2rem);
+        font-size: 0.8125rem !important;
+    }
+}
+
+/* ========== 通用工具类 ========== */
+.touch-target {
+    min-width: 44px !important;
+    min-height: 44px !important;
+}
+
+.safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-top {
+    padding-top: env(safe-area-inset-top);
+}
+
+.no-zoom {
+    touch-action: manipulation;
+}
+
+/* ========== 滚动优化 ========== */
+.smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+/* ========== 防止内容被键盘遮挡 ========== */
+@supports (-webkit-touch-callout: none) {
+    .input-section {
+        position: relative;
+        padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+    }
+}
+
