@@ -4631,85 +4631,8 @@
             });
         }
 
-        // Select model
-        document.querySelectorAll('.model-option-item').forEach(option => {
-            option.addEventListener('click', (e) => {
-                e.stopPropagation();
-                
-                try {
-                    const modelName = option.querySelector('.model-name').textContent.trim();
-                    const modelData = option.dataset.model;
-                    
-                    console.log('=== Model Selection ===');
-                    console.log('Model Name:', modelName);
-                    console.log('Model Data:', modelData);
-                    
-                    // Update selected model display
-                    if (selectedModelText) {
-                        selectedModelText.textContent = modelName;
-                        console.log('✅ Updated display text to:', modelName);
-                    }
-                    
-                    // Update current model
-                    const oldModel = currentModel;
-                    currentModel = modelData;
-                    console.log('✅ Updated currentModel to:', currentModel);
-                    
-                    // 🔑 关键修复：切换模型时创建新的对话
-                    if (oldModel !== modelData && currentConversationMessages.length > 0) {
-                        // 保存当前对话
-                        saveConversationToHistory();
-                        
-                        // 创建新对话ID
-                        currentConversationId = 'conv-' + Date.now();
-                        currentConversationMessages = [];
-                        console.log('🆕 切换模型，创建新对话ID:', currentConversationId);
-                        
-                        // 清空聊天界面
-                        const messagesContainer = document.querySelector('.messages-container');
-                        if (messagesContainer) {
-                            messagesContainer.innerHTML = '';
-                        }
-                        
-                        // 显示欢迎界面
-                        const welcomeSection = document.querySelector('.welcome-section');
-                        if (welcomeSection) {
-                            welcomeSection.style.display = 'flex';
-                        }
-                    }
-                    
-                    // Update selected state
-                    document.querySelectorAll('.model-option-item').forEach(opt => {
-                        opt.classList.remove('selected');
-                        opt.querySelector('.checkmark')?.remove();
-                    });
-                    option.classList.add('selected');
-                    
-                    // Add checkmark to selected option
-                    if (!option.querySelector('.checkmark')) {
-                        const checkmark = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-                        checkmark.setAttribute('class', 'checkmark');
-                        checkmark.setAttribute('viewBox', '0 0 24 24');
-                        checkmark.setAttribute('fill', 'none');
-                        checkmark.setAttribute('stroke', 'currentColor');
-                        checkmark.setAttribute('stroke-width', '2.5');
-                        const polyline = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-                        polyline.setAttribute('points', '20 6 9 17 4 12');
-                        checkmark.appendChild(polyline);
-                        option.querySelector('.model-option-header').appendChild(checkmark);
-                    }
-                    
-                    // Close dropdown
-                    if (modelDropdownMenu) {
-                        modelDropdownMenu.classList.remove('active');
-                    }
-                    
-                    console.log('======================');
-                } catch (error) {
-                    console.error('❌ Error in model selection:', error);
-                }
-            });
-        });
+        // 🔥 旧的模型选择器事件已移到 updateModelSelector() 函数中
+        // 模型选择器现在由动态加载的模型列表生成和绑定事件
 
         // Close dropdown when clicking outside
         document.addEventListener('click', (e) => {
@@ -4862,12 +4785,14 @@
                     // 回退到旧的硬编码模型
                     availableModels = [];
                     currentModelId = null;
+                    updateModelSelector(); // 清空旧列表并显示提示
                 }
             } catch (error) {
                 console.error('❌ Failed to load models:', error);
                 // 回退到旧的硬编码模型
                 availableModels = [];
                 currentModelId = null;
+                updateModelSelector(); // 清空旧列表并显示提示
             }
         }
 
@@ -4876,10 +4801,22 @@
             const modelDropdownMenu = document.getElementById('modelDropdownMenu');
             const selectedModelText = document.getElementById('selectedModelText');
             
-            if (!modelDropdownMenu || availableModels.length === 0) return;
+            if (!modelDropdownMenu) return;
             
-            // 清空现有内容
+            // 清空现有内容（无论是否有新模型）
             modelDropdownMenu.innerHTML = '';
+            
+            // 如果没有配置的模型，显示提示
+            if (availableModels.length === 0) {
+                modelDropdownMenu.innerHTML = `
+                    <div style="padding: 1rem; text-align: center; color: var(--text-400);">
+                        <p style="margin-bottom: 0.5rem;">⚠️ 尚未配置任何模型</p>
+                        <p style="font-size: 0.875rem;">请访问<a href="/config.html" style="color: var(--accent-main); text-decoration: underline;">配置页面</a>添加模型</p>
+                    </div>
+                `;
+                selectedModelText.textContent = '请配置模型';
+                return;
+            }
             
             // 按 provider 分组
             const grouped = {};
