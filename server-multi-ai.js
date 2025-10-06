@@ -31,39 +31,96 @@ let openaiClient = null;
 // 数据结构：Map<sessionId, Map<conversationId, messages>>
 const userSessions = new Map();
 
-// ==================== 🔑 API 配置（Vercel 兼容版本）====================
-// Vercel Serverless Functions 不支持写入文件系统
-// 配置从环境变量或前端传入
+// ==================== 🔑 API 配置存储（Vercel KV 持久化）====================
+// 使用 Vercel KV (Redis) 实现跨用户共享配置
+// 配置一次，所有人都能使用
 
-// 内存中的配置（仅在当前请求有效）
-let SERVER_CONFIG = {
-    claude: { 
-        apiKey: process.env.CLAUDE_API_KEY || '', 
-        model: 'claude-3-5-sonnet-20241022' 
-    },
-    openai: { 
-        apiKey: process.env.OPENAI_API_KEY || '', 
-        endpoint: 'https://api.openai.com/v1', 
-        model: 'gpt-3.5-turbo' 
-    },
-    gemini: { 
-        apiKey: process.env.GEMINI_API_KEY || '', 
-        model: 'gemini-2.5-pro' 
-    },
-    custom: { 
-        apiKey: process.env.CUSTOM_API_KEY || '', 
-        endpoint: process.env.CUSTOM_API_ENDPOINT || 'https://api.moonshot.cn/v1/chat/completions', 
-        model: 'moonshot-v1-8k', 
-        auth: 'bearer' 
+let kv;
+let useKV = false;
+
+// 尝试加载 Vercel KV
+try {
+    if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+        const { kv: vercelKV } = require('@vercel/kv');
+        kv = vercelKV;
+        useKV = true;
+        console.log('✅ Vercel KV 已启用（持久化存储）');
+    } else {
+        console.log('⚠️ Vercel KV 未配置，使用内存存储（重启后丢失）');
     }
-};
+} catch (error) {
+    console.log('⚠️ Vercel KV 不可用，使用内存存储');
+    useKV = false;
+}
 
-console.log('📋 API 配置状态:');
-console.log('  Claude:', SERVER_CONFIG.claude.apiKey ? '✅ 已配置(环境变量)' : '⚠️ 未配置');
-console.log('  OpenAI:', SERVER_CONFIG.openai.apiKey ? '✅ 已配置(环境变量)' : '⚠️ 未配置');
-console.log('  Gemini:', SERVER_CONFIG.gemini.apiKey ? '✅ 已配置(环境变量)' : '⚠️ 未配置');
-console.log('  Custom:', SERVER_CONFIG.custom.apiKey ? '✅ 已配置(环境变量)' : '⚠️ 未配置');
-console.log('💡 提示: API 密钥可通过前端配置或 Vercel 环境变量设置');
+// 从 KV 或环境变量加载配置
+async function loadConfig() {
+    if (useKV) {
+        try {
+            const stored = await kv.get('api_config');
+            if (stored) {
+                console.log('📥 从 Vercel KV 加载配置');
+                return stored;
+            }
+        } catch (error) {
+            console.error('从 KV 加载配置失败:', error);
+        }
+    }
+    
+    // 默认配置（从环境变量）
+    return {
+        claude: { 
+            apiKey: process.env.CLAUDE_API_KEY || '', 
+            model: 'claude-3-5-sonnet-20241022' 
+        },
+        openai: { 
+            apiKey: process.env.OPENAI_API_KEY || '', 
+            endpoint: 'https://api.openai.com/v1', 
+            model: 'gpt-3.5-turbo' 
+        },
+        gemini: { 
+            apiKey: process.env.GEMINI_API_KEY || '', 
+            model: 'gemini-2.5-pro' 
+        },
+        custom: { 
+            apiKey: process.env.CUSTOM_API_KEY || '', 
+            endpoint: process.env.CUSTOM_API_ENDPOINT || 'https://api.moonshot.cn/v1/chat/completions', 
+            model: 'moonshot-v1-8k', 
+            auth: 'bearer' 
+        }
+    };
+}
+
+// 保存配置到 KV
+async function saveConfigToKV(config) {
+    if (useKV) {
+        try {
+            await kv.set('api_config', config);
+            console.log('💾 配置已保存到 Vercel KV');
+            return true;
+        } catch (error) {
+            console.error('保存配置到 KV 失败:', error);
+            return false;
+        }
+    }
+    return false;
+}
+
+// 初始化配置
+let SERVER_CONFIG = null;
+
+// 异步初始化（在路由中使用时再加载）
+async function getConfig() {
+    if (!SERVER_CONFIG) {
+        SERVER_CONFIG = await loadConfig();
+        console.log('📋 API 配置状态:');
+        console.log('  Claude:', SERVER_CONFIG.claude.apiKey ? '✅ 已配置' : '⚠️ 未配置');
+        console.log('  OpenAI:', SERVER_CONFIG.openai.apiKey ? '✅ 已配置' : '⚠️ 未配置');
+        console.log('  Gemini:', SERVER_CONFIG.gemini.apiKey ? '✅ 已配置' : '⚠️ 未配置');
+        console.log('  Custom:', SERVER_CONFIG.custom.apiKey ? '✅ 已配置' : '⚠️ 未配置');
+    }
+    return SERVER_CONFIG;
+}
 
 // 合并配置：优先使用前端传来的配置，如果没有则使用服务器默认配置
 function mergeConfig(provider, clientConfig) {
@@ -667,20 +724,25 @@ app.get('/chat', (req, res) => {
 // ==================== 配置管理 API ====================
 
 // 获取当前配置（隐藏完整密钥）
-app.get('/api/config', (req, res) => {
-    const safeConfig = {};
-    for (const [provider, config] of Object.entries(SERVER_CONFIG)) {
-        safeConfig[provider] = {
-            ...config,
-            apiKey: config.apiKey ? maskApiKey(config.apiKey) : '',
-            hasKey: !!config.apiKey
-        };
+app.get('/api/config', async (req, res) => {
+    try {
+        const config = await getConfig();
+        const safeConfig = {};
+        for (const [provider, cfg] of Object.entries(config)) {
+            safeConfig[provider] = {
+                ...cfg,
+                apiKey: cfg.apiKey ? maskApiKey(cfg.apiKey) : '',
+                hasKey: !!cfg.apiKey
+            };
+        }
+        res.json({ success: true, config: safeConfig, storage: useKV ? 'Vercel KV' : 'Memory' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
     }
-    res.json({ success: true, config: safeConfig });
 });
 
-// 保存配置（Vercel版本：仅内存存储，不写入文件）
-app.post('/api/config', (req, res) => {
+// 保存配置（持久化到 Vercel KV）
+app.post('/api/config', async (req, res) => {
     try {
         const { provider, config } = req.body;
         
@@ -691,17 +753,29 @@ app.post('/api/config', (req, res) => {
             });
         }
         
-        // 更新内存中的配置（仅在当前会话有效）
-        SERVER_CONFIG[provider] = {
-            ...SERVER_CONFIG[provider],
+        // 获取当前配置
+        const currentConfig = await getConfig();
+        
+        // 更新配置
+        currentConfig[provider] = {
+            ...currentConfig[provider],
             ...config
         };
         
-        console.log(`✅ ${provider} 配置已更新（内存）`);
+        // 保存到 KV（如果可用）
+        const saved = await saveConfigToKV(currentConfig);
+        
+        // 更新内存缓存
+        SERVER_CONFIG = currentConfig;
+        
+        console.log(`✅ ${provider} 配置已更新${saved ? '（已永久保存）' : '（仅内存）'}`);
         
         res.json({
             success: true,
-            message: '配置已保存（当前会话有效）\n💡 提示：Vercel部署建议使用环境变量配置API密钥'
+            message: saved 
+                ? '✅ 配置已永久保存！所有用户都能使用此配置' 
+                : '⚠️ 配置已保存（仅当前会话）\n💡 提示：启用 Vercel KV 实现永久存储',
+            storage: saved ? 'persistent' : 'memory'
         });
         
     } catch (error) {
@@ -713,14 +787,20 @@ app.post('/api/config', (req, res) => {
     }
 });
 
-// 删除配置（Vercel版本：仅清空内存）
-app.delete('/api/config/:provider', (req, res) => {
+// 删除配置（持久化删除）
+app.delete('/api/config/:provider', async (req, res) => {
     try {
         const { provider } = req.params;
+        const currentConfig = await getConfig();
         
-        if (SERVER_CONFIG[provider]) {
-            SERVER_CONFIG[provider].apiKey = '';
-            console.log(`🗑️ ${provider} 配置已清除（内存）`);
+        if (currentConfig[provider]) {
+            currentConfig[provider].apiKey = '';
+            
+            // 保存到 KV
+            const saved = await saveConfigToKV(currentConfig);
+            SERVER_CONFIG = currentConfig;
+            
+            console.log(`🗑️ ${provider} 配置已清除${saved ? '（永久）' : '（内存）'}`);
             
             res.json({
                 success: true,
@@ -745,7 +825,8 @@ app.delete('/api/config/:provider', (req, res) => {
 app.post('/api/config/test/:provider', async (req, res) => {
     try {
         const { provider } = req.params;
-        const config = SERVER_CONFIG[provider];
+        const currentConfig = await getConfig();
+        const config = currentConfig[provider];
         
         if (!config || !config.apiKey) {
             return res.json({
