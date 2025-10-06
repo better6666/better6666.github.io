@@ -306,26 +306,27 @@
         <div class="add-model-section">
             <h2 class="add-model-title">➕ 添加新模型配置</h2>
             
-            <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
-                <div style="font-weight: 600; color: #856404; margin-bottom: 0.5rem;">📌 配置示例：</div>
-                <div style="color: #856404; font-size: 0.875rem; line-height: 1.6;">
-                    <strong>OpenAI 多模型：</strong><br>
-                    1️⃣ GPT-4 → 模型ID: gpt-4 → API Key: sk-xxx<br>
-                    2️⃣ GPT-4o → 模型ID: gpt-4o → API Key: sk-yyy<br>
-                    3️⃣ o1 → 模型ID: o1-preview → API Key: sk-zzz<br><br>
+            <div style="background: #d1fae5; border: 2px solid #10b981; border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1.5rem;">
+                <div style="font-weight: 600; color: #065f46; margin-bottom: 0.75rem; font-size: 1.125rem;">✨ 简化配置流程</div>
+                <div style="color: #065f46; font-size: 0.938rem; line-height: 1.8;">
+                    <strong>🎯 只需3步：</strong><br>
+                    1️⃣ 选择AI品牌（OpenAI / Claude / Gemini 等）<br>
+                    2️⃣ 选择模型（自动显示该品牌的所有模型）<br>
+                    3️⃣ 填写API Key（唯一需要手动输入的）<br><br>
                     
-                    <strong>Claude 多模型：</strong><br>
-                    1️⃣ Sonnet 3.5 → 模型ID: claude-3-5-sonnet-20241022 → API Key: sk-ant-xxx<br>
-                    2️⃣ Opus → 模型ID: claude-3-opus-20240229 → API Key: sk-ant-yyy<br><br>
+                    <strong>✅ 自动完成：</strong><br>
+                    • 模型ID：自动填充正确的官方ID<br>
+                    • 模型名称：自动设置显示名称<br>
+                    • API端点：自动配置正确的接口地址<br><br>
                     
-                    💡 <strong>每个模型都是独立配置，可以使用不同的API Key！</strong>
+                    💡 <strong>无需担心输入错误，所有信息都已预设好！</strong>
                 </div>
             </div>
 
             <div class="add-form-grid">
                 <div class="form-group">
-                    <label>AI 品牌 *</label>
-                    <select id="add-provider">
+                    <label>1️⃣ 选择 AI 品牌 *</label>
+                    <select id="add-provider" onchange="onProviderChange()">
                         <option value="">选择AI品牌</option>
                         <option value="openai">OpenAI (ChatGPT)</option>
                         <option value="claude">Claude (Anthropic)</option>
@@ -337,29 +338,25 @@
                         <option value="doubao">豆包 (字节)</option>
                         <option value="qwen">通义千问 (阿里)</option>
                         <option value="ernie">文心一言 (百度)</option>
-                        <option value="other">其他</option>
                     </select>
                 </div>
 
-                    <div class="form-group">
-                    <label>模型显示名称 * <span style="color: #737373; font-weight: normal;">(自定义，方便识别)</span></label>
-                    <input type="text" id="add-name" placeholder="例如：GPT-4 Turbo">
-                    </div>
-
-                    <div class="form-group">
-                    <label>模型ID/名称 * <span style="color: #737373; font-weight: normal;">(官方模型名)</span></label>
-                    <input type="text" id="add-model" placeholder="例如：gpt-4-turbo">
-                    </div>
-
-                    <div class="form-group">
-                    <label>API Key * <span style="color: #737373; font-weight: normal;">(每个模型独立)</span></label>
-                    <input type="password" id="add-apikey" placeholder="sk-...">
-                    </div>
-
                 <div class="form-group">
-                    <label>API 端点（可选）</label>
-                    <input type="text" id="add-endpoint" placeholder="自动填充">
+                    <label>2️⃣ 选择模型 * <span style="color: #10b981; font-weight: normal;">(自动填充模型ID)</span></label>
+                    <select id="add-model-select" disabled>
+                        <option value="">先选择AI品牌</option>
+                    </select>
                 </div>
+
+                <div class="form-group" style="grid-column: 1/-1;">
+                    <label>3️⃣ 填写 API Key * <span style="color: #737373; font-weight: normal;">(这是唯一需要手动填写的)</span></label>
+                    <input type="password" id="add-apikey" placeholder="sk-..." style="font-size: 1rem;">
+                </div>
+
+                <!-- 隐藏字段，自动填充 -->
+                <input type="hidden" id="add-name">
+                <input type="hidden" id="add-model">
+                <input type="hidden" id="add-endpoint">
             </div>
 
             <button class="btn-add" onclick="addModel()">✨ 添加模型配置</button>
@@ -385,6 +382,97 @@
             ernie: { name: '文心一言', logo: '文', color: '#3860f4', endpoint: 'https://aip.baidubce.com/rpc/2.0' },
             other: { name: '其他', logo: '?', color: '#6b7280', endpoint: '' }
         };
+
+        // 🔥 完整的模型数据库 - 自动填充
+        const MODELS_DATABASE = {
+            openai: [
+                { name: 'GPT-4', id: 'gpt-4', description: '强大的多模态模型' },
+                { name: 'GPT-4 Turbo', id: 'gpt-4-turbo', description: '更快速的GPT-4' },
+                { name: 'GPT-4o', id: 'gpt-4o', description: 'GPT-4 Omni，多模态' },
+                { name: 'GPT-4o Mini', id: 'gpt-4o-mini', description: '轻量级GPT-4o' },
+                { name: 'GPT-3.5 Turbo', id: 'gpt-3.5-turbo', description: '快速高效' },
+                { name: 'o1', id: 'o1', description: '推理模型' },
+                { name: 'o1 Preview', id: 'o1-preview', description: 'o1预览版' },
+                { name: 'o1 Mini', id: 'o1-mini', description: 'o1轻量版' },
+                { name: 'o3 Mini', id: 'o3-mini', description: 'o3轻量版' }
+            ],
+            claude: [
+                { name: 'Claude 3.5 Sonnet (最新)', id: 'claude-3-5-sonnet-20241022', description: '最新Sonnet版本' },
+                { name: 'Claude 3.5 Sonnet', id: 'claude-3-5-sonnet-20240620', description: '6月版Sonnet' },
+                { name: 'Claude 3 Opus', id: 'claude-3-opus-20240229', description: '最强大的Claude' },
+                { name: 'Claude 3 Sonnet', id: 'claude-3-sonnet-20240229', description: '平衡性能' },
+                { name: 'Claude 3 Haiku', id: 'claude-3-haiku-20240307', description: '最快速' }
+            ],
+            gemini: [
+                { name: 'Gemini 2.5 Pro', id: 'gemini-2.5-pro', description: '最新Pro版本' },
+                { name: 'Gemini 2.0 Flash (实验)', id: 'gemini-2.0-flash-exp', description: '实验性Flash' },
+                { name: 'Gemini 1.5 Pro', id: 'gemini-1.5-pro', description: '长上下文Pro' },
+                { name: 'Gemini 1.5 Flash', id: 'gemini-1.5-flash', description: '快速Flash' },
+                { name: 'Gemini 1.0 Pro', id: 'gemini-1.0-pro', description: '稳定版Pro' }
+            ],
+            grok: [
+                { name: 'Grok 2', id: 'grok-2', description: 'xAI最新模型' },
+                { name: 'Grok Beta', id: 'grok-beta', description: 'Beta测试版' },
+                { name: 'Grok Vision Beta', id: 'grok-vision-beta', description: '视觉模型Beta' }
+            ],
+            deepseek: [
+                { name: 'DeepSeek Chat', id: 'deepseek-chat', description: '对话模型' },
+                { name: 'DeepSeek Coder', id: 'deepseek-coder', description: '代码专用' },
+                { name: 'DeepSeek V3', id: 'deepseek-v3', description: 'V3最新版' }
+            ],
+            kimi: [
+                { name: 'Moonshot 8K', id: 'moonshot-v1-8k', description: '8K上下文' },
+                { name: 'Moonshot 32K', id: 'moonshot-v1-32k', description: '32K上下文' },
+                { name: 'Moonshot 128K', id: 'moonshot-v1-128k', description: '128K长文本' }
+            ],
+            perplexity: [
+                { name: 'Sonar', id: 'sonar', description: '标准模型' },
+                { name: 'Sonar Pro', id: 'sonar-pro', description: 'Pro版本' },
+                { name: 'Sonar Small', id: 'sonar-small', description: '小型模型' },
+                { name: 'Sonar Medium', id: 'sonar-medium', description: '中型模型' }
+            ],
+            doubao: [
+                { name: '豆包 Pro', id: 'doubao-pro', description: 'Pro版本' },
+                { name: '豆包 Lite', id: 'doubao-lite', description: '轻量版' },
+                { name: '豆包 128K', id: 'doubao-128k', description: '长上下文' }
+            ],
+            qwen: [
+                { name: '通义千问 Turbo', id: 'qwen-turbo', description: '快速版本' },
+                { name: '通义千问 Plus', id: 'qwen-plus', description: '增强版' },
+                { name: '通义千问 Max', id: 'qwen-max', description: '最强版本' }
+            ],
+            ernie: [
+                { name: '文心一言 4.0', id: 'ernie-4.0', description: '最新版本' },
+                { name: '文心一言 3.5', id: 'ernie-3.5', description: '稳定版' },
+                { name: '文心一言 Turbo', id: 'ernie-turbo', description: '快速版' }
+            ]
+        };
+
+        // 当选择AI品牌时，自动填充模型列表
+        function onProviderChange() {
+            const provider = document.getElementById('add-provider').value;
+            const modelSelect = document.getElementById('add-model-select');
+            
+            if (!provider) {
+                modelSelect.disabled = true;
+                modelSelect.innerHTML = '<option value="">先选择AI品牌</option>';
+                return;
+            }
+            
+            // 清空并启用模型选择
+            modelSelect.disabled = false;
+            modelSelect.innerHTML = '<option value="">选择模型</option>';
+            
+            // 填充该品牌的所有模型
+            const models = MODELS_DATABASE[provider] || [];
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = `${model.name} - ${model.description}`;
+                option.dataset.name = model.name;
+                modelSelect.appendChild(option);
+            });
+        }
 
         // 页面加载时获取已配置的模型
         window.addEventListener('load', loadModels);
@@ -480,20 +568,29 @@
 
         async function addModel() {
             const provider = document.getElementById('add-provider').value;
-            const name = document.getElementById('add-name').value;
-            const model = document.getElementById('add-model').value;
+            const modelSelect = document.getElementById('add-model-select');
             const apiKey = document.getElementById('add-apikey').value;
-            const endpoint = document.getElementById('add-endpoint').value;
 
             if (!provider) {
                 alert('❌ 请选择AI品牌');
                 return;
             }
 
-            if (!name || !model || !apiKey) {
-                alert('❌ 请填写完整信息');
+            if (!modelSelect.value) {
+                alert('❌ 请选择模型');
                 return;
             }
+
+            if (!apiKey) {
+                alert('❌ 请填写API Key');
+                return;
+            }
+
+            // 🔥 自动填充所有信息
+            const selectedOption = modelSelect.options[modelSelect.selectedIndex];
+            const name = selectedOption.dataset.name;  // 自动获取模型显示名称
+            const model = modelSelect.value;  // 自动获取模型ID
+            const endpoint = PROVIDER_CONFIG[provider]?.endpoint || '';  // 自动获取端点
 
             const config = {
                 provider: provider,
@@ -513,13 +610,12 @@
                 const result = await response.json();
                 
                 if (result.success) {
-                    alert('✅ 模型添加成功！');
+                    alert(`✅ ${name} 添加成功！\n现在可以在聊天页面选择使用了。`);
                     // 清空表单
                     document.getElementById('add-provider').value = '';
-                    document.getElementById('add-name').value = '';
-                    document.getElementById('add-model').value = '';
+                    document.getElementById('add-model-select').disabled = true;
+                    document.getElementById('add-model-select').innerHTML = '<option value="">先选择AI品牌</option>';
                     document.getElementById('add-apikey').value = '';
-                    document.getElementById('add-endpoint').value = '';
                     // 重新加载
                     loadModels();
                 } else {
@@ -611,14 +707,6 @@
             }
         }
 
-        // 自动填充端点
-        document.getElementById('add-provider').addEventListener('change', function() {
-            const provider = this.value;
-            const endpointInput = document.getElementById('add-endpoint');
-            if (provider && PROVIDER_CONFIG[provider]) {
-                endpointInput.value = PROVIDER_CONFIG[provider].endpoint;
-            }
-        });
     </script>
 </body>
 </html>
