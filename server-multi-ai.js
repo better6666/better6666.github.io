@@ -76,16 +76,41 @@ async function loadConfig() {
         openai: { 
             apiKey: process.env.OPENAI_API_KEY || '', 
             endpoint: 'https://api.openai.com/v1', 
-            model: 'gpt-3.5-turbo' 
+            model: 'gpt-4' 
         },
         gemini: { 
             apiKey: process.env.GEMINI_API_KEY || '', 
             model: 'gemini-2.5-pro' 
         },
+        grok: {
+            apiKey: process.env.GROK_API_KEY || '',
+            endpoint: 'https://api.x.ai/v1',
+            model: 'grok-2'
+        },
+        deepseek: {
+            apiKey: process.env.DEEPSEEK_API_KEY || '',
+            endpoint: 'https://api.deepseek.com/v1',
+            model: 'deepseek-chat'
+        },
+        kimi: {
+            apiKey: process.env.KIMI_API_KEY || '',
+            endpoint: 'https://api.moonshot.cn/v1',
+            model: 'moonshot-v1-8k'
+        },
+        perplexity: {
+            apiKey: process.env.PERPLEXITY_API_KEY || '',
+            endpoint: 'https://api.perplexity.ai',
+            model: 'sonar'
+        },
+        doubao: {
+            apiKey: process.env.DOUBAO_API_KEY || '',
+            endpoint: 'https://ark.cn-beijing.volces.com/api/v3',
+            model: 'doubao-pro'
+        },
         custom: { 
             apiKey: process.env.CUSTOM_API_KEY || '', 
-            endpoint: process.env.CUSTOM_API_ENDPOINT || 'https://api.moonshot.cn/v1/chat/completions', 
-            model: 'moonshot-v1-8k', 
+            endpoint: process.env.CUSTOM_API_ENDPOINT || '', 
+            model: '', 
             auth: 'bearer' 
         }
     };
@@ -106,10 +131,58 @@ async function saveConfigToKV(config) {
     return false;
 }
 
-// 初始化配置
+// ==================== 🎯 多模型配置系统 ====================
+// 支持为每个AI品牌配置多个模型
+
+let MODELS_LIST = []; // 存储所有模型配置
+
+// 从 KV 加载模型列表
+async function loadModels() {
+    if (useKV) {
+        try {
+            const stored = await kv.get('models_list');
+            if (stored && Array.isArray(stored)) {
+                MODELS_LIST = stored;
+                console.log(`📋 已加载 ${MODELS_LIST.length} 个模型配置`);
+                return MODELS_LIST;
+            }
+        } catch (error) {
+            console.error('从 KV 加载模型列表失败:', error);
+        }
+    }
+    
+    // 默认为空，需要用户添加
+    MODELS_LIST = [];
+    return MODELS_LIST;
+}
+
+// 保存模型列表到 KV
+async function saveModels(models) {
+    if (useKV) {
+        try {
+            await kv.set('models_list', models);
+            MODELS_LIST = models;
+            console.log('💾 模型列表已保存');
+            return true;
+        } catch (error) {
+            console.error('保存模型列表失败:', error);
+            return false;
+        }
+    }
+    // 如果没有 KV，只保存在内存
+    MODELS_LIST = models;
+    return true;
+}
+
+// 生成唯一ID
+function generateId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+// 初始化配置（保留旧版兼容）
 let SERVER_CONFIG = null;
 
-// 异步初始化（在路由中使用时再加载）
+// 异步初始化
 async function getConfig() {
     if (!SERVER_CONFIG) {
         SERVER_CONFIG = await loadConfig();
@@ -117,14 +190,26 @@ async function getConfig() {
         console.log('  Claude:', SERVER_CONFIG.claude.apiKey ? '✅ 已配置' : '⚠️ 未配置');
         console.log('  OpenAI:', SERVER_CONFIG.openai.apiKey ? '✅ 已配置' : '⚠️ 未配置');
         console.log('  Gemini:', SERVER_CONFIG.gemini.apiKey ? '✅ 已配置' : '⚠️ 未配置');
+        console.log('  Grok:', SERVER_CONFIG.grok.apiKey ? '✅ 已配置' : '⚠️ 未配置');
+        console.log('  DeepSeek:', SERVER_CONFIG.deepseek.apiKey ? '✅ 已配置' : '⚠️ 未配置');
+        console.log('  Kimi:', SERVER_CONFIG.kimi.apiKey ? '✅ 已配置' : '⚠️ 未配置');
+        console.log('  Perplexity:', SERVER_CONFIG.perplexity.apiKey ? '✅ 已配置' : '⚠️ 未配置');
+        console.log('  Doubao:', SERVER_CONFIG.doubao.apiKey ? '✅ 已配置' : '⚠️ 未配置');
         console.log('  Custom:', SERVER_CONFIG.custom.apiKey ? '✅ 已配置' : '⚠️ 未配置');
     }
+    
+    // 同时加载模型列表
+    if (MODELS_LIST.length === 0) {
+        await loadModels();
+    }
+    
     return SERVER_CONFIG;
 }
 
 // 合并配置：优先使用前端传来的配置，如果没有则使用服务器默认配置
-function mergeConfig(provider, clientConfig) {
-    const serverConfig = SERVER_CONFIG[provider] || {};
+async function mergeConfig(provider, clientConfig) {
+    const config = await getConfig();
+    const serverConfig = config[provider] || {};
     return {
         apiKey: clientConfig?.apiKey || serverConfig.apiKey,
         endpoint: clientConfig?.endpoint || serverConfig.endpoint,
@@ -407,7 +492,7 @@ app.post('/api/chat', async (req, res) => {
         const { message, conversationId, provider, config, sessionId } = req.body;
 
         // 🔑 合并服务器端配置和客户端配置
-        const finalConfig = mergeConfig(provider, config);
+        const finalConfig = await mergeConfig(provider, config);
 
         // 获取用户会话数据
         if (!userSessions.has(sessionId)) {
@@ -429,6 +514,12 @@ app.post('/api/chat', async (req, res) => {
                 break;
 
             case 'openai':
+            case 'grok':
+            case 'deepseek':
+            case 'kimi':
+            case 'perplexity':
+            case 'doubao':
+                // 这些AI都使用OpenAI兼容的API
                 response = await chatWithOpenAI(history, finalConfig);
                 assistantMessage = response.choices[0].message.content;
                 break;
@@ -473,7 +564,7 @@ app.post('/api/chat/stream', async (req, res) => {
         const { message, conversationId, provider, config, sessionId } = req.body;
 
         // 🔑 合并服务器端配置和客户端配置
-        const finalConfig = mergeConfig(provider, config);
+        const finalConfig = await mergeConfig(provider, config);
         finalConfig.stream = true;
 
         res.setHeader('Content-Type', 'text/event-stream');
@@ -507,6 +598,12 @@ app.post('/api/chat/stream', async (req, res) => {
                 break;
 
             case 'openai':
+            case 'grok':
+            case 'deepseek':
+            case 'kimi':
+            case 'perplexity':
+            case 'doubao':
+                // 这些AI都使用OpenAI兼容的流式API
                 const openaiStream = await chatWithOpenAI(history, finalConfig);
                 for await (const chunk of openaiStream) {
                     const content = chunk.choices[0]?.delta?.content || '';
@@ -853,6 +950,12 @@ app.post('/api/config/test/:provider', async (req, res) => {
                     break;
                     
                 case 'openai':
+                case 'grok':
+                case 'deepseek':
+                case 'kimi':
+                case 'perplexity':
+                case 'doubao':
+                    // OpenAI 兼容的 API 测试
                     const response = await fetch(`${config.endpoint}/models`, {
                         headers: { 'Authorization': `Bearer ${config.apiKey}` }
                     });
@@ -905,6 +1008,226 @@ function maskApiKey(key) {
     if (!key || key.length < 8) return '••••••••';
     return key.substring(0, 4) + '••••••••' + key.substring(key.length - 4);
 }
+
+// ==================== 🎯 多模型管理 API ====================
+
+// 获取所有模型配置
+app.get('/api/models', async (req, res) => {
+    try {
+        await getConfig(); // 确保已加载
+        
+        // 返回模型列表，隐藏完整API Key
+        const safeModels = MODELS_LIST.map(model => ({
+            ...model,
+            apiKey: model.apiKey ? '••••••••' : ''
+        }));
+        
+        res.json({
+            success: true,
+            models: safeModels
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// 添加新模型配置
+app.post('/api/models', async (req, res) => {
+    try {
+        const { provider, name, model, apiKey, endpoint } = req.body;
+        
+        if (!provider || !name || !model || !apiKey) {
+            return res.status(400).json({
+                success: false,
+                message: '缺少必要参数'
+            });
+        }
+        
+        await getConfig(); // 确保已加载
+        
+        // 创建新模型配置
+        const newModel = {
+            id: generateId(),
+            provider: provider,
+            name: name,
+            model: model,
+            apiKey: apiKey,
+            endpoint: endpoint || '',
+            createdAt: Date.now()
+        };
+        
+        // 添加到列表
+        MODELS_LIST.push(newModel);
+        
+        // 保存
+        const saved = await saveModels(MODELS_LIST);
+        
+        res.json({
+            success: true,
+            message: saved ? '模型添加成功（已永久保存）' : '模型添加成功（仅内存）',
+            model: { ...newModel, apiKey: '••••••••' }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// 更新模型配置
+app.put('/api/models/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, model, apiKey, endpoint } = req.body;
+        
+        await getConfig(); // 确保已加载
+        
+        // 查找模型
+        const index = MODELS_LIST.findIndex(m => m.id === id);
+        if (index === -1) {
+            return res.status(404).json({
+                success: false,
+                message: '模型不存在'
+            });
+        }
+        
+        // 更新字段
+        if (name) MODELS_LIST[index].name = name;
+        if (model) MODELS_LIST[index].model = model;
+        if (apiKey) MODELS_LIST[index].apiKey = apiKey;
+        if (endpoint !== undefined) MODELS_LIST[index].endpoint = endpoint;
+        
+        // 保存
+        const saved = await saveModels(MODELS_LIST);
+        
+        res.json({
+            success: true,
+            message: '更新成功'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// 删除模型配置
+app.delete('/api/models/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        await getConfig(); // 确保已加载
+        
+        // 删除模型
+        const newList = MODELS_LIST.filter(m => m.id !== id);
+        
+        if (newList.length === MODELS_LIST.length) {
+            return res.status(404).json({
+                success: false,
+                message: '模型不存在'
+            });
+        }
+        
+        // 保存
+        await saveModels(newList);
+        
+        res.json({
+            success: true,
+            message: '删除成功'
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// 测试模型连接
+app.post('/api/models/:id/test', async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        await getConfig(); // 确保已加载
+        
+        // 查找模型
+        const model = MODELS_LIST.find(m => m.id === id);
+        if (!model) {
+            return res.status(404).json({
+                success: false,
+                message: '模型不存在'
+            });
+        }
+        
+        // 根据provider类型测试
+        let testResult = false;
+        let errorMsg = '';
+        
+        try {
+            if (model.provider === 'claude') {
+                const Anthropic = require('@anthropic-ai/sdk');
+                const anthropic = new Anthropic({ apiKey: model.apiKey });
+                await anthropic.messages.create({
+                    model: model.model,
+                    max_tokens: 10,
+                    messages: [{ role: 'user', content: 'Hi' }]
+                });
+                testResult = true;
+            } 
+            else if (model.provider === 'gemini') {
+                const { GoogleGenerativeAI } = require('@google/generative-ai');
+                const genAI = new GoogleGenerativeAI(model.apiKey);
+                const geminiModel = genAI.getGenerativeModel({ model: model.model });
+                await geminiModel.generateContent('Hi');
+                testResult = true;
+            }
+            else if (['openai', 'grok', 'deepseek', 'kimi', 'perplexity', 'doubao', 'qwen', 'ernie', 'other'].includes(model.provider)) {
+                // OpenAI 兼容 API
+                const fetch = require('node-fetch');
+                const response = await fetch(`${model.endpoint}/chat/completions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${model.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model.model,
+                        messages: [{ role: 'user', content: 'Hi' }],
+                        max_tokens: 5
+                    })
+                });
+                
+                if (response.ok) {
+                    testResult = true;
+                } else {
+                    const error = await response.text();
+                    errorMsg = '测试失败: ' + error;
+                }
+            }
+            else {
+                errorMsg = '不支持的提供商';
+            }
+        } catch (error) {
+            errorMsg = error.message;
+        }
+        
+        res.json({
+            success: testResult,
+            message: testResult ? '连接测试成功' : errorMsg
+        });
+        
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
 
 // 启动服务器
 app.listen(PORT, () => {

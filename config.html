@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Claude</title>
+    <title>AI 模型配置中心</title>
     <style>
         * {
             margin: 0;
@@ -15,19 +15,23 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 2rem;
         }
 
-        .config-container {
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
             background: white;
             border-radius: 1.5rem;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            max-width: 900px;
-            width: 100%;
-            padding: 3rem;
+            padding: 2.5rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #ebebeb;
         }
 
         h1 {
@@ -38,769 +42,537 @@
 
         .subtitle {
             color: #737373;
-            margin-bottom: 2rem;
-        }
-
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid #ebebeb;
-        }
-
-        .tab {
-            padding: 0.75rem 1.5rem;
-            background: none;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: #737373;
             font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-bottom: -2px;
         }
 
-        .tab.active {
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
             color: #667eea;
-            border-bottom-color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .back-link:hover {
+            color: #5568d3;
+            transform: translateX(-4px);
+        }
+
+        .info-box {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-title {
             font-weight: 600;
+            color: #1e40af;
+            margin-bottom: 0.5rem;
         }
 
-        .tab-content {
-            display: none;
+        .info-content {
+            color: #1e3a8a;
+            font-size: 0.875rem;
+            line-height: 1.6;
         }
 
-        .tab-content.active {
-            display: block;
+        .models-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
         }
 
-        .ai-provider {
+        .model-card {
             background: #f9f9f9;
             border-radius: 1rem;
             padding: 1.5rem;
-            margin-bottom: 1.5rem;
             border: 2px solid transparent;
             transition: all 0.2s;
+            position: relative;
         }
 
-        .ai-provider:hover {
+        .model-card:hover {
             border-color: #667eea;
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.1);
         }
 
-        .ai-provider.enabled {
-            border-color: #10b981;
-            background: #f0fdf4;
-        }
-
-        .provider-header {
+        .model-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
             margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid #e0e0e0;
         }
 
-        .provider-info {
+        .model-info {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
-        .provider-logo {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 0.75rem;
+        .model-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 0.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
             font-weight: bold;
             color: white;
+            font-size: 1rem;
+            flex-shrink: 0;
         }
 
-        .provider-name {
-            font-size: 1.25rem;
-            font-weight: 600;
+        .model-details h3 {
+            font-size: 1rem;
             color: #1f1f1f;
+            margin-bottom: 0.25rem;
         }
 
-        .provider-description {
+        .model-details p {
+            font-size: 0.813rem;
             color: #737373;
-            font-size: 0.875rem;
         }
 
-        .toggle-switch {
-            position: relative;
-            width: 3.5rem;
-            height: 2rem;
-            background: #d1d5db;
-            border-radius: 1rem;
+        .delete-btn {
+            background: #fee2e2;
+            color: #991b1b;
+            border: none;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            font-size: 0.813rem;
             cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .toggle-switch.active {
-            background: #10b981;
-        }
-
-        .toggle-switch::before {
-            content: '';
-            position: absolute;
-            width: 1.5rem;
-            height: 1.5rem;
-            background: white;
-            border-radius: 50%;
-            top: 0.25rem;
-            left: 0.25rem;
-            transition: transform 0.3s;
-        }
-
-        .toggle-switch.active::before {
-            transform: translateX(1.5rem);
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        label {
-            display: block;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
-            color: #525252;
-        }
-
-        input[type="text"],
-        input[type="password"],
-        select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid #d4d4d4;
-            border-radius: 0.5rem;
-            font-size: 0.9375rem;
             transition: all 0.2s;
         }
 
-        input:focus,
-        select:focus {
+        .delete-btn:hover {
+            background: #fecaca;
+        }
+
+        .form-group {
+            margin-bottom: 0.875rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.375rem;
+            font-size: 0.813rem;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.625rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-group input:focus {
             outline: none;
             border-color: #667eea;
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
         .btn {
-            padding: 0.75rem 1.5rem;
+            flex: 1;
+            padding: 0.625rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-save {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #5568d3;
+        }
+
+        .btn-test {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-test:hover {
+            background: #059669;
+        }
+
+        .add-model-section {
+            background: #f0fdf4;
+            border: 2px dashed #10b981;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .add-model-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #065f46;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .add-form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-add {
+            background: #10b981;
+            color: white;
+            padding: 0.875rem 2rem;
             border: none;
             border-radius: 0.5rem;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            width: 100%;
         }
 
-        .btn-primary {
-            background: #667eea;
-            color: white;
+        .btn-add:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
         }
 
-        .btn-primary:hover {
-            background: #5568d3;
-            transform: translateY(-1px);
-        }
-
-        .btn-secondary {
-            background: #f3f4f6;
-            color: #525252;
-        }
-
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-
-        .btn-success {
-            background: #10b981;
-            color: white;
-        }
-
-        .btn-test {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 0.5rem;
-            height: 0.5rem;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-
-        .status-indicator.success {
-            background: #10b981;
-        }
-
-        .status-indicator.error {
-            background: #ef4444;
-        }
-
-        .status-indicator.warning {
-            background: #f59e0b;
-        }
-
-        .alert {
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .alert-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #10b981;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #ef4444;
-        }
-
-        .model-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .model-chip {
-            padding: 0.5rem 1rem;
-            background: white;
-            border: 1px solid #d4d4d4;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            text-align: center;
+        @media (max-width: 768px) {
+            .models-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .add-form-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
-    <link rel="stylesheet" href="responsive-fixes.css">
 </head>
 <body>
-    <div class="config-container">
-        <h1>🤖 Multi-AI 平台配置</h1>
-        <p class="subtitle">配置您的 AI 提供商和 API 密钥</p>
+    <div class="container">
+        <a href="chat.html" class="back-link">← 返回聊天</a>
 
-        <div class="tabs">
-            <button class="tab active" onclick="switchTab('providers')">AI 提供商</button>
-            <button class="tab" onclick="switchTab('account')">账号管理</button>
-            <button class="tab" onclick="switchTab('advanced')">高级设置</button>
+        <div class="header">
+            <h1>🤖 AI 模型配置中心</h1>
+            <p class="subtitle">为每个AI品牌配置多个模型，自由选择使用</p>
         </div>
 
-        <!-- AI 提供商配置 -->
-        <div id="providers" class="tab-content active">
-            <!-- Claude (Anthropic) -->
-            <div class="ai-provider" data-provider="claude">
-                <div class="provider-header">
-                    <div class="provider-info">
-                        <div class="provider-logo" style="background: #d97757;">C</div>
-                        <div>
-                            <div class="provider-name">Claude (Anthropic)</div>
-                            <div class="provider-description">最先进的 AI 助手</div>
-                        </div>
-                    </div>
-                    <div class="toggle-switch" onclick="toggleProvider('claude')"></div>
-                </div>
-
-                <div class="provider-config" style="display: none;">
-                    <div class="form-group">
-                        <label>
-                            API Key 
-                            <span id="claude-status" style="margin-left: 0.5rem; font-weight: normal; font-size: 0.875rem;">❌ 未配置</span>
-                        </label>
-                        <input type="password" id="claude-api-key" placeholder="sk-ant-api03-... 或留空从服务器加载">
-                    </div>
-
-                    <div class="form-group">
-                        <label>默认模型</label>
-                        <select id="claude-model">
-                            <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (推荐)</option>
-                            <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (快速)</option>
-                            <option value="claude-3-opus-20240229">Claude 3 Opus</option>
-                            <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
-                        </select>
-                    </div>
-
-                    <div class="actions">
-                        <button class="btn btn-test" onclick="testConnection('claude')">🧪 测试连接</button>
-                        <button class="btn btn-primary" onclick="saveConfig('claude')">💾 保存配置</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- OpenAI -->
-            <div class="ai-provider" data-provider="openai">
-                <div class="provider-header">
-                    <div class="provider-info">
-                        <div class="provider-logo" style="background: #10a37f;">AI</div>
-                        <div>
-                            <div class="provider-name">OpenAI (ChatGPT)</div>
-                            <div class="provider-description">GPT-4, GPT-3.5-Turbo</div>
-                        </div>
-                    </div>
-                    <div class="toggle-switch" onclick="toggleProvider('openai')"></div>
-                </div>
-
-                <div class="provider-config" style="display: none;">
-                    <div class="form-group">
-                        <label>
-                            API Key 
-                            <span id="openai-status" style="margin-left: 0.5rem; font-weight: normal; font-size: 0.875rem;">❌ 未配置</span>
-                        </label>
-                        <input type="password" id="openai-api-key" placeholder="sk-... 或留空从服务器加载">
-                    </div>
-
-                    <div class="form-group">
-                        <label>API 端点（可选）</label>
-                        <input type="text" id="openai-endpoint" placeholder="https://api.openai.com/v1">
-                    </div>
-
-                    <div class="form-group">
-                        <label>默认模型</label>
-                        <select id="openai-model">
-                            <option value="gpt-4-turbo-preview">GPT-4 Turbo</option>
-                            <option value="gpt-4">GPT-4</option>
-                            <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                        </select>
-                    </div>
-
-                    <div class="actions">
-                        <button class="btn btn-test" onclick="testConnection('openai')">🧪 测试连接</button>
-                        <button class="btn btn-primary" onclick="saveConfig('openai')">💾 保存配置</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Google Gemini -->
-            <div class="ai-provider" data-provider="gemini">
-                <div class="provider-header">
-                    <div class="provider-info">
-                        <div class="provider-logo" style="background: #4285f4;">G</div>
-                        <div>
-                            <div class="provider-name">Google Gemini</div>
-                            <div class="provider-description">Google 最新 AI 模型</div>
-                        </div>
-                    </div>
-                    <div class="toggle-switch" onclick="toggleProvider('gemini')"></div>
-                </div>
-
-                <div class="provider-config" style="display: none;">
-                    <div class="form-group">
-                        <label>
-                            API Key 
-                            <span id="gemini-status" style="margin-left: 0.5rem; font-weight: normal; font-size: 0.875rem;">❌ 未配置</span>
-                        </label>
-                        <input type="password" id="gemini-api-key" placeholder="AIza... 或留空从服务器加载">
-                    </div>
-
-                    <div class="form-group">
-                        <label>默认模型</label>
-                        <select id="gemini-model">
-                            <option value="gemini-2.5-pro">💎 Gemini 2.5 Pro (最新)</option>
-                        </select>
-                    </div>
-
-                    <div class="actions">
-                        <button class="btn btn-test" onclick="testConnection('gemini')">🧪 测试连接</button>
-                        <button class="btn btn-primary" onclick="saveConfig('gemini')">💾 保存配置</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 自定义 API -->
-            <div class="ai-provider" data-provider="custom">
-                <div class="provider-header">
-                    <div class="provider-info">
-                        <div class="provider-logo" style="background: #8b5cf6;">🔧</div>
-                        <div>
-                            <div class="provider-name">自定义 API</div>
-                            <div class="provider-description">接入其他 AI 服务</div>
-                        </div>
-                    </div>
-                    <div class="toggle-switch" onclick="toggleProvider('custom')"></div>
-                </div>
-
-                <div class="provider-config" style="display: none;">
-                    <div class="form-group">
-                        <label>服务名称</label>
-                        <input type="text" id="custom-name" placeholder="My AI Service">
-                    </div>
-
-                    <div class="form-group">
-                        <label>API 端点</label>
-                        <input type="text" id="custom-endpoint" placeholder="https://api.example.com/v1/chat">
-                    </div>
-
-                    <div class="form-group">
-                        <label>
-                            API Key / Token 
-                            <span id="custom-status" style="margin-left: 0.5rem; font-weight: normal; font-size: 0.875rem;">❌ 未配置</span>
-                        </label>
-                        <input type="password" id="custom-api-key" placeholder="输入您的 API Key 或留空从服务器加载">
-                    </div>
-
-                    <div class="form-group">
-                        <label>认证方式</label>
-                        <select id="custom-auth">
-                            <option value="bearer">Bearer Token</option>
-                            <option value="apikey">API Key Header</option>
-                            <option value="basic">Basic Auth</option>
-                        </select>
-                    </div>
-
-                    <div class="actions">
-                        <button class="btn btn-test" onclick="testConnection('custom')">🧪 测试连接</button>
-                        <button class="btn btn-primary" onclick="saveConfig('custom')">💾 保存配置</button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top: 2rem; text-align: center;">
-                <button class="btn btn-success" onclick="goToChat()">✅ 完成配置，开始使用</button>
+        <div class="info-box">
+            <div class="info-title">💡 使用说明</div>
+            <div class="info-content">
+                • <strong>多模型配置</strong>：每个AI品牌可以添加多个模型（如OpenAI可以同时配置gpt-4, gpt-4o, o1等）<br>
+                • <strong>自定义名称</strong>：为每个模型配置起一个容易识别的名字<br>
+                • <strong>独立API Key</strong>：每个模型配置可以使用不同的API Key<br>
+                • <strong>配置永久有效</strong>：保存后所有用户都能使用
             </div>
         </div>
 
-        <!-- 账号管理 -->
-        <div id="account" class="tab-content">
-            <div class="ai-provider">
-                <h3 style="margin-bottom: 1rem;">创建管理员账号</h3>
-                <div class="form-group">
-                    <label>用户名</label>
-                    <input type="text" id="admin-username" placeholder="admin">
-                </div>
-                <div class="form-group">
-                    <label>密码</label>
-                    <input type="password" id="admin-password" placeholder="至少8位">
-                </div>
-                <div class="form-group">
-                    <label>确认密码</label>
-                    <input type="password" id="admin-password-confirm" placeholder="再次输入密码">
-                </div>
-                <button class="btn btn-primary" onclick="createAccount()">创建账号</button>
-            </div>
-
-            <div class="ai-provider">
-                <h3 style="margin-bottom: 1rem;">或使用现有账号</h3>
-                <div class="form-group">
-                    <label>用户名</label>
-                    <input type="text" id="login-username">
-                </div>
-                <div class="form-group">
-                    <label>密码</label>
-                    <input type="password" id="login-password">
-                </div>
-                <button class="btn btn-primary" onclick="login()">登录</button>
-            </div>
+        <div id="models-container" class="models-grid">
+            <!-- 动态加载的模型卡片 -->
         </div>
 
-        <!-- 高级设置 -->
-        <div id="advanced" class="tab-content">
-            <div class="ai-provider">
-                <h3 style="margin-bottom: 1rem;">服务器设置</h3>
+        <div class="add-model-section">
+            <h2 class="add-model-title">➕ 添加新模型</h2>
+            
+            <div class="add-form-grid">
                 <div class="form-group">
-                    <label>服务器端口</label>
-                    <input type="text" id="server-port" value="3000">
+                    <label>AI 品牌 *</label>
+                    <select id="add-provider">
+                        <option value="">选择AI品牌</option>
+                        <option value="openai">OpenAI (ChatGPT)</option>
+                        <option value="claude">Claude (Anthropic)</option>
+                        <option value="gemini">Google Gemini</option>
+                        <option value="grok">Grok (xAI)</option>
+                        <option value="deepseek">DeepSeek</option>
+                        <option value="kimi">Kimi (月之暗面)</option>
+                        <option value="perplexity">Perplexity</option>
+                        <option value="doubao">豆包 (字节)</option>
+                        <option value="qwen">通义千问 (阿里)</option>
+                        <option value="ernie">文心一言 (百度)</option>
+                        <option value="other">其他</option>
+                    </select>
                 </div>
+
                 <div class="form-group">
-                    <label>最大对话历史</label>
-                    <input type="text" id="max-history" value="50">
+                    <label>模型显示名称 *</label>
+                    <input type="text" id="add-name" placeholder="例如：GPT-4 Turbo">
                 </div>
+
                 <div class="form-group">
-                    <label>请求超时（秒）</label>
-                    <input type="text" id="timeout" value="30">
+                    <label>模型ID/名称 *</label>
+                    <input type="text" id="add-model" placeholder="例如：gpt-4-turbo">
                 </div>
-                <button class="btn btn-primary" onclick="saveAdvancedConfig()">保存设置</button>
+
+                <div class="form-group">
+                    <label>API Key *</label>
+                    <input type="password" id="add-apikey" placeholder="sk-...">
+                </div>
+
+                <div class="form-group">
+                    <label>API 端点（可选）</label>
+                    <input type="text" id="add-endpoint" placeholder="例如：https://api.openai.com/v1">
+                </div>
             </div>
 
-            <div class="ai-provider">
-                <h3 style="margin-bottom: 1rem;">数据管理</h3>
-                <div class="actions">
-                    <button class="btn btn-secondary" onclick="exportConfig()">📥 导出配置</button>
-                    <button class="btn btn-secondary" onclick="importConfig()">📤 导入配置</button>
-                    <button class="btn btn-secondary" onclick="clearData()">🗑️ 清除数据</button>
-                </div>
-            </div>
+            <button class="btn-add" onclick="addModel()">✨ 添加模型配置</button>
         </div>
     </div>
 
     <script>
-        // 切换标签页
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            event.target.classList.add('active');
-            document.getElementById(tabName).classList.add('active');
+        // 品牌配置
+        const PROVIDER_CONFIG = {
+            openai: { name: 'OpenAI', logo: 'AI', color: '#10a37f', endpoint: 'https://api.openai.com/v1' },
+            claude: { name: 'Claude', logo: 'C', color: '#D97757', endpoint: '' },
+            gemini: { name: 'Gemini', logo: 'G', color: '#4285f4', endpoint: '' },
+            grok: { name: 'Grok', logo: '𝕏', color: '#000000', endpoint: 'https://api.x.ai/v1' },
+            deepseek: { name: 'DeepSeek', logo: 'DS', color: '#3b82f6', endpoint: 'https://api.deepseek.com/v1' },
+            kimi: { name: 'Kimi', logo: '🌙', color: '#f59e0b', endpoint: 'https://api.moonshot.cn/v1' },
+            perplexity: { name: 'Perplexity', logo: 'P', color: '#8b5cf6', endpoint: 'https://api.perplexity.ai' },
+            doubao: { name: '豆包', logo: '豆', color: '#ef4444', endpoint: 'https://ark.cn-beijing.volces.com/api/v3' },
+            qwen: { name: '通义千问', logo: '通', color: '#ff6a00', endpoint: 'https://dashscope.aliyuncs.com/api/v1' },
+            ernie: { name: '文心一言', logo: '文', color: '#3860f4', endpoint: 'https://aip.baidubce.com/rpc/2.0' },
+            other: { name: '其他', logo: '?', color: '#6b7280', endpoint: '' }
+        };
+
+        // 页面加载时获取已配置的模型
+        window.addEventListener('load', loadModels);
+
+        async function loadModels() {
+            try {
+                const response = await fetch('/api/models');
+                const result = await response.json();
+                
+                if (result.success && result.models) {
+                    displayModels(result.models);
+                }
+            } catch (error) {
+                console.error('加载模型失败:', error);
+            }
         }
 
-        // 切换 AI 提供商
-        function toggleProvider(provider) {
-            const providerEl = document.querySelector(`[data-provider="${provider}"]`);
-            const toggle = providerEl.querySelector('.toggle-switch');
-            const config = providerEl.querySelector('.provider-config');
-            
-            toggle.classList.toggle('active');
-            const isActive = toggle.classList.contains('active');
-            
-            config.style.display = isActive ? 'block' : 'none';
-            providerEl.classList.toggle('enabled', isActive);
+        function displayModels(models) {
+            const container = document.getElementById('models-container');
+            container.innerHTML = '';
 
-            // 保存状态
-            const settings = getSettings();
-            settings.providers = settings.providers || {};
-            settings.providers[provider] = { enabled: isActive };
-            saveSettings(settings);
-        }
-
-        // 测试连接
-        async function testConnection(provider) {
-            const apiKey = document.getElementById(`${provider}-api-key`).value;
-            
-            if (!apiKey) {
-                alert('请先输入 API Key！');
+            if (models.length === 0) {
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #737373;">暂无配置，请添加模型</p>';
                 return;
             }
 
-            const btn = event.target;
-            btn.textContent = '⏳ 测试中...';
-            btn.disabled = true;
+            models.forEach(model => {
+                const providerConfig = PROVIDER_CONFIG[model.provider] || PROVIDER_CONFIG.other;
+                
+                const card = document.createElement('div');
+                card.className = 'model-card';
+                card.innerHTML = `
+                    <div class="model-header">
+                        <div class="model-info">
+                            <div class="model-logo" style="background: ${providerConfig.color};">
+                                ${providerConfig.logo}
+                            </div>
+                            <div class="model-details">
+                                <h3>${model.name}</h3>
+                                <p>${providerConfig.name} • ${model.model}</p>
+                            </div>
+                        </div>
+                        <button class="delete-btn" onclick="deleteModel('${model.id}')">删除</button>
+                    </div>
 
-            try {
-                // 收集所有必要的配置信息
-                const requestBody = { apiKey };
-                
-                // 对于不同的提供商，添加额外参数
-                if (provider === 'openai' || provider === 'custom') {
-                    const endpointInput = document.getElementById(`${provider}-endpoint`);
-                    if (endpointInput) {
-                        requestBody.endpoint = endpointInput.value;
-                    }
-                }
-                
-                // 对于 Gemini，添加模型参数
-                if (provider === 'gemini') {
-                    const modelInput = document.getElementById(`${provider}-model`);
-                    if (modelInput) {
-                        requestBody.model = modelInput.value;
-                    }
-                }
-                
-                const response = await fetch(`/api/test/${provider}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(requestBody)
-                });
+                    <div class="form-group">
+                        <label>模型显示名称</label>
+                        <input type="text" value="${model.name}" id="name-${model.id}">
+                    </div>
 
-                const result = await response.json();
+                    <div class="form-group">
+                        <label>模型ID</label>
+                        <input type="text" value="${model.model}" id="model-${model.id}">
+                    </div>
+
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" placeholder="${model.apiKey ? '••••••••' : ''}" id="apikey-${model.id}">
+                    </div>
+
+                    ${model.endpoint ? `
+                    <div class="form-group">
+                        <label>API 端点</label>
+                        <input type="text" value="${model.endpoint}" id="endpoint-${model.id}">
+                    </div>
+                    ` : ''}
+
+                    <div class="actions">
+                        <button class="btn btn-save" onclick="updateModel('${model.id}')">💾 保存</button>
+                        <button class="btn btn-test" onclick="testModel('${model.id}')">🧪 测试</button>
+                    </div>
+                `;
                 
-                if (result.success) {
-                    alert(`✅ ${provider} 连接成功！\n模型：${result.model || 'N/A'}`);
-                } else {
-                    alert(`❌ 连接失败：${result.error}`);
-                }
-            } catch (error) {
-                alert(`❌ 连接失败：${error.message}`);
-            } finally {
-                btn.textContent = '🧪 测试连接';
-                btn.disabled = false;
-            }
+                container.appendChild(card);
+            });
         }
 
-        // 保存配置
-        // 保存配置到服务器（永久生效）
-        async function saveConfig(provider) {
+        async function addModel() {
+            const provider = document.getElementById('add-provider').value;
+            const name = document.getElementById('add-name').value;
+            const model = document.getElementById('add-model').value;
+            const apiKey = document.getElementById('add-apikey').value;
+            const endpoint = document.getElementById('add-endpoint').value;
+
+            if (!provider) {
+                alert('❌ 请选择AI品牌');
+                return;
+            }
+
+            if (!name || !model || !apiKey) {
+                alert('❌ 请填写完整信息');
+                return;
+            }
+
             const config = {
-                apiKey: document.getElementById(`${provider}-api-key`).value,
-                model: document.getElementById(`${provider}-model`)?.value
+                provider: provider,
+                name: name,
+                model: model,
+                apiKey: apiKey,
+                endpoint: endpoint || PROVIDER_CONFIG[provider]?.endpoint || ''
             };
 
-            if (provider === 'openai') {
-                config.endpoint = document.getElementById('openai-endpoint').value;
-            }
-
-            if (provider === 'custom') {
-                config.name = document.getElementById('custom-name').value;
-                config.endpoint = document.getElementById('custom-endpoint').value;
-                config.auth = document.getElementById('custom-auth').value;
-            }
-
-            if (!config.apiKey) {
-                alert('❌ 请输入 API Key');
-                return;
-            }
-
             try {
-                const response = await fetch('/api/config', {
+                const response = await fetch('/api/models', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ provider, config })
+                    body: JSON.stringify(config)
                 });
 
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(`✅ ${provider} 配置已永久保存到服务器！`);
-                    loadServerConfig(); // 重新加载配置显示
+                    alert('✅ 模型添加成功！');
+                    // 清空表单
+                    document.getElementById('add-provider').value = '';
+                    document.getElementById('add-name').value = '';
+                    document.getElementById('add-model').value = '';
+                    document.getElementById('add-apikey').value = '';
+                    document.getElementById('add-endpoint').value = '';
+                    // 重新加载
+                    loadModels();
                 } else {
-                    alert(`❌ 保存失败: ${result.message}`);
+                    alert('❌ 添加失败：' + result.message);
                 }
             } catch (error) {
-                console.error('保存配置错误:', error);
-                alert(`❌ 保存失败: ${error.message}`);
+                alert('❌ 添加失败：' + error.message);
             }
         }
 
-        // 前往聊天界面
-        function goToChat() {
-            const settings = getSettings();
-            const enabled = Object.keys(settings.providers || {}).filter(
-                p => settings.providers[p].enabled
-            );
+        async function updateModel(id) {
+            const name = document.getElementById(`name-${id}`).value;
+            const model = document.getElementById(`model-${id}`).value;
+            const apiKey = document.getElementById(`apikey-${id}`).value;
+            const endpointEl = document.getElementById(`endpoint-${id}`);
+            const endpoint = endpointEl ? endpointEl.value : '';
 
-            if (enabled.length === 0) {
-                alert('请至少配置一个 AI 提供商！');
-                return;
+            const config = {
+                name: name,
+                model: model
+            };
+
+            if (apiKey) {
+                config.apiKey = apiKey;
             }
 
-            window.location.href = 'chat.html';
-        }
-
-        // 本地存储
-        function getSettings() {
-            return JSON.parse(localStorage.getItem('aiSettings') || '{}');
-        }
-
-        function saveSettings(settings) {
-            localStorage.setItem('aiSettings', JSON.stringify(settings));
-        }
-
-        // 创建账号
-        function createAccount() {
-            const username = document.getElementById('admin-username').value;
-            const password = document.getElementById('admin-password').value;
-            const confirm = document.getElementById('admin-password-confirm').value;
-
-            if (!username || !password) {
-                alert('请填写用户名和密码！');
-                return;
+            if (endpoint) {
+                config.endpoint = endpoint;
             }
 
-            if (password !== confirm) {
-                alert('两次密码不一致！');
-                return;
-            }
-
-            if (password.length < 8) {
-                alert('密码至少8位！');
-                return;
-            }
-
-            const settings = getSettings();
-            settings.account = { username, password: btoa(password) };
-            saveSettings(settings);
-
-            alert('✅ 账号创建成功！');
-        }
-
-        // 登录
-        function login() {
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
-            const settings = getSettings();
-
-            if (settings.account && 
-                settings.account.username === username &&
-                settings.account.password === btoa(password)) {
-                alert('✅ 登录成功！');
-                switchTab('providers');
-            } else {
-                alert('❌ 用户名或密码错误！');
-            }
-        }
-
-        // 导出配置
-        function exportConfig() {
-            const settings = getSettings();
-            const dataStr = JSON.stringify(settings, null, 2);
-            const dataBlob = new Blob([dataStr], { type: 'application/json' });
-            const url = URL.createObjectURL(dataBlob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = 'ai-config.json';
-            link.click();
-        }
-
-        // 页面加载时恢复状态
-        // 从服务器加载配置
-        async function loadServerConfig() {
             try {
-                const response = await fetch('/api/config');
+                const response = await fetch(`/api/models/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(config)
+                });
+
                 const result = await response.json();
-                
-                if (result.success && result.config) {
-                    // 显示配置状态
-                    Object.keys(result.config).forEach(provider => {
-                        const config = result.config[provider];
-                        const statusEl = document.getElementById(`${provider}-status`);
-                        const apiKeyInput = document.getElementById(`${provider}-api-key`);
-                        
-                        if (statusEl) {
-                            if (config.hasKey) {
-                                statusEl.textContent = '✅ 已配置';
-                                statusEl.style.color = '#48bb78';
-                            } else {
-                                statusEl.textContent = '❌ 未配置';
-                                statusEl.style.color = '#f56565';
-                            }
-                        }
-                        
-                        // 显示隐藏的API Key
-                        if (apiKeyInput && config.apiKey && config.apiKey.includes('••')) {
-                            apiKeyInput.placeholder = config.apiKey;
-                        }
-                    });
+
+                if (result.success) {
+                    alert('✅ 更新成功！');
+                    loadModels();
+                } else {
+                    alert('❌ 更新失败：' + result.message);
                 }
             } catch (error) {
-                console.error('加载配置失败:', error);
+                alert('❌ 更新失败：' + error.message);
             }
         }
 
-        window.addEventListener('load', () => {
-            // 加载服务器配置
-            loadServerConfig();
-            
-            const settings = getSettings();
-            
-            // 恢复 AI 提供商状态
-            Object.keys(settings.providers || {}).forEach(provider => {
-                if (settings.providers[provider].enabled) {
-                    const providerEl = document.querySelector(`[data-provider="${provider}"]`);
-                    if (providerEl) {
-                        providerEl.querySelector('.toggle-switch').click();
-                        
-                        // 恢复 API Key
-                        const apiKeyInput = document.getElementById(`${provider}-api-key`);
-                        if (apiKeyInput && settings.providers[provider].apiKey) {
-                            apiKeyInput.value = settings.providers[provider].apiKey;
-                        }
-                    }
+        async function deleteModel(id) {
+            if (!confirm('确定要删除这个模型配置吗？')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/models/${id}`, {
+                    method: 'DELETE'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ 删除成功');
+                    loadModels();
+                } else {
+                    alert('❌ 删除失败：' + result.message);
                 }
-            });
+            } catch (error) {
+                alert('❌ 删除失败：' + error.message);
+            }
+        }
+
+        async function testModel(id) {
+            try {
+                const response = await fetch(`/api/models/${id}/test`, {
+                    method: 'POST'
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✅ 测试成功！模型可以正常使用');
+                } else {
+                    alert('❌ 测试失败：' + (result.message || '未知错误'));
+                }
+            } catch (error) {
+                alert('❌ 测试失败：' + error.message);
+            }
+        }
+
+        // 自动填充端点
+        document.getElementById('add-provider').addEventListener('change', function() {
+            const provider = this.value;
+            const endpointInput = document.getElementById('add-endpoint');
+            if (provider && PROVIDER_CONFIG[provider]) {
+                endpointInput.value = PROVIDER_CONFIG[provider].endpoint;
+            }
         });
     </script>
 </body>
 </html>
-
