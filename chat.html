@@ -84,35 +84,46 @@
                 flex-direction: column;
                 align-items: center;
                 width: 100%;
+                max-width: 100%;
             }
             
-            /* 欢迎区域和消息容器居中 - Claude官网风格 */
-            .sidebar.hidden ~ .main-content .welcome-section {
-                max-width: 768px !important;
+            /* 欢迎区域和消息容器居中 - 收起侧边栏时使用更窄宽度 */
+            .sidebar.hidden ~ .main-content .chat-container > .welcome-section,
+            .sidebar.hidden ~ .main-content .chat-container > .messages-container {
+                max-width: 640px !important;
                 width: 100% !important;
                 margin: 0 auto !important;
-                padding-left: 3rem !important;
-                padding-right: 3rem !important;
+                padding: 2rem !important;
+                box-sizing: border-box;
             }
             
-            .sidebar.hidden ~ .main-content .messages-container {
-                max-width: 768px !important;
-                width: 100% !important;
+            /* input-section也要跟随相同宽度 */
+            .sidebar.hidden ~ .main-content .chat-container .input-section {
+                max-width: 640px !important;
                 margin: 0 auto !important;
-                padding-left: 3rem !important;
-                padding-right: 3rem !important;
             }
             
             /* input-section居中 */
             .sidebar.hidden ~ .main-content .welcome-section .input-section {
                 max-width: 100% !important;
                 width: 100% !important;
-                margin: 0 !important;
+                margin: 0 auto !important;
                 padding: 0 !important;
+                background: transparent !important;
+                box-sizing: border-box;
             }
             
             .sidebar.hidden ~ .main-content .input-wrapper {
                 width: 100% !important;
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            /* 快捷按钮区域也居中 */
+            .sidebar.hidden ~ .main-content .quick-actions {
+                max-width: 100% !important;
+                width: 100% !important;
+                box-sizing: border-box;
             }
             
             /* 切换按钮保持在左上角 */
@@ -121,27 +132,42 @@
             }
         }
         
-        /* 中屏笔记本：侧边栏隐藏时内容更宽 */
+        /* 中屏笔记本：侧边栏隐藏时稍宽 */
         @media (min-width: 1024px) and (max-width: 1439px) {
-            .sidebar.hidden ~ .main-content .welcome-section,
-            .sidebar.hidden ~ .main-content .messages-container {
-                max-width: 850px !important;
+            .sidebar.hidden ~ .main-content .chat-container > .welcome-section,
+            .sidebar.hidden ~ .main-content .chat-container > .messages-container {
+                max-width: 720px !important;
+                padding: 2.5rem !important;
+            }
+            
+            .sidebar.hidden ~ .main-content .chat-container .input-section {
+                max-width: 720px !important;
             }
         }
-        
+
         /* 大屏：侧边栏隐藏时内容更宽 */
         @media (min-width: 1440px) {
-            .sidebar.hidden ~ .main-content .welcome-section,
-            .sidebar.hidden ~ .main-content .messages-container {
-                max-width: 900px !important;
+            .sidebar.hidden ~ .main-content .chat-container > .welcome-section,
+            .sidebar.hidden ~ .main-content .chat-container > .messages-container {
+                max-width: 840px !important;
+                padding: 3rem !important;
+            }
+            
+            .sidebar.hidden ~ .main-content .chat-container .input-section {
+                max-width: 840px !important;
             }
         }
         
         /* 超大屏：限制最大宽度 */
         @media (min-width: 1920px) {
-            .sidebar.hidden ~ .main-content .welcome-section,
-            .sidebar.hidden ~ .main-content .messages-container {
-                max-width: 1000px !important;
+            .sidebar.hidden ~ .main-content .chat-container > .welcome-section,
+            .sidebar.hidden ~ .main-content .chat-container > .messages-container {
+                max-width: 900px !important;
+                padding: 3rem !important;
+            }
+            
+            .sidebar.hidden ~ .main-content .chat-container .input-section {
+                max-width: 900px !important;
             }
         }
 
@@ -401,33 +427,38 @@
             }
         }
         
-        /* 当artifacts打开时，对话区域充分利用剩余空间，像Claude官网一样 */
+        /* 当artifacts打开时，对话区域保持适中宽度 */
         .main-content.with-artifacts .chat-container > .welcome-section,
         .main-content.with-artifacts .chat-container > .messages-container {
-            /* 使用更多可用宽度，保持舒适阅读 */
-            max-width: 90% !important; /* 充分利用剩余64%的空间 */
-            padding-left: 2rem !important;
-            padding-right: 2rem !important;
+            max-width: 95% !important; /* 充分利用剩余空间 */
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
         }
         
         @media (min-width: 1024px) {
             .main-content.with-artifacts .chat-container > .welcome-section,
             .main-content.with-artifacts .chat-container > .messages-container {
-                max-width: 85% !important;
+                max-width: 90% !important;
+                padding-left: 2rem !important;
+                padding-right: 2rem !important;
             }
         }
         
         @media (min-width: 1440px) {
             .main-content.with-artifacts .chat-container > .welcome-section,
             .main-content.with-artifacts .chat-container > .messages-container {
-                max-width: 1100px !important; /* 大屏限制最大宽度 */
+                max-width: 750px !important; /* 限制宽度，确保可读性 */
+                padding-left: 2.5rem !important;
+                padding-right: 2.5rem !important;
             }
         }
         
         @media (min-width: 1920px) {
             .main-content.with-artifacts .chat-container > .welcome-section,
             .main-content.with-artifacts .chat-container > .messages-container {
-                max-width: 1200px !important; /* 超大屏也保持可读性 */
+                max-width: 850px !important; /* 超大屏适当增加 */
+                padding-left: 3rem !important;
+                padding-right: 3rem !important;
             }
         }
 
@@ -455,16 +486,21 @@
         /* 平板及以上增加welcome-section的间距 */
         @media (min-width: 768px) {
             .welcome-section {
-                padding: 2.5rem;
+                padding: 2.5rem 2rem;
                 gap: 2.5rem;
             }
         }
         
         @media (min-width: 1440px) {
             .welcome-section {
-                padding: 3rem;
+                padding: 3rem 2rem;
                 gap: 3rem;
             }
+        }
+        
+        /* 确保侧边栏显示时welcome-section居中 */
+        .chat-container > .welcome-section {
+            margin: 0 auto;
         }
         
         /* 当artifacts打开时的字体优化 - 保持清晰易读 */
@@ -592,24 +628,24 @@
         
         /* Artifacts打开时的输入框宽度 - 与对话区域保持一致 */
         .main-content.with-artifacts .input-section {
-            max-width: 90% !important;
+            max-width: 95% !important;
         }
         
         @media (min-width: 1024px) {
             .main-content.with-artifacts .input-section {
-                max-width: 85% !important;
+                max-width: 90% !important;
             }
         }
         
         @media (min-width: 1440px) {
             .main-content.with-artifacts .input-section {
-                max-width: 1100px !important;
+                max-width: 750px !important;
             }
         }
         
         @media (min-width: 1920px) {
             .main-content.with-artifacts .input-section {
-                max-width: 1200px !important;
+                max-width: 850px !important;
             }
         }
         
@@ -1418,29 +1454,30 @@
         /* 桌面端：Artifacts打开时，主内容区域自适应调整 */
         @media (min-width: 769px) {
             .main-content.with-artifacts {
-                margin-right: 36%; /* 为artifacts留出空间 */
+                margin-right: 32%; /* 为artifacts留出空间 - 减小比例以留更多空间给对话 */
                 width: auto !important;
                 max-width: 100% !important;
                 flex: 1 1 auto !important;
+                min-width: 0; /* 允许flex收缩 */
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             
             /* 当侧边栏隐藏时，对话区域可以更宽 */
             .sidebar.hidden ~ .main-content.with-artifacts {
                 margin-left: 0;
-                margin-right: 36%;
+                margin-right: 32%;
             }
         }
         
-        /* 中等屏幕（笔记本）：占33% */
+        /* 中等屏幕（笔记本）：占30% */
         @media (min-width: 769px) and (max-width: 1440px) {
             .artifacts-panel {
-                width: 33%;
-                min-width: 420px;
+                width: 30%;
+                min-width: 400px;
             }
             
             .main-content.with-artifacts {
-                margin-right: 33% !important;
+                margin-right: 30% !important;
             }
         }
         
@@ -1607,6 +1644,70 @@
         .artifacts-markdown {
             line-height: 1.8;
             color: var(--text-100);
+        }
+        
+        /* ==================== Artifacts通知按钮（移动/平板端） ==================== */
+        .artifacts-notification-btn {
+            position: fixed;
+            bottom: 6rem;
+            right: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.25rem;
+            background: linear-gradient(135deg, #d97757 0%, #c16843 100%);
+            color: white;
+            border: none;
+            border-radius: 2rem;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(217, 119, 87, 0.4);
+            cursor: pointer;
+            z-index: 199;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: slideInUp 0.4s ease-out, pulse 2s ease-in-out infinite;
+        }
+        
+        .artifacts-notification-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(217, 119, 87, 0.5);
+        }
+        
+        .artifacts-notification-btn:active {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .artifacts-notification-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke-width: 2.5;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 4px 16px rgba(217, 119, 87, 0.4);
+            }
+            50% {
+                box-shadow: 0 4px 20px rgba(217, 119, 87, 0.6);
+            }
+        }
+        
+        /* 桌面端不显示通知按钮 */
+        @media (min-width: 1025px) {
+            .artifacts-notification-btn {
+                display: none !important;
+            }
         }
 
         .artifacts-markdown h1,
@@ -2866,6 +2967,172 @@
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
 
     <script>
+        // ==================== 设备检测系统 ====================
+        const DeviceDetector = {
+            // 设备信息
+            device: {
+                type: 'desktop', // desktop, tablet, mobile
+                os: 'unknown',   // ios, android, windows, macos, linux
+                browser: 'unknown', // chrome, safari, firefox, edge
+                touch: false,    // 是否支持触摸
+                screenSize: {
+                    width: window.innerWidth,
+                    height: window.innerHeight
+                }
+            },
+            
+            // 初始化检测
+            init() {
+                this.detectDevice();
+                this.detectOS();
+                this.detectBrowser();
+                this.detectTouch();
+                this.logDeviceInfo();
+                this.setupResizeListener();
+                return this.device;
+            },
+            
+            // 检测设备类型
+            detectDevice() {
+                const ua = navigator.userAgent.toLowerCase();
+                const width = window.innerWidth;
+                
+                // 优先检测User Agent
+                if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                    this.device.type = 'tablet';
+                } else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+                    this.device.type = 'mobile';
+                } else {
+                    // 根据屏幕宽度辅助判断
+                    if (width <= 768) {
+                        this.device.type = 'mobile';
+                    } else if (width > 768 && width <= 1024) {
+                        this.device.type = 'tablet';
+                    } else {
+                        this.device.type = 'desktop';
+                    }
+                }
+                
+                // 添加设备类型到body
+                document.body.setAttribute('data-device-type', this.device.type);
+            },
+            
+            // 检测操作系统
+            detectOS() {
+                const ua = navigator.userAgent;
+                const platform = navigator.platform.toLowerCase();
+                
+                if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+                    this.device.os = 'ios';
+                } else if (/android/i.test(ua)) {
+                    this.device.os = 'android';
+                } else if (/Win/i.test(platform)) {
+                    this.device.os = 'windows';
+                } else if (/Mac/i.test(platform)) {
+                    this.device.os = 'macos';
+                } else if (/Linux/i.test(platform)) {
+                    this.device.os = 'linux';
+                }
+                
+                document.body.setAttribute('data-os', this.device.os);
+            },
+            
+            // 检测浏览器
+            detectBrowser() {
+                const ua = navigator.userAgent.toLowerCase();
+                
+                if (ua.indexOf('edg') > -1) {
+                    this.device.browser = 'edge';
+                } else if (ua.indexOf('chrome') > -1 && ua.indexOf('edg') === -1) {
+                    this.device.browser = 'chrome';
+                } else if (ua.indexOf('safari') > -1 && ua.indexOf('chrome') === -1) {
+                    this.device.browser = 'safari';
+                } else if (ua.indexOf('firefox') > -1) {
+                    this.device.browser = 'firefox';
+                }
+                
+                document.body.setAttribute('data-browser', this.device.browser);
+            },
+            
+            // 检测触摸支持
+            detectTouch() {
+                this.device.touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                document.body.setAttribute('data-touch', this.device.touch);
+            },
+            
+            // 监听窗口大小变化
+            setupResizeListener() {
+                let resizeTimer;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => {
+                        const oldType = this.device.type;
+                        this.device.screenSize = {
+                            width: window.innerWidth,
+                            height: window.innerHeight
+                        };
+                        this.detectDevice();
+                        
+                        // 设备类型变化时触发自定义事件
+                        if (oldType !== this.device.type) {
+                            window.dispatchEvent(new CustomEvent('deviceTypeChanged', {
+                                detail: {
+                                    oldType: oldType,
+                                    newType: this.device.type
+                                }
+                            }));
+                        }
+                    }, 200);
+                });
+            },
+            
+            // 打印设备信息
+            logDeviceInfo() {
+                console.log('📱 设备信息检测：');
+                console.log('  设备类型:', this.device.type);
+                console.log('  操作系统:', this.device.os);
+                console.log('  浏览器:', this.device.browser);
+                console.log('  触摸支持:', this.device.touch ? '是' : '否');
+                console.log('  屏幕尺寸:', `${this.device.screenSize.width}x${this.device.screenSize.height}`);
+                console.log('  User Agent:', navigator.userAgent);
+            },
+            
+            // 便捷方法
+            isMobile() {
+                return this.device.type === 'mobile';
+            },
+            
+            isTablet() {
+                return this.device.type === 'tablet';
+            },
+            
+            isDesktop() {
+                return this.device.type === 'desktop';
+            },
+            
+            isMobileOrTablet() {
+                return this.device.type === 'mobile' || this.device.type === 'tablet';
+            },
+            
+            isIOS() {
+                return this.device.os === 'ios';
+            },
+            
+            isAndroid() {
+                return this.device.os === 'android';
+            },
+            
+            supportTouch() {
+                return this.device.touch;
+            }
+        };
+        
+        // 初始化设备检测
+        const deviceInfo = DeviceDetector.init();
+        
+        // 将DeviceDetector暴露为全局对象，方便其他代码使用
+        window.DeviceDetector = DeviceDetector;
+        
         // ==================== 思考链处理 ====================
         function updateMessageWithThinking(textElement, fullMessage, provider) {
             // 只对 Gemini 显示思考链
@@ -3362,6 +3629,17 @@
                 }
             } else {
                 sidebar.classList.toggle('hidden');
+                // 记录用户是否手动收起了侧边栏（桌面端）
+                sidebarManuallyHidden = sidebar.classList.contains('hidden');
+                
+                // 调试日志
+                console.log('🔄 Sidebar toggled:', {
+                    hidden: sidebarManuallyHidden,
+                    windowWidth: window.innerWidth,
+                    welcomeSection: document.querySelector('.welcome-section'),
+                    welcomeWidth: document.querySelector('.welcome-section')?.offsetWidth,
+                    welcomeMaxWidth: window.getComputedStyle(document.querySelector('.welcome-section'))?.maxWidth
+                });
             }
         }
 
@@ -3379,11 +3657,16 @@
         });
 
         // Handle window resize
+        let sidebarManuallyHidden = false; // 记录用户是否手动收起了侧边栏
+        
         window.addEventListener('resize', () => {
             if (window.innerWidth > 768) {
                 document.body.style.overflow = '';
                 sidebarBackdrop.classList.remove('active');
-                sidebar.classList.remove('hidden');
+                // 只有在用户没有手动收起侧边栏时才自动显示
+                if (!sidebarManuallyHidden) {
+                    sidebar.classList.remove('hidden');
+                }
             }
         });
 
@@ -4832,6 +5115,7 @@
                 const sidebar = document.getElementById('sidebar');
                 if (sidebar && window.innerWidth > 768) {
                     sidebar.classList.remove('hidden');
+                    sidebarManuallyHidden = false; // 自动显示侧边栏后，重置标志
                 }
                 // 移动端保持隐藏，用户需要手动打开
             });
@@ -4949,13 +5233,14 @@
             });
         }
 
-        // 打开 Artifacts
-        function openArtifacts(title, content, type = 'code') {
+        // 打开 Artifacts（根据设备类型智能展开）
+        function openArtifacts(title, content, type = 'code', autoOpen = true) {
             if (!artifactsTitle || !artifactsContent || !artifactsPanel || !mainContent) {
                 console.warn('Artifacts elements not found');
                 return;
             }
             
+            // 更新Artifacts内容
             artifactsTitle.textContent = title;
             
             if (type === 'code') {
@@ -4966,15 +5251,68 @@
                 artifactsContent.innerHTML = `<iframe class="artifacts-preview" srcdoc="${escapeHtml(content)}"></iframe>`;
             }
             
-            artifactsPanel.classList.add('active');
-            mainContent.classList.add('with-artifacts');
+            // 🎯 根据设备类型决定是否自动展开
+            const shouldAutoOpen = autoOpen && window.DeviceDetector && window.DeviceDetector.isDesktop();
             
-            // 自动收起左侧栏（仅桌面端），腾出更多空间给对话区域
-            const sidebar = document.getElementById('sidebar');
-            if (sidebar && window.innerWidth > 768) {
-                sidebar.classList.add('hidden');
+            if (shouldAutoOpen) {
+                // 桌面端：自动展开
+                console.log('💻 桌面端：自动展开 Artifacts 面板');
+                artifactsPanel.classList.add('active');
+                mainContent.classList.add('with-artifacts');
+                
+                // 自动收起左侧栏，腾出更多空间给对话区域
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar && window.innerWidth > 768) {
+                    sidebar.classList.add('hidden');
+                }
+            } else {
+                // 手机/平板端：不自动展开，但内容已准备好
+                console.log('📱 移动/平板端：Artifacts 内容已准备，等待用户手动打开');
+                // 可以显示一个提示按钮让用户知道有Artifacts可查看
+                showArtifactsNotification();
             }
-            // 移动端侧边栏已经默认隐藏，无需额外处理
+        }
+        
+        // 显示Artifacts可用通知（手机/平板端）
+        function showArtifactsNotification() {
+            if (window.DeviceDetector && window.DeviceDetector.isMobileOrTablet()) {
+                // 创建一个浮动按钮提示用户可以查看Artifacts
+                let notification = document.getElementById('artifacts-notification');
+                if (!notification) {
+                    notification = document.createElement('button');
+                    notification.id = 'artifacts-notification';
+                    notification.className = 'artifacts-notification-btn';
+                    notification.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="9" x2="15" y2="9"></line>
+                            <line x1="9" y1="13" x2="15" y2="13"></line>
+                            <line x1="9" y1="17" x2="13" y2="17"></line>
+                        </svg>
+                        <span>查看代码</span>
+                    `;
+                    notification.onclick = () => {
+                        artifactsPanel.classList.add('active');
+                        mainContent.classList.add('with-artifacts');
+                        notification.style.display = 'none';
+                    };
+                    document.body.appendChild(notification);
+                }
+                notification.style.display = 'flex';
+                
+                // 5秒后自动隐藏通知
+                setTimeout(() => {
+                    if (notification) {
+                        notification.style.opacity = '0';
+                        setTimeout(() => {
+                            if (!artifactsPanel.classList.contains('active')) {
+                                notification.style.display = 'none';
+                            }
+                            notification.style.opacity = '1';
+                        }, 300);
+                    }
+                }, 5000);
+            }
         }
 
         // HTML 转义

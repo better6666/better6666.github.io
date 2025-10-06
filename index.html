@@ -351,6 +351,103 @@
     </div>
 
     <script>
+        // ==================== 设备检测系统 ====================
+        const DeviceDetector = {
+            device: {
+                type: 'desktop',
+                os: 'unknown',
+                browser: 'unknown',
+                touch: false,
+                screenSize: { width: window.innerWidth, height: window.innerHeight }
+            },
+            
+            init() {
+                this.detectDevice();
+                this.detectOS();
+                this.detectBrowser();
+                this.detectTouch();
+                this.logDeviceInfo();
+                return this.device;
+            },
+            
+            detectDevice() {
+                const ua = navigator.userAgent.toLowerCase();
+                const width = window.innerWidth;
+                
+                if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                    this.device.type = 'tablet';
+                } else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+                    this.device.type = 'mobile';
+                } else {
+                    if (width <= 768) {
+                        this.device.type = 'mobile';
+                    } else if (width > 768 && width <= 1024) {
+                        this.device.type = 'tablet';
+                    } else {
+                        this.device.type = 'desktop';
+                    }
+                }
+                
+                document.body.setAttribute('data-device-type', this.device.type);
+            },
+            
+            detectOS() {
+                const ua = navigator.userAgent;
+                const platform = navigator.platform.toLowerCase();
+                
+                if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+                    this.device.os = 'ios';
+                } else if (/android/i.test(ua)) {
+                    this.device.os = 'android';
+                } else if (/Win/i.test(platform)) {
+                    this.device.os = 'windows';
+                } else if (/Mac/i.test(platform)) {
+                    this.device.os = 'macos';
+                } else if (/Linux/i.test(platform)) {
+                    this.device.os = 'linux';
+                }
+                
+                document.body.setAttribute('data-os', this.device.os);
+            },
+            
+            detectBrowser() {
+                const ua = navigator.userAgent.toLowerCase();
+                
+                if (ua.indexOf('edg') > -1) {
+                    this.device.browser = 'edge';
+                } else if (ua.indexOf('chrome') > -1 && ua.indexOf('edg') === -1) {
+                    this.device.browser = 'chrome';
+                } else if (ua.indexOf('safari') > -1 && ua.indexOf('chrome') === -1) {
+                    this.device.browser = 'safari';
+                } else if (ua.indexOf('firefox') > -1) {
+                    this.device.browser = 'firefox';
+                }
+                
+                document.body.setAttribute('data-browser', this.device.browser);
+            },
+            
+            detectTouch() {
+                this.device.touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                document.body.setAttribute('data-touch', this.device.touch);
+            },
+            
+            logDeviceInfo() {
+                console.log('📱 设备信息：');
+                console.log('  类型:', this.device.type);
+                console.log('  系统:', this.device.os);
+                console.log('  浏览器:', this.device.browser);
+                console.log('  屏幕:', `${this.device.screenSize.width}x${this.device.screenSize.height}`);
+            },
+            
+            isMobile() { return this.device.type === 'mobile'; },
+            isTablet() { return this.device.type === 'tablet'; },
+            isDesktop() { return this.device.type === 'desktop'; },
+            isMobileOrTablet() { return this.device.type === 'mobile' || this.device.type === 'tablet'; }
+        };
+        
+        // 初始化设备检测
+        const deviceInfo = DeviceDetector.init();
+        
         // Enable/disable submit button based on terms checkbox
         const termsCheckbox = document.getElementById('terms');
         const submitBtn = document.getElementById('submitBtn');
@@ -360,13 +457,13 @@
             submitBtn.disabled = !this.checked;
         });
 
-               form.addEventListener('submit', function(e) {
-                   e.preventDefault();
-                   if (termsCheckbox.checked) {
-                       // Redirect to chat page
-                       window.location.href = 'chat.html';
-                   }
-               });
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (termsCheckbox.checked) {
+                // Redirect to chat page
+                window.location.href = 'chat.html';
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+    <title>设备检测测试页面</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .container {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.75rem;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .value {
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .icon {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+
+        .details {
+            background: #f8f9fa;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .details h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .detail-item {
+            padding: 0.5rem 0;
+            font-size: 0.875rem;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .badge-mobile {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .badge-tablet {
+            background: #feca57;
+            color: #333;
+        }
+
+        .badge-desktop {
+            background: #1dd1a1;
+            color: white;
+        }
+
+        .refresh-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .refresh-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .refresh-btn:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+            }
+
+            .info-card {
+                padding: 1rem;
+            }
+
+            .info-row {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .value {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 设备检测系统</h1>
+        
+        <div class="info-card">
+            <div class="icon" id="deviceIcon">💻</div>
+            
+            <div class="info-row">
+                <span class="label">设备类型</span>
+                <span class="value" id="deviceType">检测中...</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">操作系统</span>
+                <span class="value" id="deviceOS">检测中...</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">浏览器</span>
+                <span class="value" id="deviceBrowser">检测中...</span>
+            </div>
+            
+            <div class="info-row">
+                <span class="label">触摸支持</span>
+                <span class="value" id="deviceTouch">检测中...</span>
+            </div>
+        </div>
+
+        <div class="details">
+            <h3>📊 详细信息</h3>
+            <div class="detail-item">
+                <span class="detail-label">屏幕尺寸:</span>
+                <span id="screenSize">-</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">像素密度:</span>
+                <span id="pixelRatio">-</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">屏幕方向:</span>
+                <span id="orientation">-</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-label">User Agent:</span>
+                <div style="margin-top: 0.5rem; padding: 0.75rem; background: white; border-radius: 0.5rem; word-break: break-all; font-size: 0.75rem; color: #666;" id="userAgent">-</div>
+            </div>
+        </div>
+
+        <div class="details">
+            <h3>🎯 Artifacts面板行为</h3>
+            <div class="detail-item" id="artifactsBehavior">
+                正在分析...
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="location.reload()">🔄 刷新检测</button>
+    </div>
+
+    <script>
+        // ==================== 设备检测系统 ====================
+        const DeviceDetector = {
+            device: {
+                type: 'desktop',
+                os: 'unknown',
+                browser: 'unknown',
+                touch: false,
+                screenSize: { width: window.innerWidth, height: window.innerHeight }
+            },
+            
+            init() {
+                this.detectDevice();
+                this.detectOS();
+                this.detectBrowser();
+                this.detectTouch();
+                this.updateUI();
+                this.setupResizeListener();
+                return this.device;
+            },
+            
+            detectDevice() {
+                const ua = navigator.userAgent.toLowerCase();
+                const width = window.innerWidth;
+                
+                if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+                    this.device.type = 'tablet';
+                } else if (/Mobile|Android|iP(hone|od)|IEMobile|BlackBerry|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+                    this.device.type = 'mobile';
+                } else {
+                    if (width <= 768) {
+                        this.device.type = 'mobile';
+                    } else if (width > 768 && width <= 1024) {
+                        this.device.type = 'tablet';
+                    } else {
+                        this.device.type = 'desktop';
+                    }
+                }
+            },
+            
+            detectOS() {
+                const ua = navigator.userAgent;
+                const platform = navigator.platform.toLowerCase();
+                
+                if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
+                    this.device.os = 'iOS';
+                } else if (/android/i.test(ua)) {
+                    this.device.os = 'Android';
+                } else if (/Win/i.test(platform)) {
+                    this.device.os = 'Windows';
+                } else if (/Mac/i.test(platform)) {
+                    this.device.os = 'macOS';
+                } else if (/Linux/i.test(platform)) {
+                    this.device.os = 'Linux';
+                }
+            },
+            
+            detectBrowser() {
+                const ua = navigator.userAgent.toLowerCase();
+                
+                if (ua.indexOf('edg') > -1) {
+                    this.device.browser = 'Edge';
+                } else if (ua.indexOf('chrome') > -1 && ua.indexOf('edg') === -1) {
+                    this.device.browser = 'Chrome';
+                } else if (ua.indexOf('safari') > -1 && ua.indexOf('chrome') === -1) {
+                    this.device.browser = 'Safari';
+                } else if (ua.indexOf('firefox') > -1) {
+                    this.device.browser = 'Firefox';
+                } else {
+                    this.device.browser = 'Unknown';
+                }
+            },
+            
+            detectTouch() {
+                this.device.touch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            },
+            
+            updateUI() {
+                // 图标
+                const icons = {
+                    mobile: '📱',
+                    tablet: '📋',
+                    desktop: '💻'
+                };
+                document.getElementById('deviceIcon').textContent = icons[this.device.type];
+                
+                // 设备类型
+                const badges = {
+                    mobile: '<span class="badge badge-mobile">手机</span>',
+                    tablet: '<span class="badge badge-tablet">平板</span>',
+                    desktop: '<span class="badge badge-desktop">电脑</span>'
+                };
+                document.getElementById('deviceType').innerHTML = this.device.type.toUpperCase() + badges[this.device.type];
+                
+                // 操作系统
+                document.getElementById('deviceOS').textContent = this.device.os;
+                
+                // 浏览器
+                document.getElementById('deviceBrowser').textContent = this.device.browser;
+                
+                // 触摸支持
+                document.getElementById('deviceTouch').textContent = this.device.touch ? '✅ 支持' : '❌ 不支持';
+                document.getElementById('deviceTouch').style.background = this.device.touch ? 'rgba(46, 213, 115, 0.2)' : 'rgba(255, 107, 107, 0.2)';
+                
+                // 详细信息
+                document.getElementById('screenSize').textContent = `${this.device.screenSize.width} × ${this.device.screenSize.height} px`;
+                document.getElementById('pixelRatio').textContent = `${window.devicePixelRatio}x`;
+                document.getElementById('orientation').textContent = window.innerWidth > window.innerHeight ? '横屏 🔄' : '竖屏 📱';
+                document.getElementById('userAgent').textContent = navigator.userAgent;
+                
+                // Artifacts行为
+                const artifactsBehavior = document.getElementById('artifactsBehavior');
+                if (this.device.type === 'desktop') {
+                    artifactsBehavior.innerHTML = `
+                        <strong style="color: #1dd1a1;">✅ 桌面端：自动展开</strong><br>
+                        当AI返回代码时，Artifacts面板会自动在右侧展开（占屏幕36%），左侧边栏会自动收起以提供更多空间。
+                    `;
+                } else {
+                    artifactsBehavior.innerHTML = `
+                        <strong style="color: #feca57;">⚠️ ${this.device.type === 'mobile' ? '手机' : '平板'}端：手动展开</strong><br>
+                        当AI返回代码时，不会自动展开Artifacts面板。会显示一个浮动的"查看代码"按钮，您可以点击它来查看代码。
+                    `;
+                }
+            },
+            
+            setupResizeListener() {
+                let resizeTimer;
+                window.addEventListener('resize', () => {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(() => {
+                        this.device.screenSize = {
+                            width: window.innerWidth,
+                            height: window.innerHeight
+                        };
+                        this.detectDevice();
+                        this.updateUI();
+                    }, 200);
+                });
+            }
+        };
+        
+        // 初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            DeviceDetector.init();
+            
+            // 控制台输出
+            console.log('📱 设备检测结果：');
+            console.log('  设备类型:', DeviceDetector.device.type);
+            console.log('  操作系统:', DeviceDetector.device.os);
+            console.log('  浏览器:', DeviceDetector.device.browser);
+            console.log('  触摸支持:', DeviceDetector.device.touch);
+            console.log('  屏幕尺寸:', DeviceDetector.device.screenSize);
+        });
+    </script>
+</body>
+</html>
+

@@ -720,3 +720,257 @@ body {
     }
 }
 
+/* ==================== 基于设备类型的智能优化 ==================== */
+
+/* 手机端特定优化 */
+body[data-device-type="mobile"] {
+    font-size: 16px; /* 防止iOS自动缩放 */
+}
+
+body[data-device-type="mobile"] .artifacts-panel {
+    /* 手机端Artifacts面板全屏显示 */
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+}
+
+body[data-device-type="mobile"] .artifacts-panel.active ~ .main-content {
+    /* 手机端打开Artifacts时隐藏主内容 */
+    display: none !important;
+}
+
+/* 平板端特定优化 */
+body[data-device-type="tablet"] .artifacts-panel {
+    /* 平板端Artifacts面板占50% */
+    width: 50% !important;
+    min-width: 400px !important;
+    max-width: 600px !important;
+}
+
+body[data-device-type="tablet"] .main-content.with-artifacts {
+    margin-right: 50% !important;
+}
+
+body[data-device-type="tablet"] .sidebar {
+    width: 260px;
+}
+
+/* 桌面端特定优化 */
+body[data-device-type="desktop"] .artifacts-panel {
+    width: 36%;
+    min-width: 450px;
+    max-width: 600px;
+}
+
+/* iOS特定优化 */
+body[data-os="ios"] {
+    /* iOS平滑滚动 */
+    -webkit-overflow-scrolling: touch;
+}
+
+body[data-os="ios"] input,
+body[data-os="ios"] textarea {
+    /* iOS输入框优化 */
+    font-size: 16px !important; /* 防止缩放 */
+    border-radius: 0;
+    -webkit-appearance: none;
+}
+
+body[data-os="ios"] .input-section {
+    /* iOS键盘适配 */
+    padding-bottom: calc(env(safe-area-inset-bottom) + 1rem);
+}
+
+/* Android特定优化 */
+body[data-os="android"] {
+    /* Android渲染优化 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+body[data-os="android"] .input-section {
+    /* Android键盘适配 */
+    padding-bottom: 1rem;
+}
+
+/* 触摸设备优化 */
+body[data-touch="true"] button,
+body[data-touch="true"] .btn,
+body[data-touch="true"] .clickable {
+    /* 触摸设备增大点击区域 */
+    min-width: 44px !important;
+    min-height: 44px !important;
+}
+
+body[data-touch="true"] {
+    /* 禁用触摸高亮 */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Safari特定优化 */
+body[data-browser="safari"] {
+    /* Safari渲染优化 */
+    -webkit-font-smoothing: antialiased;
+}
+
+body[data-browser="safari"] input,
+body[data-browser="safari"] textarea {
+    /* Safari输入框样式修复 */
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Chrome特定优化 */
+body[data-browser="chrome"] {
+    /* Chrome滚动优化 */
+    scroll-behavior: smooth;
+}
+
+/* Firefox特定优化 */
+body[data-browser="firefox"] {
+    /* Firefox滚动优化 */
+    scrollbar-width: thin;
+    scrollbar-color: #d4d4d4 transparent;
+}
+
+/* ==================== 响应式断点优化（基于实际设备尺寸） ==================== */
+
+/* 超小手机 (iPhone SE, iPhone 5) */
+@media (max-width: 374px) {
+    body[data-device-type="mobile"] .welcome-title {
+        font-size: 1.375rem !important;
+    }
+    
+    body[data-device-type="mobile"] .sidebar {
+        width: 95vw !important;
+    }
+}
+
+/* 标准手机 (iPhone 6/7/8, most Android) */
+@media (min-width: 375px) and (max-width: 413px) {
+    body[data-device-type="mobile"] .message-text-content {
+        font-size: 1rem !important;
+    }
+}
+
+/* 大屏手机 (iPhone Plus, Pixel XL) */
+@media (min-width: 414px) and (max-width: 767px) {
+    body[data-device-type="mobile"] .message-text-content {
+        font-size: 1.0625rem !important;
+    }
+    
+    body[data-device-type="mobile"] .input-textarea {
+        font-size: 16px !important;
+    }
+}
+
+/* 小平板 (iPad Mini) */
+@media (min-width: 768px) and (max-width: 820px) {
+    body[data-device-type="tablet"] .messages-container {
+        max-width: 640px !important;
+    }
+}
+
+/* 标准平板 (iPad) */
+@media (min-width: 821px) and (max-width: 1023px) {
+    body[data-device-type="tablet"] .messages-container {
+        max-width: 720px !important;
+    }
+}
+
+/* 大平板 (iPad Pro 11") */
+@media (min-width: 1024px) and (max-width: 1193px) {
+    body[data-device-type="tablet"] .messages-container {
+        max-width: 800px !important;
+    }
+}
+
+/* 超大平板 (iPad Pro 12.9") */
+@media (min-width: 1194px) {
+    body[data-device-type="tablet"] .messages-container {
+        max-width: 900px !important;
+    }
+}
+
+/* ==================== 横屏模式特殊处理 ==================== */
+
+/* 手机横屏 */
+@media (orientation: landscape) and (max-width: 896px) and (max-height: 414px) {
+    body[data-device-type="mobile"] .welcome-section {
+        padding: 0.75rem 1rem !important;
+        gap: 0.75rem !important;
+    }
+    
+    body[data-device-type="mobile"] .welcome-title {
+        font-size: 1.25rem !important;
+    }
+    
+    body[data-device-type="mobile"] .input-section {
+        padding: 0.5rem 1rem !important;
+    }
+    
+    body[data-device-type="mobile"] .chat-container {
+        padding-top: 3rem !important;
+    }
+}
+
+/* 平板横屏 */
+@media (orientation: landscape) and (min-width: 768px) and (max-width: 1366px) {
+    body[data-device-type="tablet"] .sidebar {
+        width: 240px;
+    }
+    
+    body[data-device-type="tablet"] .artifacts-panel {
+        width: 45% !important;
+    }
+    
+    body[data-device-type="tablet"] .main-content.with-artifacts {
+        margin-right: 45% !important;
+    }
+}
+
+/* ==================== 高像素密度屏幕优化 ==================== */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+    
+    .message-text-content {
+        text-rendering: optimizeLegibility;
+    }
+}
+
+/* ==================== 暗色模式支持（预留） ==================== */
+@media (prefers-color-scheme: dark) {
+    /* 未来可以在这里添加暗色模式样式 */
+}
+
+/* ==================== 减少动画偏好 ==================== */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ==================== 打印优化 ==================== */
+@media print {
+    .sidebar,
+    .toggle-sidebar-btn,
+    .input-section,
+    .artifacts-notification-btn {
+        display: none !important;
+    }
+    
+    .main-content {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    .message-bubble {
+        page-break-inside: avoid;
+    }
+}
+
