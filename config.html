@@ -282,20 +282,46 @@
         <div class="info-box">
             <div class="info-title">💡 使用说明</div>
             <div class="info-content">
-                • <strong>多模型配置</strong>：每个AI品牌可以添加多个模型（如OpenAI可以同时配置gpt-4, gpt-4o, o1等）<br>
-                • <strong>自定义名称</strong>：为每个模型配置起一个容易识别的名字<br>
-                • <strong>独立API Key</strong>：每个模型配置可以使用不同的API Key<br>
+                • <strong>多模型配置</strong>：每个AI品牌可以添加多个模型，每个模型独立配置<br>
+                • <strong>示例</strong>：Claude可以添加 claude-3.5-sonnet 和 claude-opus，分别使用不同API Key<br>
+                • <strong>自由选择</strong>：配置后在聊天界面可以自由切换使用<br>
                 • <strong>配置永久有效</strong>：保存后所有用户都能使用
+                        </div>
+                </div>
+
+        <div style="margin-bottom: 2rem;">
+            <h2 style="font-size: 1.25rem; font-weight: 600; color: #1f1f1f; margin-bottom: 1rem;">
+                📋 已配置的模型 (<span id="models-count">0</span>)
+            </h2>
+            <div id="models-container" class="models-grid">
+                <!-- 动态加载的模型卡片 -->
+            </div>
+            <div id="empty-state" style="text-align: center; padding: 3rem; color: #737373; display: none;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">📭</div>
+                <p style="font-size: 1.125rem; font-weight: 500; margin-bottom: 0.5rem;">暂无配置的模型</p>
+                <p style="font-size: 0.938rem;">请在下方添加你的第一个AI模型配置</p>
             </div>
         </div>
 
-        <div id="models-container" class="models-grid">
-            <!-- 动态加载的模型卡片 -->
-        </div>
-
         <div class="add-model-section">
-            <h2 class="add-model-title">➕ 添加新模型</h2>
+            <h2 class="add-model-title">➕ 添加新模型配置</h2>
             
+            <div style="background: #fff3cd; border: 1px solid #ffc107; border-radius: 0.5rem; padding: 1rem; margin-bottom: 1.5rem;">
+                <div style="font-weight: 600; color: #856404; margin-bottom: 0.5rem;">📌 配置示例：</div>
+                <div style="color: #856404; font-size: 0.875rem; line-height: 1.6;">
+                    <strong>OpenAI 多模型：</strong><br>
+                    1️⃣ GPT-4 → 模型ID: gpt-4 → API Key: sk-xxx<br>
+                    2️⃣ GPT-4o → 模型ID: gpt-4o → API Key: sk-yyy<br>
+                    3️⃣ o1 → 模型ID: o1-preview → API Key: sk-zzz<br><br>
+                    
+                    <strong>Claude 多模型：</strong><br>
+                    1️⃣ Sonnet 3.5 → 模型ID: claude-3-5-sonnet-20241022 → API Key: sk-ant-xxx<br>
+                    2️⃣ Opus → 模型ID: claude-3-opus-20240229 → API Key: sk-ant-yyy<br><br>
+                    
+                    💡 <strong>每个模型都是独立配置，可以使用不同的API Key！</strong>
+                </div>
+            </div>
+
             <div class="add-form-grid">
                 <div class="form-group">
                     <label>AI 品牌 *</label>
@@ -315,28 +341,32 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label>模型显示名称 *</label>
+                    <div class="form-group">
+                    <label>模型显示名称 * <span style="color: #737373; font-weight: normal;">(自定义，方便识别)</span></label>
                     <input type="text" id="add-name" placeholder="例如：GPT-4 Turbo">
-                </div>
+                    </div>
 
-                <div class="form-group">
-                    <label>模型ID/名称 *</label>
+                    <div class="form-group">
+                    <label>模型ID/名称 * <span style="color: #737373; font-weight: normal;">(官方模型名)</span></label>
                     <input type="text" id="add-model" placeholder="例如：gpt-4-turbo">
-                </div>
+                    </div>
 
-                <div class="form-group">
-                    <label>API Key *</label>
+                    <div class="form-group">
+                    <label>API Key * <span style="color: #737373; font-weight: normal;">(每个模型独立)</span></label>
                     <input type="password" id="add-apikey" placeholder="sk-...">
-                </div>
+                    </div>
 
                 <div class="form-group">
                     <label>API 端点（可选）</label>
-                    <input type="text" id="add-endpoint" placeholder="例如：https://api.openai.com/v1">
+                    <input type="text" id="add-endpoint" placeholder="自动填充">
                 </div>
             </div>
 
             <button class="btn-add" onclick="addModel()">✨ 添加模型配置</button>
+            
+            <div style="text-align: center; margin-top: 1rem; color: #737373; font-size: 0.875rem;">
+                💡 <strong>提示：</strong>可以重复添加同一品牌的不同模型，每个都有独立的API Key
+            </div>
         </div>
     </div>
 
@@ -374,11 +404,27 @@
 
         function displayModels(models) {
             const container = document.getElementById('models-container');
+            const emptyState = document.getElementById('empty-state');
+            const modelsCount = document.getElementById('models-count');
+            
             container.innerHTML = '';
+            
+            // 更新模型数量
+            if (modelsCount) {
+                modelsCount.textContent = models.length;
+            }
 
             if (models.length === 0) {
-                container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #737373;">暂无配置，请添加模型</p>';
+                container.style.display = 'none';
+                if (emptyState) {
+                    emptyState.style.display = 'block';
+                }
                 return;
+            }
+            
+            container.style.display = 'grid';
+            if (emptyState) {
+                emptyState.style.display = 'none';
             }
 
             models.forEach(model => {
@@ -391,14 +437,14 @@
                         <div class="model-info">
                             <div class="model-logo" style="background: ${providerConfig.color};">
                                 ${providerConfig.logo}
-                            </div>
+                    </div>
                             <div class="model-details">
                                 <h3>${model.name}</h3>
                                 <p>${providerConfig.name} • ${model.model}</p>
-                            </div>
+            </div>
                         </div>
                         <button class="delete-btn" onclick="deleteModel('${model.id}')">删除</button>
-                    </div>
+                </div>
 
                     <div class="form-group">
                         <label>模型显示名称</label>
@@ -465,7 +511,7 @@
                 });
 
                 const result = await response.json();
-
+                
                 if (result.success) {
                     alert('✅ 模型添加成功！');
                     // 清空表单
@@ -490,7 +536,7 @@
             const apiKey = document.getElementById(`apikey-${id}`).value;
             const endpointEl = document.getElementById(`endpoint-${id}`);
             const endpoint = endpointEl ? endpointEl.value : '';
-
+            
             const config = {
                 name: name,
                 model: model
@@ -557,7 +603,7 @@
 
                 if (result.success) {
                     alert('✅ 测试成功！模型可以正常使用');
-                } else {
+            } else {
                     alert('❌ 测试失败：' + (result.message || '未知错误'));
                 }
             } catch (error) {
