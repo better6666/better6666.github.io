@@ -3709,6 +3709,8 @@
         let currentProvider = 'claude'; // 默认使用 Claude
         let isStreaming = false;
         let currentConversationMessages = []; // 当前对话的消息历史
+        let availableModels = []; // 🔥 从服务器加载的可用模型列表
+        let currentModelId = null; // 🔥 当前选择的模型ID（用于多模型系统）
         let conversationTitle = ''; // 当前对话标题
 
         // ==================== 对话历史管理 ====================
@@ -4057,20 +4059,6 @@
 
                 // 设置为流式请求状态
                 isStreaming = true;
-
-                // 获取当前选择的提供商和配置
-                console.log('🔍 Getting provider config for:', currentModel);
-                const providerData = getProviderConfig(currentModel);
-                console.log('✅ Provider data:', providerData);
-                
-                if (!providerData) {
-                    console.error('❌ No provider data returned!');
-                    addMessage('❌ 错误：无法识别的模型类型', 'assistant', true);
-                    isStreaming = false;
-                    return;
-                }
-                
-                const { provider, config } = providerData;
                 
                 // 构建消息内容（包含文件）
                 let fullMessage = message;
@@ -4101,11 +4089,40 @@
                     }
                 }
                 
-                console.log('📤 Sending request:');
-                console.log('  Provider:', provider);
-                console.log('  Config:', config);
-                console.log('  Message:', message);
-                console.log('  Files:', uploadedFiles.length);
+                // 🔥 准备请求体：使用 modelId（新系统）或 provider+config（旧系统）
+                let requestBody;
+                if (currentModelId) {
+                    console.log('🔥 Using new model system, modelId:', currentModelId);
+                    requestBody = {
+                        message: fullMessage,
+                        conversationId: currentConversationId,
+                        modelId: currentModelId,
+                        sessionId: sessionStorage.getItem('sessionId') || 'session-' + Date.now()
+                    };
+                } else {
+                    // 旧方式：回退到旧的系统
+                    console.log('⚠️ No modelId, falling back to old system');
+                    const providerData = getProviderConfig(currentModel);
+                    console.log('✅ Provider data:', providerData);
+                    
+                    if (!providerData) {
+                        console.error('❌ No provider data returned!');
+                        addMessage('❌ 错误：无法识别的模型类型', 'assistant', true);
+                        isStreaming = false;
+                        return;
+                    }
+                    
+                    const { provider, config } = providerData;
+                    requestBody = {
+                        message: fullMessage,
+                        conversationId: currentConversationId,
+                        provider: provider,
+                        config: config,
+                        sessionId: sessionStorage.getItem('sessionId') || 'session-' + Date.now()
+                    };
+                }
+                
+                console.log('📤 Sending request:', requestBody);
                 
                 // 调用流式 API
                 const response = await fetch('/api/chat/stream', {
@@ -4113,12 +4130,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        message: fullMessage,
-                        conversationId: currentConversationId,
-                        provider: provider,
-                        config: config
-                    })
+                    body: JSON.stringify(requestBody)
                 });
                 
                 if (!response.ok) {
@@ -4824,10 +4836,202 @@
         }
 
         // 页面加载时应用保存的语言和初始化对话历史
-        document.addEventListener('DOMContentLoaded', () => {
+        // 🔥 从服务器加载可用模型列表
+        async function loadAvailableModels() {
+            try {
+                console.log('🔄 Loading available models from server...');
+                const response = await fetch('/api/available-models');
+                const data = await response.json();
+                
+                if (data.success && data.models && data.models.length > 0) {
+                    availableModels = data.models;
+                    console.log('✅ Loaded', availableModels.length, 'models:', availableModels);
+                    
+                    // 更新模型选择器
+                    updateModelSelector();
+                    
+                    // 设置第一个模型为默认模型
+                    if (availableModels.length > 0) {
+                        currentModelId = availableModels[0].id;
+                        currentModel = availableModels[0].model;
+                        currentProvider = availableModels[0].provider;
+                        console.log('✅ Default model set to:', currentModelId);
+                    }
+                } else {
+                    console.warn('⚠️ No models configured, using fallback');
+                    // 回退到旧的硬编码模型
+                    availableModels = [];
+                    currentModelId = null;
+                }
+            } catch (error) {
+                console.error('❌ Failed to load models:', error);
+                // 回退到旧的硬编码模型
+                availableModels = [];
+                currentModelId = null;
+            }
+        }
+
+        // 🔥 更新模型选择器UI
+        function updateModelSelector() {
+            const modelDropdownMenu = document.getElementById('modelDropdownMenu');
+            const selectedModelText = document.getElementById('selectedModelText');
+            
+            if (!modelDropdownMenu || availableModels.length === 0) return;
+            
+            // 清空现有内容
+            modelDropdownMenu.innerHTML = '';
+            
+            // 按 provider 分组
+            const grouped = {};
+            availableModels.forEach(model => {
+                if (!grouped[model.provider]) {
+                    grouped[model.provider] = [];
+                }
+                grouped[model.provider].push(model);
+            });
+            
+            // 生成分组的模型选项
+            Object.keys(grouped).forEach((provider, groupIndex) => {
+                const models = grouped[provider];
+                
+                // 添加分组标题（可选）
+                if (Object.keys(grouped).length > 1) {
+                    const groupHeader = document.createElement('div');
+                    groupHeader.className = 'model-group-header';
+                    groupHeader.style.cssText = 'padding: 0.5rem 1rem; font-size: 0.75rem; color: var(--text-400); text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600;';
+                    groupHeader.textContent = getProviderDisplayName(provider);
+                    modelDropdownMenu.appendChild(groupHeader);
+                }
+                
+                // 添加该组的所有模型
+                models.forEach((model, index) => {
+                    const isFirst = groupIndex === 0 && index === 0;
+                    const modelItem = document.createElement('div');
+                    modelItem.className = 'model-option-item' + (isFirst ? ' selected' : '');
+                    modelItem.dataset.modelId = model.id;
+                    modelItem.dataset.provider = model.provider;
+                    modelItem.dataset.model = model.model;
+                    modelItem.dataset.modelName = model.name;
+                    
+                    modelItem.innerHTML = `
+                        <div class="model-option-header">
+                            <span class="model-name">${escapeHtml(model.name)}</span>
+                            <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="model-description">${getProviderDisplayName(model.provider)} - ${model.model}</div>
+                    `;
+                    
+                    // 🔥 绑定点击事件
+                    modelItem.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        
+                        try {
+                            const modelId = modelItem.dataset.modelId;
+                            const modelName = modelItem.dataset.modelName;
+                            const provider = modelItem.dataset.provider;
+                            const modelCode = modelItem.dataset.model;
+                            
+                            console.log('=== Model Selection (New System) ===');
+                            console.log('Model ID:', modelId);
+                            console.log('Model Name:', modelName);
+                            console.log('Provider:', provider);
+                            console.log('Model Code:', modelCode);
+                            
+                            // Update selected model display
+                            if (selectedModelText) {
+                                selectedModelText.textContent = modelName;
+                                console.log('✅ Updated display text to:', modelName);
+                            }
+                            
+                            // Update current model
+                            const oldModelId = currentModelId;
+                            currentModelId = modelId;
+                            currentModel = modelCode;
+                            currentProvider = provider;
+                            console.log('✅ Updated currentModelId to:', currentModelId);
+                            
+                            // 🔑 关键修复：切换模型时创建新的对话
+                            if (oldModelId !== modelId && currentConversationMessages.length > 0) {
+                                // 保存当前对话
+                                saveConversationToHistory();
+                                
+                                // 创建新对话ID
+                                currentConversationId = 'conv-' + Date.now();
+                                currentConversationMessages = [];
+                                console.log('🆕 切换模型，创建新对话ID:', currentConversationId);
+                                
+                                // 清空聊天界面
+                                const messagesContainer = document.querySelector('.messages-container');
+                                if (messagesContainer) {
+                                    messagesContainer.innerHTML = '';
+                                }
+                                
+                                // 显示欢迎界面
+                                const welcomeSection = document.querySelector('.welcome-section');
+                                if (welcomeSection) {
+                                    welcomeSection.style.display = 'flex';
+                                }
+                            }
+                            
+                            // Update visual selection
+                            document.querySelectorAll('.model-option-item').forEach(item => {
+                                item.classList.remove('selected');
+                            });
+                            modelItem.classList.add('selected');
+                            
+                            // Close dropdown
+                            if (modelDropdownMenu) {
+                                modelDropdownMenu.classList.remove('active');
+                            }
+                            
+                            console.log('✅ Model selection complete');
+                        } catch (error) {
+                            console.error('❌ Error in model selection:', error);
+                        }
+                    });
+                    
+                    modelDropdownMenu.appendChild(modelItem);
+                });
+            });
+            
+            // 更新选中的模型文本
+            if (availableModels.length > 0) {
+                selectedModelText.textContent = availableModels[0].name;
+            }
+        }
+        
+        // 辅助函数：获取 provider 的显示名称
+        function getProviderDisplayName(provider) {
+            const names = {
+                'claude': 'Claude',
+                'openai': 'OpenAI',
+                'gemini': 'Google Gemini',
+                'kimi': 'Kimi (月之暗面)',
+                'grok': 'Grok (xAI)',
+                'deepseek': 'DeepSeek',
+                'perplexity': 'Perplexity',
+                'doubao': '豆包',
+                'qwen': '通义千问',
+                'ernie': '文心一言',
+                'custom': 'Custom API'
+            };
+            return names[provider] || provider.toUpperCase();
+        }
+        
+        // 辅助函数：HTML转义
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
             applyTranslation(currentLanguage);
             updateLanguageSelection();
             renderRecentsList(); // 初始化对话历史列表
+            await loadAvailableModels(); // 🔥 加载可用模型
             console.log('✅ Initial language loaded:', currentLanguage);
             console.log('🌍 Browser language:', navigator.language);
             console.log('📋 Recents list initialized');
@@ -5213,18 +5417,31 @@
                     artifactsEditInput.disabled = true;
 
                     try {
-                        const providerData = getProviderConfig(currentModel);
-                        const { provider, config } = providerData;
+                        // 🔥 准备请求体
+                        let requestBody;
+                        if (currentModelId) {
+                            requestBody = {
+                                message: prompt,
+                                conversationId: 'artifacts-edit-' + Date.now(),
+                                modelId: currentModelId,
+                                sessionId: sessionStorage.getItem('sessionId') || 'session-' + Date.now()
+                            };
+                        } else {
+                            const providerData = getProviderConfig(currentModel);
+                            const { provider, config } = providerData;
+                            requestBody = {
+                                message: prompt,
+                                conversationId: 'artifacts-edit-' + Date.now(),
+                                provider,
+                                config,
+                                sessionId: sessionStorage.getItem('sessionId') || 'session-' + Date.now()
+                            };
+                        }
 
                         const response = await fetch('/api/chat/stream', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                message: prompt,
-                                history: [],
-                                provider,
-                                config
-                            })
+                            body: JSON.stringify(requestBody)
                         });
 
                         const reader = response.body.getReader();
