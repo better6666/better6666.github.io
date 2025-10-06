@@ -317,8 +317,11 @@
 
                 <div class="provider-config" style="display: none;">
                     <div class="form-group">
-                        <label>API Key</label>
-                        <input type="password" id="claude-api-key" placeholder="sk-ant-api03-...">
+                        <label>
+                            API Key 
+                            <span id="claude-status" style="margin-left: 0.5rem; font-weight: normal; font-size: 0.875rem;">❌ 未配置</span>
+                        </label>
+                        <input type="password" id="claude-api-key" placeholder="sk-ant-api03-... 或留空从服务器加载">
                     </div>
 
                     <div class="form-group">
@@ -353,8 +356,11 @@
 
                 <div class="provider-config" style="display: none;">
                     <div class="form-group">
-                        <label>API Key</label>
-                        <input type="password" id="openai-api-key" placeholder="sk-...">
+                        <label>
+                            API Key 
+                            <span id="openai-status" style="margin-left: 0.5rem; font-weight: normal; font-size: 0.875rem;">❌ 未配置</span>
+                        </label>
+                        <input type="password" id="openai-api-key" placeholder="sk-... 或留空从服务器加载">
                     </div>
 
                     <div class="form-group">
@@ -393,8 +399,11 @@
 
                 <div class="provider-config" style="display: none;">
                     <div class="form-group">
-                        <label>API Key</label>
-                        <input type="password" id="gemini-api-key" placeholder="AIza...">
+                        <label>
+                            API Key 
+                            <span id="gemini-status" style="margin-left: 0.5rem; font-weight: normal; font-size: 0.875rem;">❌ 未配置</span>
+                        </label>
+                        <input type="password" id="gemini-api-key" placeholder="AIza... 或留空从服务器加载">
                     </div>
 
                     <div class="form-group">
@@ -436,8 +445,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label>API Key / Token</label>
-                        <input type="password" id="custom-api-key" placeholder="your-api-key">
+                        <label>
+                            API Key / Token 
+                            <span id="custom-status" style="margin-left: 0.5rem; font-weight: normal; font-size: 0.875rem;">❌ 未配置</span>
+                        </label>
+                        <input type="password" id="custom-api-key" placeholder="输入您的 API Key 或留空从服务器加载">
                     </div>
 
                     <div class="form-group">
@@ -608,12 +620,9 @@
         }
 
         // 保存配置
-        function saveConfig(provider) {
-            const settings = getSettings();
-            settings.providers = settings.providers || {};
-            
+        // 保存配置到服务器（永久生效）
+        async function saveConfig(provider) {
             const config = {
-                enabled: true,
                 apiKey: document.getElementById(`${provider}-api-key`).value,
                 model: document.getElementById(`${provider}-model`)?.value
             };
@@ -628,10 +637,30 @@
                 config.auth = document.getElementById('custom-auth').value;
             }
 
-            settings.providers[provider] = config;
-            saveSettings(settings);
-            
-            alert(`✅ ${provider} 配置已保存！`);
+            if (!config.apiKey) {
+                alert('❌ 请输入 API Key');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ provider, config })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`✅ ${provider} 配置已永久保存到服务器！`);
+                    loadServerConfig(); // 重新加载配置显示
+                } else {
+                    alert(`❌ 保存失败: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('保存配置错误:', error);
+                alert(`❌ 保存失败: ${error.message}`);
+            }
         }
 
         // 前往聊天界面
@@ -715,7 +744,44 @@
         }
 
         // 页面加载时恢复状态
+        // 从服务器加载配置
+        async function loadServerConfig() {
+            try {
+                const response = await fetch('/api/config');
+                const result = await response.json();
+                
+                if (result.success && result.config) {
+                    // 显示配置状态
+                    Object.keys(result.config).forEach(provider => {
+                        const config = result.config[provider];
+                        const statusEl = document.getElementById(`${provider}-status`);
+                        const apiKeyInput = document.getElementById(`${provider}-api-key`);
+                        
+                        if (statusEl) {
+                            if (config.hasKey) {
+                                statusEl.textContent = '✅ 已配置';
+                                statusEl.style.color = '#48bb78';
+                            } else {
+                                statusEl.textContent = '❌ 未配置';
+                                statusEl.style.color = '#f56565';
+                            }
+                        }
+                        
+                        // 显示隐藏的API Key
+                        if (apiKeyInput && config.apiKey && config.apiKey.includes('••')) {
+                            apiKeyInput.placeholder = config.apiKey;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('加载配置失败:', error);
+            }
+        }
+
         window.addEventListener('load', () => {
+            // 加载服务器配置
+            loadServerConfig();
+            
             const settings = getSettings();
             
             // 恢复 AI 提供商状态

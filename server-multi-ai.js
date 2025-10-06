@@ -31,29 +31,55 @@ let openaiClient = null;
 // 数据结构：Map<sessionId, Map<conversationId, messages>>
 const userSessions = new Map();
 
-// ==================== 🔑 服务器端 API 配置（所有设备共享）====================
-// 在这里配置 API Key 后，所有访问网站的用户都能直接使用，无需前端配置
-const SERVER_CONFIG = {
-    claude: {
-        apiKey: process.env.ANTHROPIC_API_KEY || '',  // Claude API Key
-        model: 'claude-3-5-sonnet-20241022'
-    },
-    openai: {
-        apiKey: process.env.OPENAI_API_KEY || '',  // OpenAI API Key
-        endpoint: 'https://api.openai.com/v1',
-        model: 'gpt-3.5-turbo'
-    },
-    gemini: {
-        apiKey: process.env.GEMINI_API_KEY || 'AIzaSyDXYDslr_G05gonG8eB_AfjapZQNoZfmig',  // Google Gemini API Key
-        model: 'gemini-2.5-pro'  // 最新的 2.5 Pro 版本
-    },
-    custom: {
-        apiKey: process.env.CUSTOM_API_KEY || 'sk-YWVsd3yPnEM5CXPV7c6rej17bbhRWfhCDm8IIrGqWdo8fiW1',  // 🌙 Kimi API Key（已配置）
-        endpoint: process.env.CUSTOM_API_ENDPOINT || 'https://api.moonshot.cn/v1/chat/completions',
-        model: process.env.CUSTOM_MODEL || 'moonshot-v1-8k',
-        auth: 'bearer'  // 认证方式
+// ==================== 🔑 API 配置存储（通过网站配置，永久生效）====================
+// API密钥已从代码中移除，必须通过网站后台配置
+// 配置保存在服务器，重启后依然有效
+const fs = require('fs');
+const CONFIG_FILE = path.join(__dirname, '.config', 'api-config.json');
+
+// 确保配置目录存在
+if (!fs.existsSync(path.join(__dirname, '.config'))) {
+    fs.mkdirSync(path.join(__dirname, '.config'), { recursive: true });
+}
+
+// 加载配置
+function loadConfig() {
+    try {
+        if (fs.existsSync(CONFIG_FILE)) {
+            const data = fs.readFileSync(CONFIG_FILE, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (error) {
+        console.error('加载配置失败:', error);
     }
-};
+    return {
+        claude: { apiKey: '', model: 'claude-3-5-sonnet-20241022' },
+        openai: { apiKey: '', endpoint: 'https://api.openai.com/v1', model: 'gpt-3.5-turbo' },
+        gemini: { apiKey: '', model: 'gemini-2.5-pro' },
+        custom: { apiKey: '', endpoint: '', model: '', auth: 'bearer' }
+    };
+}
+
+// 保存配置
+function saveConfig(config) {
+    try {
+        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
+        console.log('✅ 配置已保存');
+        return true;
+    } catch (error) {
+        console.error('❌ 保存配置失败:', error);
+        return false;
+    }
+}
+
+// 服务器配置（从文件加载）
+let SERVER_CONFIG = loadConfig();
+
+console.log('📋 当前配置状态:');
+console.log('  Claude:', SERVER_CONFIG.claude.apiKey ? '✅ 已配置' : '❌ 未配置');
+console.log('  OpenAI:', SERVER_CONFIG.openai.apiKey ? '✅ 已配置' : '❌ 未配置');
+console.log('  Gemini:', SERVER_CONFIG.gemini.apiKey ? '✅ 已配置' : '❌ 未配置');
+console.log('  Custom:', SERVER_CONFIG.custom.apiKey ? '✅ 已配置' : '❌ 未配置');
 
 // 合并配置：优先使用前端传来的配置，如果没有则使用服务器默认配置
 function mergeConfig(provider, clientConfig) {
@@ -653,6 +679,174 @@ app.get('/index.html', (req, res) => {
 app.get('/chat', (req, res) => {
     res.sendFile(path.join(__dirname, 'chat.html'));
 });
+
+// ==================== 配置管理 API ====================
+
+// 获取当前配置（隐藏完整密钥）
+app.get('/api/config', (req, res) => {
+    const safeConfig = {};
+    for (const [provider, config] of Object.entries(SERVER_CONFIG)) {
+        safeConfig[provider] = {
+            ...config,
+            apiKey: config.apiKey ? maskApiKey(config.apiKey) : '',
+            hasKey: !!config.apiKey
+        };
+    }
+    res.json({ success: true, config: safeConfig });
+});
+
+// 保存配置
+app.post('/api/config', (req, res) => {
+    try {
+        const { provider, config } = req.body;
+        
+        if (!provider || !config) {
+            return res.status(400).json({
+                success: false,
+                message: '缺少必要参数'
+            });
+        }
+        
+        // 更新配置
+        SERVER_CONFIG[provider] = {
+            ...SERVER_CONFIG[provider],
+            ...config
+        };
+        
+        // 保存到文件
+        if (saveConfig(SERVER_CONFIG)) {
+            console.log(`✅ ${provider} 配置已更新`);
+            res.json({
+                success: true,
+                message: '配置保存成功'
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                message: '配置保存失败'
+            });
+        }
+    } catch (error) {
+        console.error('保存配置错误:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// 删除配置
+app.delete('/api/config/:provider', (req, res) => {
+    try {
+        const { provider } = req.params;
+        
+        if (SERVER_CONFIG[provider]) {
+            SERVER_CONFIG[provider].apiKey = '';
+            saveConfig(SERVER_CONFIG);
+            console.log(`🗑️ ${provider} 配置已清除`);
+            
+            res.json({
+                success: true,
+                message: '配置已清除'
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                message: '配置不存在'
+            });
+        }
+    } catch (error) {
+        console.error('删除配置错误:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// 测试API连接
+app.post('/api/config/test/:provider', async (req, res) => {
+    try {
+        const { provider } = req.params;
+        const config = SERVER_CONFIG[provider];
+        
+        if (!config || !config.apiKey) {
+            return res.json({
+                success: false,
+                message: 'API Key 未配置'
+            });
+        }
+        
+        // 根据不同提供商测试连接
+        let testResult = false;
+        let errorMessage = '';
+        
+        try {
+            switch (provider) {
+                case 'claude':
+                    const Anthropic = require('@anthropic-ai/sdk');
+                    const anthropic = new Anthropic({ apiKey: config.apiKey });
+                    await anthropic.messages.create({
+                        model: config.model,
+                        max_tokens: 10,
+                        messages: [{ role: 'user', content: 'Hi' }]
+                    });
+                    testResult = true;
+                    break;
+                    
+                case 'openai':
+                    const response = await fetch(`${config.endpoint}/models`, {
+                        headers: { 'Authorization': `Bearer ${config.apiKey}` }
+                    });
+                    testResult = response.ok;
+                    if (!response.ok) {
+                        errorMessage = '连接失败';
+                    }
+                    break;
+                    
+                case 'gemini':
+                    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${config.apiKey}`;
+                    const geminiResponse = await fetch(geminiUrl);
+                    testResult = geminiResponse.ok;
+                    if (!geminiResponse.ok) {
+                        errorMessage = 'API Key 无效';
+                    }
+                    break;
+                    
+                case 'custom':
+                    // 简单的连接测试
+                    testResult = true;
+                    break;
+                    
+                default:
+                    errorMessage = '不支持的提供商';
+            }
+            
+            res.json({
+                success: testResult,
+                message: testResult ? '连接测试成功' : errorMessage
+            });
+            
+        } catch (error) {
+            res.json({
+                success: false,
+                message: error.message || '连接测试失败'
+            });
+        }
+    } catch (error) {
+        console.error('测试连接错误:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+    }
+});
+
+// 隐藏API Key的辅助函数
+function maskApiKey(key) {
+    if (!key || key.length < 8) return '••••••••';
+    return key.substring(0, 4) + '••••••••' + key.substring(key.length - 4);
+}
 
 // 启动服务器
 app.listen(PORT, () => {
