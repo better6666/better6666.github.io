@@ -1,0 +1,295 @@
+/* ========================================
+   📱 手机端专属优化
+   针对移动设备的舒适体验
+   ======================================== */
+
+/* 只在手机端生效（屏幽小于768px） */
+@media (max-width: 767px) {
+    
+    /* ========== 全局字体和布局 ========== */
+    html {
+        font-size: 14px !important; /* 基础字体 */
+    }
+    
+    body {
+        font-size: 1rem !important;
+        line-height: 1.5 !important;
+        overscroll-behavior: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    /* 允许文本内容选择 */
+    .message-text-content,
+    .input-box {
+        -webkit-user-select: text;
+        user-select: text;
+    }
+    
+    /* ========== 消息显示优化 ========== */
+    
+    /* 消息容器 - 紧凑布局 */
+    .messages-container {
+        padding: 0.625rem !important; /* 8.75px */
+    }
+    
+    /* AI消息 - 整体更紧凑 */
+    [class*="message"] {
+        padding: 0.625rem 0.75rem !important; /* 8.75px 10.5px */
+        margin-bottom: 0.75rem !important;
+        border-radius: 0.5rem !important;
+    }
+    
+    /* 消息文本 - 舒适的阅读大小 */
+    .message-text-content {
+        font-size: 0.93rem !important; /* 13px */
+        line-height: 1.5 !important;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+    
+    /* 标题层级 - 清晰但不过大 */
+    .message-text-content h1 {
+        font-size: 1.2rem !important; /* 16.8px */
+        margin: 0.75rem 0 0.5rem !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
+    }
+    
+    .message-text-content h2 {
+        font-size: 1.1rem !important; /* 15.4px */
+        margin: 0.625rem 0 0.5rem !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
+    }
+    
+    .message-text-content h3 {
+        font-size: 1rem !important; /* 14px */
+        margin: 0.5rem 0 0.375rem !important;
+        font-weight: 600 !important;
+        line-height: 1.3 !important;
+    }
+    
+    /* 段落间距 - 紧凑 */
+    .message-text-content p {
+        margin: 0.5rem 0 !important;
+    }
+    
+    .message-text-content p:first-child {
+        margin-top: 0 !important;
+    }
+    
+    .message-text-content p:last-child {
+        margin-bottom: 0 !important;
+    }
+    
+    /* 列表 - 更紧凑 */
+    .message-text-content ul,
+    .message-text-content ol {
+        margin: 0.5rem 0 !important;
+        padding-left: 1.25rem !important;
+    }
+    
+    .message-text-content li {
+        margin: 0.2rem 0 !important;
+        line-height: 1.5 !important;
+    }
+    
+    /* 代码块 - 舒适的代码显示 */
+    .message-text-content pre {
+        margin: 0.625rem -0.75rem !important; /* 负边距对齐 */
+        padding: 0.625rem 0.75rem !important;
+        font-size: 0.79rem !important; /* 11px */
+        line-height: 1.4 !important;
+        overflow-x: auto !important;
+        border-radius: 0.375rem !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    /* 行内代码 */
+    .message-text-content code {
+        font-size: 0.86rem !important; /* 12px */
+        padding: 0.125rem 0.3rem !important;
+        border-radius: 0.25rem !important;
+    }
+    
+    .message-text-content pre code {
+        font-size: 0.79rem !important; /* 11px */
+        padding: 0 !important;
+    }
+    
+    /* 引用块 */
+    .message-text-content blockquote {
+        margin: 0.5rem 0 !important;
+        padding: 0.5rem 0 0.5rem 0.75rem !important;
+        border-left-width: 2.5px !important;
+        font-size: 0.93rem !important;
+    }
+    
+    /* 表格 - 可横向滚动 */
+    .message-text-content table {
+        display: block !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        font-size: 0.86rem !important;
+        margin: 0.5rem -0.75rem !important;
+    }
+    
+    .message-text-content th,
+    .message-text-content td {
+        padding: 0.5rem !important;
+        font-size: 0.86rem !important;
+    }
+    
+    /* ========== 输入区域优化 ========== */
+    
+    /* 输入框 */
+    .input-box {
+        font-size: 16px !important; /* 防止iOS缩放 */
+        line-height: 1.4 !important;
+        padding: 0.75rem !important;
+        min-height: 44px !important; /* 苹果人机交互指南 */
+    }
+    
+    /* 发送按钮 */
+    .send-btn {
+        min-width: 44px !important;
+        min-height: 44px !important;
+        padding: 0.625rem !important;
+    }
+    
+    /* ========== 欢迎页面 ========== */
+    
+    .welcome-section {
+        padding: 0.875rem !important;
+    }
+    
+    .welcome-title {
+        font-size: 1.57rem !important; /* 22px */
+        margin-bottom: 0.625rem !important;
+        line-height: 1.3 !important;
+    }
+    
+    .welcome-subtitle {
+        font-size: 0.93rem !important; /* 13px */
+        line-height: 1.5 !important;
+    }
+    
+    /* 快捷操作按钮 */
+    .quick-action-btn {
+        padding: 0.75rem !important;
+        font-size: 0.86rem !important;
+        min-height: 44px !important;
+    }
+    
+    /* ========== 其他UI元素 ========== */
+    
+    /* 按钮 */
+    button {
+        min-height: 44px !important; /* 触摸友好 */
+        min-width: 44px !important;
+        padding: 0.625rem 0.875rem !important;
+        font-size: 0.93rem !important;
+    }
+    
+    /* 图标按钮 */
+    [class*="btn"][class*="icon"],
+    .icon-btn {
+        min-width: 44px !important;
+        min-height: 44px !important;
+        padding: 0.625rem !important;
+    }
+    
+    /* 滚动条 - 更细 */
+    ::-webkit-scrollbar {
+        width: 4px !important;
+        height: 4px !important;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        border-radius: 2px !important;
+    }
+    
+    /* ========== 性能优化 ========== */
+    
+    /* 减少动画（省电） */
+    * {
+        -webkit-transition-duration: 0.2s !important;
+        transition-duration: 0.2s !important;
+    }
+    
+    /* 硬件加速 */
+    .sidebar,
+    .sidebar-backdrop,
+    .artifacts-panel {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        will-change: transform;
+    }
+    
+    /* ========== 横屏优化 ========== */
+    
+    @media (orientation: landscape) and (max-height: 500px) {
+        /* 横屏时减小所有间距 */
+        .messages-container {
+            padding: 0.5rem !important;
+        }
+        
+        .message-text-content {
+            font-size: 0.86rem !important;
+        }
+        
+        .input-box {
+            padding: 0.5rem !important;
+            min-height: 36px !important;
+        }
+        
+        [class*="message"] {
+            padding: 0.5rem !important;
+            margin-bottom: 0.5rem !important;
+        }
+    }
+}
+
+/* ========== 小屏手机（iPhone SE等）========== */
+@media (max-width: 375px) {
+    html {
+        font-size: 13px !important; /* 更小的基础字体 */
+    }
+    
+    .message-text-content {
+        font-size: 0.93rem !important; /* 约12px */
+    }
+    
+    .message-text-content pre {
+        font-size: 0.77rem !important; /* 约10px */
+    }
+}
+
+/* ========== iOS专属优化 ========== */
+@supports (-webkit-touch-callout: none) {
+    /* 防止iOS缩放 */
+    input,
+    textarea,
+    select {
+        font-size: 16px !important;
+    }
+    
+    /* iOS安全区域适配 */
+    body {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    .chat-container {
+        padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+    }
+}
+
+/* ========== 深色模式支持 ========== */
+@media (prefers-color-scheme: dark) and (max-width: 767px) {
+    /* 移动端深色模式可根据需要调整 */
+    .message-text-content {
+        color: #e0e0e0;
+    }
+}
+

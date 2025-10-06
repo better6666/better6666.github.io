@@ -1977,11 +1977,11 @@
         /* 移动端（手机）- 优先设计 */
         @media (max-width: 767px) {
             html {
-                font-size: 15px; /* 手机端适中字体，便于阅读 */
+                font-size: 14px; /* 手机端更紧凑舒适的字体 */
             }
             
             body {
-                font-size: 1rem; /* 15px - 舒适的阅读大小 */
+                font-size: 1rem; /* 14px - 舒适的阅读大小 */
                 line-height: 1.5; /* 舒适的行高 */
             }
             
@@ -2044,10 +2044,10 @@
                 z-index: 101;
             }
 
-            /* 欢迎界面 */
+            /* 欢迎界面 - 更紧凑 */
             .welcome-section {
-                padding: 1.5rem 1rem !important;
-                gap: 2rem !important;
+                padding: 1rem 0.875rem !important;
+                gap: 1.5rem !important;
             }
 
             .welcome-title {
@@ -2061,75 +2061,84 @@
                 line-height: 1.5 !important;
             }
             
-            /* 消息内容区域 */
+            /* 消息内容区域 - 更紧凑 */
             .messages-container {
-                padding: 1rem !important;
+                padding: 0.75rem 0.875rem !important;
             }
             
             /* 消息文本内容 */
+            /* 消息内容 - 手机端优化 */
             .message-text-content {
-                font-size: 1rem !important; /* 15px - 手机端最佳阅读大小 */
-                line-height: 1.6 !important;
+                font-size: 0.95rem !important; /* 13.3px - 手机端舒适阅读 */
+                line-height: 1.55 !important;
             }
             
-            /* 标题 */
+            /* 标题 - 更紧凑 */
             .message-text-content h1 {
-                font-size: 1.5rem !important; /* 22.5px - 手机端清晰的主标题 */
-                margin: 1rem 0 0.75rem !important;
-                line-height: 1.3 !important;
-            }
-            
-            .message-text-content h2 {
-                font-size: 1.3rem !important; /* 19.5px */
+                font-size: 1.3rem !important; /* 18.2px */
                 margin: 0.875rem 0 0.625rem !important;
                 line-height: 1.3 !important;
             }
             
-            .message-text-content h3 {
-                font-size: 1.15rem !important; /* 17.25px */
+            .message-text-content h2 {
+                font-size: 1.15rem !important; /* 16.1px */
                 margin: 0.75rem 0 0.5rem !important;
                 line-height: 1.3 !important;
             }
             
-            .message-text-content h4 {
-                font-size: 1.05rem !important; /* 15.75px */
+            .message-text-content h3 {
+                font-size: 1.05rem !important; /* 14.7px */
                 margin: 0.625rem 0 0.5rem !important;
                 line-height: 1.3 !important;
             }
             
-            /* 段落 */
+            .message-text-content h4 {
+                font-size: 1rem !important; /* 14px */
+                margin: 0.5rem 0 0.375rem !important;
+                line-height: 1.3 !important;
+            }
+            
+            /* 段落 - 减小间距 */
             .message-text-content p {
-                margin: 0.75rem 0 !important;
+                margin: 0.5rem 0 !important;
             }
             
             /* 列表 */
             .message-text-content ul,
             .message-text-content ol {
-                margin: 0.75rem 0 !important;
-                padding-left: 1.5rem !important;
+                margin: 0.5rem 0 !important;
+                padding-left: 1.25rem !important;
             }
             
             .message-text-content li {
-                margin: 0.375rem 0 !important;
-                line-height: 1.6 !important;
+                margin: 0.25rem 0 !important;
+                line-height: 1.5 !important;
             }
             
-            /* 代码块 */
+            /* 代码块 - 更紧凑 */
             .message-text-content pre {
-                margin: 0.75rem 0 !important;
-                padding: 0.875rem !important;
-                font-size: 0.875rem !important; /* 13px - 手机端易读代码 */
-                line-height: 1.5 !important;
+                margin: 0.625rem 0 !important;
+                padding: 0.75rem !important;
+                font-size: 0.8rem !important; /* 11.2px */
+                line-height: 1.45 !important;
                 overflow-x: auto !important;
+                border-radius: 0.375rem !important;
             }
             
             .message-text-content code {
-                font-size: 0.9rem !important; /* 13.5px */
-                padding: 0.125rem 0.375rem !important;
+                font-size: 0.85rem !important; /* 11.9px */
+                padding: 0.125rem 0.3rem !important;
             }
             
             .message-text-content pre code {
-                font-size: 0.875rem !important; /* 13px */
+                font-size: 0.8rem !important; /* 11.2px */
+            }
+            
+            /* 引用块 */
+            .message-text-content blockquote {
+                margin: 0.5rem 0 !important;
+                padding-left: 0.75rem !important;
+                border-left-width: 2px !important;
             }
 
             /* 快捷操作按钮 */
@@ -2540,6 +2549,7 @@
         }
     </style>
     <link rel="stylesheet" href="responsive-fixes.css">
+    <link rel="stylesheet" href="mobile-优化.css">
 </head>
 <body>
     <!-- Sidebar Backdrop (for mobile) -->
