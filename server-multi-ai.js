@@ -31,55 +31,39 @@ let openaiClient = null;
 // 数据结构：Map<sessionId, Map<conversationId, messages>>
 const userSessions = new Map();
 
-// ==================== 🔑 API 配置存储（通过网站配置，永久生效）====================
-// API密钥已从代码中移除，必须通过网站后台配置
-// 配置保存在服务器，重启后依然有效
-const fs = require('fs');
-const CONFIG_FILE = path.join(__dirname, '.config', 'api-config.json');
+// ==================== 🔑 API 配置（Vercel 兼容版本）====================
+// Vercel Serverless Functions 不支持写入文件系统
+// 配置从环境变量或前端传入
 
-// 确保配置目录存在
-if (!fs.existsSync(path.join(__dirname, '.config'))) {
-    fs.mkdirSync(path.join(__dirname, '.config'), { recursive: true });
-}
-
-// 加载配置
-function loadConfig() {
-    try {
-        if (fs.existsSync(CONFIG_FILE)) {
-            const data = fs.readFileSync(CONFIG_FILE, 'utf8');
-            return JSON.parse(data);
-        }
-    } catch (error) {
-        console.error('加载配置失败:', error);
+// 内存中的配置（仅在当前请求有效）
+let SERVER_CONFIG = {
+    claude: { 
+        apiKey: process.env.CLAUDE_API_KEY || '', 
+        model: 'claude-3-5-sonnet-20241022' 
+    },
+    openai: { 
+        apiKey: process.env.OPENAI_API_KEY || '', 
+        endpoint: 'https://api.openai.com/v1', 
+        model: 'gpt-3.5-turbo' 
+    },
+    gemini: { 
+        apiKey: process.env.GEMINI_API_KEY || '', 
+        model: 'gemini-2.5-pro' 
+    },
+    custom: { 
+        apiKey: process.env.CUSTOM_API_KEY || '', 
+        endpoint: process.env.CUSTOM_API_ENDPOINT || 'https://api.moonshot.cn/v1/chat/completions', 
+        model: 'moonshot-v1-8k', 
+        auth: 'bearer' 
     }
-    return {
-        claude: { apiKey: '', model: 'claude-3-5-sonnet-20241022' },
-        openai: { apiKey: '', endpoint: 'https://api.openai.com/v1', model: 'gpt-3.5-turbo' },
-        gemini: { apiKey: '', model: 'gemini-2.5-pro' },
-        custom: { apiKey: '', endpoint: '', model: '', auth: 'bearer' }
-    };
-}
+};
 
-// 保存配置
-function saveConfig(config) {
-    try {
-        fs.writeFileSync(CONFIG_FILE, JSON.stringify(config, null, 2));
-        console.log('✅ 配置已保存');
-        return true;
-    } catch (error) {
-        console.error('❌ 保存配置失败:', error);
-        return false;
-    }
-}
-
-// 服务器配置（从文件加载）
-let SERVER_CONFIG = loadConfig();
-
-console.log('📋 当前配置状态:');
-console.log('  Claude:', SERVER_CONFIG.claude.apiKey ? '✅ 已配置' : '❌ 未配置');
-console.log('  OpenAI:', SERVER_CONFIG.openai.apiKey ? '✅ 已配置' : '❌ 未配置');
-console.log('  Gemini:', SERVER_CONFIG.gemini.apiKey ? '✅ 已配置' : '❌ 未配置');
-console.log('  Custom:', SERVER_CONFIG.custom.apiKey ? '✅ 已配置' : '❌ 未配置');
+console.log('📋 API 配置状态:');
+console.log('  Claude:', SERVER_CONFIG.claude.apiKey ? '✅ 已配置(环境变量)' : '⚠️ 未配置');
+console.log('  OpenAI:', SERVER_CONFIG.openai.apiKey ? '✅ 已配置(环境变量)' : '⚠️ 未配置');
+console.log('  Gemini:', SERVER_CONFIG.gemini.apiKey ? '✅ 已配置(环境变量)' : '⚠️ 未配置');
+console.log('  Custom:', SERVER_CONFIG.custom.apiKey ? '✅ 已配置(环境变量)' : '⚠️ 未配置');
+console.log('💡 提示: API 密钥可通过前端配置或 Vercel 环境变量设置');
 
 // 合并配置：优先使用前端传来的配置，如果没有则使用服务器默认配置
 function mergeConfig(provider, clientConfig) {
@@ -695,7 +679,7 @@ app.get('/api/config', (req, res) => {
     res.json({ success: true, config: safeConfig });
 });
 
-// 保存配置
+// 保存配置（Vercel版本：仅内存存储，不写入文件）
 app.post('/api/config', (req, res) => {
     try {
         const { provider, config } = req.body;
@@ -707,25 +691,19 @@ app.post('/api/config', (req, res) => {
             });
         }
         
-        // 更新配置
+        // 更新内存中的配置（仅在当前会话有效）
         SERVER_CONFIG[provider] = {
             ...SERVER_CONFIG[provider],
             ...config
         };
         
-        // 保存到文件
-        if (saveConfig(SERVER_CONFIG)) {
-            console.log(`✅ ${provider} 配置已更新`);
-            res.json({
-                success: true,
-                message: '配置保存成功'
-            });
-        } else {
-            res.status(500).json({
-                success: false,
-                message: '配置保存失败'
-            });
-        }
+        console.log(`✅ ${provider} 配置已更新（内存）`);
+        
+        res.json({
+            success: true,
+            message: '配置已保存（当前会话有效）\n💡 提示：Vercel部署建议使用环境变量配置API密钥'
+        });
+        
     } catch (error) {
         console.error('保存配置错误:', error);
         res.status(500).json({
@@ -735,15 +713,14 @@ app.post('/api/config', (req, res) => {
     }
 });
 
-// 删除配置
+// 删除配置（Vercel版本：仅清空内存）
 app.delete('/api/config/:provider', (req, res) => {
     try {
         const { provider } = req.params;
         
         if (SERVER_CONFIG[provider]) {
             SERVER_CONFIG[provider].apiKey = '';
-            saveConfig(SERVER_CONFIG);
-            console.log(`🗑️ ${provider} 配置已清除`);
+            console.log(`🗑️ ${provider} 配置已清除（内存）`);
             
             res.json({
                 success: true,
