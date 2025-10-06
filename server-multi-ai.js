@@ -206,6 +206,26 @@ async function getConfig() {
     return SERVER_CONFIG;
 }
 
+// 🔥 根据模型ID查找配置
+async function getModelConfig(modelId) {
+    await getConfig(); // 确保已加载
+    
+    // 从多模型列表中查找
+    const modelConfig = MODELS_LIST.find(m => m.id === modelId);
+    
+    if (modelConfig) {
+        return {
+            provider: modelConfig.provider,
+            apiKey: modelConfig.apiKey,
+            model: modelConfig.model,
+            endpoint: modelConfig.endpoint || PROVIDER_CONFIG[modelConfig.provider]?.endpoint || ''
+        };
+    }
+    
+    // 如果没找到，返回 null
+    return null;
+}
+
 // 合并配置：优先使用前端传来的配置，如果没有则使用服务器默认配置
 async function mergeConfig(provider, clientConfig) {
     const config = await getConfig();
@@ -489,10 +509,28 @@ app.get('/api/conversations/:sessionId', (req, res) => {
 // ==================== 统一聊天接口 ====================
 app.post('/api/chat', async (req, res) => {
     try {
-        const { message, conversationId, provider, config, sessionId } = req.body;
+        const { message, conversationId, provider, config, sessionId, modelId } = req.body;
 
-        // 🔑 合并服务器端配置和客户端配置
-        const finalConfig = await mergeConfig(provider, config);
+        // 🔥 新方式：如果提供了 modelId，从多模型系统获取配置
+        let finalConfig;
+        let actualProvider = provider;
+        
+        if (modelId) {
+            const modelConfig = await getModelConfig(modelId);
+            if (modelConfig) {
+                finalConfig = modelConfig;
+                actualProvider = modelConfig.provider;
+                console.log(`✅ 使用多模型配置: ${modelId} (${actualProvider})`);
+            } else {
+                return res.status(404).json({
+                    success: false,
+                    error: `未找到模型配置: ${modelId}`
+                });
+            }
+        } else {
+            // 旧方式：兼容之前的调用方式
+            finalConfig = await mergeConfig(provider, config);
+        }
 
         // 获取用户会话数据
         if (!userSessions.has(sessionId)) {
@@ -507,7 +545,7 @@ app.post('/api/chat', async (req, res) => {
         let response;
         let assistantMessage;
 
-        switch (provider) {
+        switch (actualProvider) {
             case 'claude':
                 response = await chatWithClaude(history, finalConfig);
                 assistantMessage = response.content[0].text;
@@ -561,10 +599,29 @@ app.post('/api/chat', async (req, res) => {
 // ==================== 流式聊天接口 ====================
 app.post('/api/chat/stream', async (req, res) => {
     try {
-        const { message, conversationId, provider, config, sessionId } = req.body;
+        const { message, conversationId, provider, config, sessionId, modelId } = req.body;
 
-        // 🔑 合并服务器端配置和客户端配置
-        const finalConfig = await mergeConfig(provider, config);
+        // 🔥 新方式：如果提供了 modelId，从多模型系统获取配置
+        let finalConfig;
+        let actualProvider = provider;
+        
+        if (modelId) {
+            const modelConfig = await getModelConfig(modelId);
+            if (modelConfig) {
+                finalConfig = modelConfig;
+                actualProvider = modelConfig.provider;
+                console.log(`✅ 使用多模型配置(流式): ${modelId} (${actualProvider})`);
+            } else {
+                return res.status(404).json({
+                    success: false,
+                    error: `未找到模型配置: ${modelId}`
+                });
+            }
+        } else {
+            // 旧方式：兼容之前的调用方式
+            finalConfig = await mergeConfig(provider, config);
+        }
+        
         finalConfig.stream = true;
 
         res.setHeader('Content-Type', 'text/event-stream');
@@ -582,7 +639,7 @@ app.post('/api/chat/stream', async (req, res) => {
 
         let fullResponse = '';
 
-        switch (provider) {
+        switch (actualProvider) {
             case 'claude':
                 const claudeStream = await chatWithClaude(history, finalConfig);
                 claudeStream.on('text', (text) => {
@@ -1011,7 +1068,33 @@ function maskApiKey(key) {
 
 // ==================== 🎯 多模型管理 API ====================
 
-// 获取所有模型配置
+// 获取可用模型列表（供聊天页面使用）
+app.get('/api/available-models', async (req, res) => {
+    try {
+        await getConfig(); // 确保已加载
+        
+        // 返回简化的模型列表，用于聊天界面选择
+        const availableModels = MODELS_LIST.map(model => ({
+            id: model.id,
+            name: model.name,
+            provider: model.provider,
+            model: model.model
+        }));
+        
+        res.json({
+            success: true,
+            models: availableModels
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+            models: []
+        });
+    }
+});
+
+// 获取所有模型配置（供配置页面使用）
 app.get('/api/models', async (req, res) => {
     try {
         await getConfig(); // 确保已加载
